@@ -1,6 +1,6 @@
 # Recipe Vault
 
-Recipe Vault is a private-only recipe application. Iteration 0 provides a deployable Next.js foundation; it deliberately does not include recipe UI, API routes, database schema, or an MCP endpoint.
+Recipe Vault is a private-only recipe application. Iteration 1 adds the secure, migration-backed recipe data model; it deliberately does not include recipe UI, API routes, or an MCP endpoint.
 
 ## Local development
 
@@ -20,6 +20,63 @@ Next.js generates `next-env.d.ts` while running development, type generation, an
 Never place `SUPABASE_SERVICE_ROLE_KEY` in `NEXT_PUBLIC_*` variables or browser code. Iteration 0 does not require or use a service-role key. If a later server-only task requires it, configure it only as a server environment variable and keep its use isolated to server code.
 
 The app validates required public settings at client creation and names only missing variable names in errors; values are never logged or returned.
+
+## Recipe database (Iteration 1)
+
+The version-controlled schema is in `supabase/migrations/20260916000000_recipe_vault.sql`.
+It uses four application tables:
+
+| Table | Purpose |
+| --- | --- |
+| `recipes` | The owner-scoped recipe record, timing, servings, tags, dietary flags, source, and notes. |
+| `recipe_ingredients` | Ordered ingredient rows belonging to one recipe. |
+| `recipe_steps` | Ordered preparation steps belonging to one recipe. |
+| `recipe_audit_events` | Append-only write-event history for later trusted application and MCP logging. |
+
+Every recipe has one `owner_id` referencing `auth.users(id)`. Ingredients and steps
+inherit ownership through their recipe. Audit events retain an `owner_id` so the owner
+can later view their own history; recipe and user links become null if their source is
+deleted, preserving the event record. Tags and dietary flags are lowercase `text[]`
+columns: a lightweight, queryable free-form label format rather than a fixed taxonomy.
+Labels allow letters, numbers, spaces, underscores, and hyphens.
+
+All four tables have RLS enabled. `authenticated` users can create, select, update, and
+delete only recipes where `owner_id = auth.uid()`, and can manipulate ingredients and
+steps only through an owned recipe. They can select only their own audit events. There
+are intentionally no audit-event write policies, so a normal authenticated JWT cannot
+insert, alter, or delete audit history. `anon` is explicitly granted no access.
+Trusted future server-side code may append audit records using a service role or a
+narrowly scoped database function; a service-role key must remain server-only.
+
+The database enforces nonblank required text, positive child ordering and servings,
+nonnegative quantities and durations, unique child order per recipe, valid label
+arrays, and a total time no shorter than prep plus cook time when all three are supplied.
+Indexes support owner-scoped recent lists, title search, ordered children, and audit
+history. `updated_at` is automatically refreshed on recipe, ingredient, and step
+updates.
+
+### Applying and verifying locally
+
+Install and start the Supabase CLI locally, then apply the migration using your normal
+local workflow (for example, `supabase start` followed by `supabase db reset`). The
+included local config deliberately disables automatic seeding, so reset works without
+an Auth fixture. Do not point reset commands at a shared or production database. Run
+ownership and constraint verification against the local database URL:
+
+```sh
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_rls_verification.sql
+# equivalently: DATABASE_URL=... pnpm test:db
+```
+
+The verification script creates only two synthetic `.test` Auth identities inside a
+transaction and always rolls it back. It checks owner CRUD, cross-owner and anonymous
+denial, invalid values, and audit immutability.
+
+`supabase/seed.sql` is an intentionally manual, development-only sample seed. Create a
+local Auth user through the local Supabase dashboard, replace the placeholder UUID in
+that file with its ID, and run it in the local SQL editor or through `psql`. It inserts
+one fictional recipe only and refuses to run until an existing local Auth user ID is
+provided. Never use it in shared, preview, or production environments.
 
 ## Vercel deployment
 
