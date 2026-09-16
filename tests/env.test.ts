@@ -5,12 +5,12 @@ import { validatePublicSupabaseConfig } from "../src/lib/env";
 test("returns public Supabase configuration when required values are present", () => {
   const config = validatePublicSupabaseConfig({
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: "public-anon-key",
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "public-publishable-key",
   });
 
   assert.deepEqual(config, {
     url: "https://example.supabase.co",
-    anonKey: "public-anon-key",
+    publishableKey: "public-publishable-key",
   });
 });
 
@@ -19,8 +19,18 @@ test("reports missing variable names without echoing values", () => {
     () =>
       validatePublicSupabaseConfig({
         NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: undefined,
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: undefined,
       }),
-    /NEXT_PUBLIC_SUPABASE_ANON_KEY/,
+    /NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY/,
+  );
+});
+
+test("accepts the legacy anon-key variable while deployments are migrated", () => {
+  assert.deepEqual(
+    validatePublicSupabaseConfig({
+      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "legacy-public-key",
+    }),
+    { url: "https://example.supabase.co", publishableKey: "legacy-public-key" },
   );
 });

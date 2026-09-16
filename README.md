@@ -32,7 +32,7 @@ Reads are limited to 120 requests/minute/user and writes to 30 requests/minute/u
 
 1. Install Node.js 24 or newer.
 2. Run `pnpm install`.
-3. Copy `.env.example` to `.env.local` and replace the public placeholders with your Supabase project URL and anon key.
+3. Copy `.env.example` to `.env.local` and replace the public placeholders with your Supabase project URL and publishable key.
 4. Run `npm run dev`, then open `http://localhost:3000`. `GET /health` is a configuration-free liveness check and returns no configuration details.
 
 Run the baseline checks with `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build`, or run the first three with `pnpm check`. Format the repository with `pnpm format`; use `pnpm format:check` to verify formatting without changing files.
@@ -72,7 +72,7 @@ Next.js generates `next-env.d.ts` while running development, type generation, an
 
 ## Supabase configuration
 
-`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are required when code creates a Supabase client. They are public project configuration, so the anon key may be present in browser bundles. Row Level Security and future application authorization must protect the data.
+`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are required when code creates a Supabase client. They are public project configuration, so the publishable key may be present in browser bundles. Row Level Security and future application authorization must protect the data.
 
 Never place `SUPABASE_SERVICE_ROLE_KEY` in `NEXT_PUBLIC_*` variables or browser code. Iteration 0 does not require or use a service-role key. If a later server-only task requires it, configure it only as a server environment variable and keep its use isolated to server code.
 
@@ -87,7 +87,7 @@ before using the recipe service; unauthenticated requests redirect to `/sign-in`
 
 The recipe list supports a title search plus optional tag and dietary-flag filters. Recipe
 forms use the shared Zod create schema and preserve browser-entered fields on validation
-errors. The repository remains backed by the authenticated user's anon-key session—not a
+errors. The repository remains backed by the authenticated user's publishable-key session—not a
 service role—and explicitly applies the owner ID in addition to the migration's RLS policy.
 
 ## Recipe database (Iteration 1)
@@ -153,7 +153,7 @@ provided. Never use it in shared, preview, or production environments.
 ## Vercel deployment
 
 1. Import this repository into Vercel and use the default Next.js build settings (`pnpm build`).
-2. In **Project Settings → Environment Variables**, add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` for each needed environment (Production, Preview, and Development). Do not commit a `.env.local` file.
+2. In **Project Settings → Environment Variables**, add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for each needed environment (Production, Preview, and Development). Do not commit a `.env.local` file.
 3. Add any future server-only secrets, such as a service-role key if explicitly needed, in the same Vercel environment-variable settings. Do not add them to source, GitHub Actions secrets unless CI truly needs them, logs, or client variables.
 4. Deploy. The placeholder app and `/health` route build without Supabase settings because neither instantiates a client; protected functionality added later will require the variables.
 

@@ -9,7 +9,7 @@
 4. Pre-register exactly one trusted OAuth application with only its verified
    redirect URIs. Keep dynamic registration disabled.
 5. In Vercel set `NEXT_PUBLIC_SUPABASE_URL`,
-   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `MCP_TRUSTED_OAUTH_CLIENT_ID`, and
+   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `MCP_TRUSTED_OAUTH_CLIENT_ID`, and
    `RECIPE_VAULT_OWNER_ID`. Never set an access token, refresh token,
    authorization code, Supabase secret key, or service-role key as an MCP
    credential.
