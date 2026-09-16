@@ -9,9 +9,9 @@ import { getPublicSupabaseConfig } from "@/lib/env";
  */
 export async function getServerSupabaseClient() {
   const cookieStore = await cookies();
-  const { url, anonKey } = getPublicSupabaseConfig();
+  const { url, publishableKey } = getPublicSupabaseConfig();
 
-  return createServerClient(url, anonKey, {
+  return createServerClient(url, publishableKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

@@ -20,7 +20,7 @@ function ownerUserId() {
 }
 
 function createHandler() {
-  const { url, anonKey } = getPublicSupabaseConfig();
+  const { url, publishableKey } = getPublicSupabaseConfig();
   const clientId = trustedClientId();
   const ownerId = ownerUserId();
   return withOAuthProtectedResource(
@@ -36,7 +36,7 @@ function createHandler() {
         // data API; it is never accepted from an MCP client as user identity.
         env: {
           url,
-          publishableKeys: { default: anonKey },
+          publishableKeys: { default: publishableKey },
           jwks: new URL(`${url}/auth/v1/.well-known/jwks.json`),
         },
       },
