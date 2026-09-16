@@ -23,6 +23,8 @@ export type Recipe = {
 export type RecipeIngredient = RecipeCreateInput["ingredients"][number];
 export type RecipeStep = RecipeCreateInput["steps"][number];
 export type RecipeSummary = Omit<Recipe, "ingredients" | "steps">;
+export type RecipePage = { items: RecipeSummary[]; total: number };
+export type AuditMetadata = { requestId: string; method: string };
 
 type DatabaseRecipe = {
   id: string;
@@ -148,6 +150,40 @@ export class RecipeRepository {
     });
   }
 
+  async listPage(
+    ownerId: string,
+    search: string | undefined,
+    tags: string[],
+    dietaryFlags: string[],
+    offset: number,
+    limit: number,
+  ): Promise<RecipePage> {
+    let query = this.client
+      .from("recipes")
+      .select(selectFields, { count: "exact" })
+      .eq("owner_id", ownerId)
+      .order("updated_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+    if (search) query = query.ilike("title", `%${search.replaceAll("%", "\\%").replaceAll("_", "\\_")}%`);
+    for (const label of tags) query = query.contains("tags", [label]);
+    for (const flag of dietaryFlags) query = query.contains("dietary_flags", [flag]);
+    const { data, error, count } = await query;
+    if (error) throw new Error("Could not load recipes.");
+    return {
+      items: (data as DatabaseRecipe[]).map((row) => {
+        const recipe = mapRecipe(row);
+        return {
+          id: recipe.id, ownerId: recipe.ownerId, title: recipe.title, summary: recipe.summary,
+          prepTimeMinutes: recipe.prepTimeMinutes, cookTimeMinutes: recipe.cookTimeMinutes,
+          totalTimeMinutes: recipe.totalTimeMinutes, servings: recipe.servings, tags: recipe.tags,
+          dietaryFlags: recipe.dietaryFlags, sourceUrl: recipe.sourceUrl, notes: recipe.notes,
+          createdAt: recipe.createdAt, updatedAt: recipe.updatedAt,
+        };
+      }),
+      total: count ?? 0,
+    };
+  }
+
   async get(ownerId: string, id: string): Promise<Recipe | null> {
     const { data, error } = await this.client
       .from("recipes")
@@ -198,7 +234,7 @@ export class RecipeRepository {
     return (await this.get(ownerId, recipeId))!;
   }
 
-  async update(ownerId: string, id: string, input: RecipeCreateInput): Promise<void> {
+  async update(ownerId: string, id: string, input: RecipeCreateInput): Promise<Recipe | null> {
     const { error } = await this.client
       .from("recipes")
       .update(nullableFields(input))
@@ -233,6 +269,7 @@ export class RecipeRepository {
       })),
     );
     if (ingredientError || stepError) throw new Error("Could not update the recipe details.");
+    return this.get(ownerId, id);
   }
 
   async remove(ownerId: string, id: string): Promise<void> {
@@ -242,5 +279,15 @@ export class RecipeRepository {
       .eq("id", id)
       .eq("owner_id", ownerId);
     if (error) throw new Error("Could not delete this recipe.");
+  }
+
+  async recordAudit(ownerId: string, recipeId: string, eventType: string, metadata: AuditMetadata): Promise<void> {
+    const { error } = await this.client.rpc("recipe_vault_record_audit_event", {
+      target_recipe_id: recipeId,
+      target_owner_id: ownerId,
+      audit_event_type: eventType,
+      audit_event_data: { requestId: metadata.requestId, method: metadata.method, recipeId },
+    });
+    if (error) throw new Error("Could not record audit event.");
   }
 }

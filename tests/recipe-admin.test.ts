@@ -49,12 +49,24 @@ test("recipe form validation retains the shared schema rules", () => {
 test("recipe service scopes create, edit, and delete commands to the current owner", async () => {
   const calls: Array<[string, string]> = [];
   const repository = {
+    get: async () => ({
+      id: "recipe",
+      ownerId: "owner-a",
+      title: "Toast",
+      tags: [],
+      dietaryFlags: [],
+      ingredients: inputIngredients(),
+      steps: inputSteps(),
+      createdAt: "now",
+      updatedAt: "now",
+    }),
     create: async (owner: string) => {
       calls.push(["create", owner]);
       return { id: "recipe" };
     },
     update: async (owner: string) => {
       calls.push(["update", owner]);
+      return null;
     },
     remove: async (owner: string) => {
       calls.push(["delete", owner]);
@@ -71,6 +83,13 @@ test("recipe service scopes create, edit, and delete commands to the current own
     ["delete", "owner-a"],
   ]);
 });
+
+function inputIngredients() {
+  return [{ displayOrder: 1, quantity: 2, unit: "slices", ingredientName: "bread" }];
+}
+function inputSteps() {
+  return [{ stepOrder: 1, instruction: "Toast the bread." }];
+}
 
 test("recipe list queries are constrained to the current owner before RLS is applied", async () => {
   const filters: string[][] = [];
