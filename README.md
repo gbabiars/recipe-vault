@@ -4,7 +4,7 @@ Recipe Vault is a private-only recipe application. Iteration 0 provides a deploy
 
 ## Local development
 
-1. Install Node.js 20.9 or newer (Node 24 is used in CI).
+1. Install Node.js 24 or newer.
 2. Run `pnpm install`.
 3. Copy `.env.example` to `.env.local` and replace the public placeholders with your Supabase project URL and anon key.
 4. Run `npm run dev`, then open `http://localhost:3000`. `GET /health` is a configuration-free liveness check and returns no configuration details.
