@@ -1,8 +1,8 @@
 # Recipe Vault
 
-Recipe Vault is a private-only recipe application. Iteration 2 adds the authenticated
-owner web interface for creating, browsing, searching, editing, and deleting recipes.
-It deliberately does not include public registration, sharing, an MCP endpoint, or external API credentials.
+Recipe Vault is a private-only recipe application. Iteration 4 adds an authenticated
+remote MCP endpoint backed by Supabase OAuth 2.1; it does not add public registration,
+sharing, API-key authentication, or external credentials.
 
 ## Application API (Iteration 3)
 
@@ -36,6 +36,21 @@ Reads are limited to 120 requests/minute/user and writes to 30 requests/minute/u
 4. Run `npm run dev`, then open `http://localhost:3000`. `GET /health` is a configuration-free liveness check and returns no configuration details.
 
 Run the baseline checks with `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build`, or run the first three with `pnpm check`. Format the repository with `pnpm format`; use `pnpm format:check` to verify formatting without changing files.
+
+## MCP (Iteration 4)
+
+The private Streamable HTTP MCP endpoint is `/api/mcp`. It exposes only
+`search_recipes`, `get_recipe`, and the non-idempotent create-only `save_recipe`
+tool. Supabase Auth is the OAuth 2.1 authorization server; an OAuth access token
+is validated through Supabase JWKS and used exclusively to create the
+RLS-scoped client passed into the existing recipe service. No personal API keys,
+custom bearer tokens, service-role routines, or general-purpose tools are used.
+
+See [the private operator guide](docs/mcp-operator-guide.md) and
+[the deployment checklist](docs/mcp-deployment-checklist.md) for required
+Supabase and Vercel dashboard configuration. Production deployment requires a
+shared rate-limit provider; the bundled in-memory limiter is intentionally only
+a local-development fallback.
 
 ## Browser tests
 
