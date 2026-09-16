@@ -8,13 +8,13 @@ It deliberately does not include public registration, sharing, an MCP endpoint, 
 
 The private, browser-session authenticated API is under `/api/v1`. Every request requires a valid Supabase session; identity is read server-side from that session and never from a request user ID. This API is private/single-owner for v1 and Supabase RLS remains the database-level backstop. It does not enable signup, anonymous access, sharing, direct API credentials, or MCP authentication—those client-auth decisions are deferred to Iteration 4.
 
-| Method | Path | Behavior |
-| --- | --- | --- |
-| `GET` | `/api/v1/recipes` | Owned recipe summaries. Optional `page` (default 1), `pageSize` (1–100; default 25), `search`, `tag`, and `dietaryFlag`. |
-| `POST` | `/api/v1/recipes` | Creates an owned recipe from the canonical Zod create payload. Ownership and audit fields are rejected. |
-| `GET` | `/api/v1/recipes/:id` | Returns a complete owned recipe. Missing and unowned recipes both return `404`. |
-| `PATCH` | `/api/v1/recipes/:id` | Applies a non-empty partial patch, merges it with the owned recipe, then validates the complete result. Ingredient/step arrays replace their respective full collections when supplied. |
-| `DELETE` | `/api/v1/recipes/:id` | Deletes an owned recipe and returns `204`; missing and unowned resources return `404`. |
+| Method   | Path                  | Behavior                                                                                                                                                                                |
+| -------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`    | `/api/v1/recipes`     | Owned recipe summaries. Optional `page` (default 1), `pageSize` (1–100; default 25), `search`, `tag`, and `dietaryFlag`.                                                                |
+| `POST`   | `/api/v1/recipes`     | Creates an owned recipe from the canonical Zod create payload. Ownership and audit fields are rejected.                                                                                 |
+| `GET`    | `/api/v1/recipes/:id` | Returns a complete owned recipe. Missing and unowned recipes both return `404`.                                                                                                         |
+| `PATCH`  | `/api/v1/recipes/:id` | Applies a non-empty partial patch, merges it with the owned recipe, then validates the complete result. Ingredient/step arrays replace their respective full collections when supplied. |
+| `DELETE` | `/api/v1/recipes/:id` | Deletes an owned recipe and returns `204`; missing and unowned resources return `404`.                                                                                                  |
 
 Successful creates, updates, and deletes record an audit event with actor, recipe identifier, event type, timestamp (database generated), request ID, and HTTP method. Recipe bodies, cookies, authorization values, and headers are not recorded. Responses use `{ "data": ... , "meta": { "requestId": ... } }`; errors use `{ "error": { "code", "message", "requestId", "details"? } }`. Invalid JSON is `400`, validation/query errors are `422`, no valid session is `401`, non-owned resources are non-enumerating `404`, and unexpected failures are generic `500`.
 

@@ -1,5 +1,9 @@
 import { RecipeRepository } from "@/lib/db/recipe-repository";
-import { recipeCreateInputSchema, type RecipeCreateInput, type RecipeUpdateInput } from "@/lib/validation/recipe";
+import {
+  recipeCreateInputSchema,
+  type RecipeCreateInput,
+  type RecipeUpdateInput,
+} from "@/lib/validation/recipe";
 import type { AuditMetadata, RecipePage } from "@/lib/db/recipe-repository";
 
 export class RecipeService {
@@ -8,8 +12,24 @@ export class RecipeService {
   list(ownerId: string, search?: string, tags?: string[], dietaryFlags?: string[]) {
     return this.recipes.list(ownerId, search, tags, dietaryFlags);
   }
-  listPage(ownerId: string, options: { search?: string; tags: string[]; dietaryFlags: string[]; page: number; pageSize: number }): Promise<RecipePage> {
-    return this.recipes.listPage(ownerId, options.search, options.tags, options.dietaryFlags, (options.page - 1) * options.pageSize, options.pageSize);
+  listPage(
+    ownerId: string,
+    options: {
+      search?: string;
+      tags: string[];
+      dietaryFlags: string[];
+      page: number;
+      pageSize: number;
+    },
+  ): Promise<RecipePage> {
+    return this.recipes.listPage(
+      ownerId,
+      options.search,
+      options.tags,
+      options.dietaryFlags,
+      (options.page - 1) * options.pageSize,
+      options.pageSize,
+    );
   }
   get(ownerId: string, recipeId: string) {
     return this.recipes.get(ownerId, recipeId);
@@ -19,7 +39,12 @@ export class RecipeService {
     if (audit) await this.recipes.recordAudit(ownerId, recipe.id, "recipe.created", audit);
     return recipe;
   }
-  async update(ownerId: string, recipeId: string, patch: RecipeUpdateInput | RecipeCreateInput, audit?: AuditMetadata) {
+  async update(
+    ownerId: string,
+    recipeId: string,
+    patch: RecipeUpdateInput | RecipeCreateInput,
+    audit?: AuditMetadata,
+  ) {
     const current = await this.recipes.get(ownerId, recipeId);
     if (!current) return null;
     const merged = recipeCreateInputSchema.parse({
