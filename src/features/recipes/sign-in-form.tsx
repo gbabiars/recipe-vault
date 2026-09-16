@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getBrowserSupabaseClient } from "@/lib/auth/browser";
 
-export function SignInForm() {
+export function SignInForm({ destination = "/recipes" }: { destination?: string }) {
   const router = useRouter();
   const [message, setMessage] = useState<string>();
   const [pending, setPending] = useState(false);
@@ -22,7 +22,7 @@ export function SignInForm() {
       setPending(false);
       return;
     }
-    router.replace("/recipes");
+    router.replace(destination);
     router.refresh();
   }
   return (
