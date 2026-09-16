@@ -1,0 +1,5 @@
+# pnpm v11 blocks dependency lifecycle scripts by default. These two transitive
+# build-time tools require their official install scripts for local tooling.
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
