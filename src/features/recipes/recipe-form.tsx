@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import type { Recipe } from "@/lib/db/recipe-repository";
-import { emptyRecipeFormState, saveRecipeAction } from "./actions";
+import { saveRecipeAction } from "./actions";
+import { emptyRecipeFormState } from "./recipe-form-state";
 
 type IngredientRow = { quantity?: number; unit?: string; ingredientName?: string; notes?: string };
 type StepRow = { instruction?: string; durationMinutes?: number };
@@ -13,10 +14,14 @@ const errorFor = (errors: Record<string, string>, key: string) =>
 
 export function RecipeForm({ recipe }: { recipe?: Recipe }) {
   const [state, action, pending] = useActionState(saveRecipeAction, emptyRecipeFormState);
+  const formRef = useRef<HTMLFormElement>(null);
   const [ingredients, setIngredients] = useState<IngredientRow[]>(
     recipe?.ingredients.length ? recipe.ingredients : [blankIngredient],
   );
   const [steps, setSteps] = useState<StepRow[]>(recipe?.steps.length ? recipe.steps : [blankStep]);
+  useEffect(() => {
+    formRef.current?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus();
+  }, [state.errors]);
   const field = (
     name: string,
     label: string,
@@ -31,6 +36,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
         name={name}
         type={type}
         defaultValue={defaultValue}
+        aria-invalid={errorFor(state.errors, errorKey) ? true : undefined}
         aria-describedby={errorFor(state.errors, errorKey) ? `${name}-error` : undefined}
       />
       {hint && <small>{hint}</small>}
@@ -42,7 +48,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
     </label>
   );
   return (
-    <form action={action} className="recipe-form" noValidate>
+    <form ref={formRef} action={action} className="recipe-form" noValidate>
       {recipe && <input type="hidden" name="recipeId" value={recipe.id} />}
       {state.message && (
         <p className="form-message" role="alert">
@@ -54,9 +60,16 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
         {field("title", "Title", "text", recipe?.title)}
         <label className="field">
           Summary
-          <textarea name="summary" defaultValue={recipe?.summary} />
+          <textarea
+            name="summary"
+            defaultValue={recipe?.summary}
+            aria-invalid={errorFor(state.errors, "summary") ? true : undefined}
+            aria-describedby={errorFor(state.errors, "summary") ? "summary-error" : undefined}
+          />
           {errorFor(state.errors, "summary") && (
-            <span className="field-error">{errorFor(state.errors, "summary")}</span>
+            <span id="summary-error" className="field-error">
+              {errorFor(state.errors, "summary")}
+            </span>
           )}
         </label>
         <div className="form-grid">
@@ -78,9 +91,16 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
         {field("sourceUrl", "Source URL", "url", recipe?.sourceUrl)}
         <label className="field">
           Notes
-          <textarea name="notes" defaultValue={recipe?.notes} />
+          <textarea
+            name="notes"
+            defaultValue={recipe?.notes}
+            aria-invalid={errorFor(state.errors, "notes") ? true : undefined}
+            aria-describedby={errorFor(state.errors, "notes") ? "notes-error" : undefined}
+          />
           {errorFor(state.errors, "notes") && (
-            <span className="field-error">{errorFor(state.errors, "notes")}</span>
+            <span id="notes-error" className="field-error">
+              {errorFor(state.errors, "notes")}
+            </span>
           )}
         </label>
       </section>
@@ -152,9 +172,20 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
             <legend>Step {index + 1}</legend>
             <label className="field">
               Instruction
-              <textarea name={`step-${index}-instruction`} defaultValue={step.instruction} />
+              <textarea
+                name={`step-${index}-instruction`}
+                defaultValue={step.instruction}
+                aria-invalid={
+                  errorFor(state.errors, `steps.${index}.instruction`) ? true : undefined
+                }
+                aria-describedby={
+                  errorFor(state.errors, `steps.${index}.instruction`)
+                    ? `step-${index}-instruction-error`
+                    : undefined
+                }
+              />
               {errorFor(state.errors, `steps.${index}.instruction`) && (
-                <span className="field-error">
+                <span id={`step-${index}-instruction-error`} className="field-error">
                   {errorFor(state.errors, `steps.${index}.instruction`)}
                 </span>
               )}
@@ -179,7 +210,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
           </fieldset>
         ))}
       </section>
-      <button className="primary-button" disabled={pending}>
+      <button type="submit" className="primary-button" disabled={pending}>
         {pending ? "Saving…" : recipe ? "Save changes" : "Create recipe"}
       </button>
     </form>

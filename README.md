@@ -37,6 +37,22 @@ Reads are limited to 120 requests/minute/user and writes to 30 requests/minute/u
 
 Run the baseline checks with `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build`, or run the first three with `pnpm check`. Format the repository with `pnpm format`; use `pnpm format:check` to verify formatting without changing files.
 
+## Browser tests
+
+Playwright covers the signed-in recipe creation journey, including server-side form
+validation and persistence. Start the local Supabase stack and apply migrations, then
+create a local test-only account (email confirmation is disabled in `supabase/config.toml`):
+
+```sh
+pnpm supabase:start
+pnpm db:reset
+# Create a disposable account in local Supabase Studio at http://127.0.0.1:54323.
+E2E_EMAIL='recipe-e2e@example.test' E2E_PASSWORD='a-test-password' pnpm test:e2e
+```
+
+The suite intentionally skips when these credentials are absent, so ordinary unit-test
+runs never create accounts or write recipe data to a configured Supabase project.
+
 Next.js generates `next-env.d.ts` while running development, type generation, and production builds. It is intentionally ignored by Git. The `pnpm typecheck` command runs `next typegen` first so generated Next.js types are always available.
 
 ## Supabase configuration
