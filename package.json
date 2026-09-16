@@ -13,6 +13,12 @@
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "node --import tsx --test tests/**/*.test.ts",
+    "supabase": "supabase",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "db:reset": "supabase db reset",
+    "db:push": "supabase db push",
     "test:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_rls_verification.sql",
     "check": "npm run lint && npm run typecheck && npm test"
   },
@@ -30,6 +36,7 @@
     "@types/react-dom": "19.3.0",
     "eslint": "9.39.5",
     "eslint-config-next": "16.3.5",
+    "supabase": "^2.117.0",
     "tsx": "4.23.13",
     "typescript": "6.0.3"
   }

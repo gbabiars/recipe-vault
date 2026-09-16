@@ -1,3 +1,5 @@
 # Recipe feature boundary
 
-Place recipe-domain UI and feature composition here. Iteration 0 intentionally contains no recipe UI.
+This directory contains the private recipe UI composition: client forms, server actions,
+and the shared shell. Forms convert `FormData` to the canonical validation wire format;
+pages stay in `src/app` and compose these feature components.

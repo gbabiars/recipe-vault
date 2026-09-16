@@ -1,4 +1,5 @@
 # Recipe library boundary
 
-Place recipe-domain services, transformations, and access policies here. No recipe
-schema or operations are implemented in Iteration 0.
+`recipe-service.ts` provides the recipe command/query surface used by the web UI.
+`index.ts` composes it with the request-scoped repository. Future application APIs must
+reuse this service rather than reaching into Supabase from routes.
