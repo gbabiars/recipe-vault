@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { deleteRecipeAction, emptyRecipeFormState } from "./actions";
+import { deleteRecipeAction } from "./actions";
+import { emptyRecipeFormState } from "./recipe-form-state";
 
 export function DeleteRecipeForm({ recipeId }: { recipeId: string }) {
   const [state, action, pending] = useActionState(deleteRecipeAction, emptyRecipeFormState);

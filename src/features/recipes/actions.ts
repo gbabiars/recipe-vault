@@ -5,9 +5,9 @@ import type { RecipeCreateInput } from "@/lib/validation/recipe";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import { formOptional, parseRecipeFormData } from "./recipe-form-data";
+import type { RecipeFormState } from "./recipe-form-state";
 
-export type RecipeFormState = { errors: Record<string, string>; message?: string };
-export const emptyRecipeFormState: RecipeFormState = { errors: {} };
+export type { RecipeFormState } from "./recipe-form-state";
 
 function validationState(error: unknown): RecipeFormState {
   if (!(error instanceof Error) || !("issues" in error))
