@@ -17,7 +17,10 @@ export class InMemoryRateLimiter implements RateLimiter {
     const events = (this.buckets.get(key) ?? []).filter((event) => event > start);
     if (events.length >= policy.limit) {
       this.buckets.set(key, events);
-      return { allowed: false, retryAfterSeconds: Math.max(1, Math.ceil((events[0] + policy.windowMs - now) / 1000)) };
+      return {
+        allowed: false,
+        retryAfterSeconds: Math.max(1, Math.ceil((events[0] + policy.windowMs - now) / 1000)),
+      };
     }
     events.push(now);
     this.buckets.set(key, events);

@@ -164,7 +164,8 @@ export class RecipeRepository {
       .eq("owner_id", ownerId)
       .order("updated_at", { ascending: false })
       .range(offset, offset + limit - 1);
-    if (search) query = query.ilike("title", `%${search.replaceAll("%", "\\%").replaceAll("_", "\\_")}%`);
+    if (search)
+      query = query.ilike("title", `%${search.replaceAll("%", "\\%").replaceAll("_", "\\_")}%`);
     for (const label of tags) query = query.contains("tags", [label]);
     for (const flag of dietaryFlags) query = query.contains("dietary_flags", [flag]);
     const { data, error, count } = await query;
@@ -173,11 +174,20 @@ export class RecipeRepository {
       items: (data as DatabaseRecipe[]).map((row) => {
         const recipe = mapRecipe(row);
         return {
-          id: recipe.id, ownerId: recipe.ownerId, title: recipe.title, summary: recipe.summary,
-          prepTimeMinutes: recipe.prepTimeMinutes, cookTimeMinutes: recipe.cookTimeMinutes,
-          totalTimeMinutes: recipe.totalTimeMinutes, servings: recipe.servings, tags: recipe.tags,
-          dietaryFlags: recipe.dietaryFlags, sourceUrl: recipe.sourceUrl, notes: recipe.notes,
-          createdAt: recipe.createdAt, updatedAt: recipe.updatedAt,
+          id: recipe.id,
+          ownerId: recipe.ownerId,
+          title: recipe.title,
+          summary: recipe.summary,
+          prepTimeMinutes: recipe.prepTimeMinutes,
+          cookTimeMinutes: recipe.cookTimeMinutes,
+          totalTimeMinutes: recipe.totalTimeMinutes,
+          servings: recipe.servings,
+          tags: recipe.tags,
+          dietaryFlags: recipe.dietaryFlags,
+          sourceUrl: recipe.sourceUrl,
+          notes: recipe.notes,
+          createdAt: recipe.createdAt,
+          updatedAt: recipe.updatedAt,
         };
       }),
       total: count ?? 0,
@@ -281,7 +291,12 @@ export class RecipeRepository {
     if (error) throw new Error("Could not delete this recipe.");
   }
 
-  async recordAudit(ownerId: string, recipeId: string, eventType: string, metadata: AuditMetadata): Promise<void> {
+  async recordAudit(
+    ownerId: string,
+    recipeId: string,
+    eventType: string,
+    metadata: AuditMetadata,
+  ): Promise<void> {
     const { error } = await this.client.rpc("recipe_vault_record_audit_event", {
       target_recipe_id: recipeId,
       target_owner_id: ownerId,
