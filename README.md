@@ -11,7 +11,7 @@ It deliberately does not include public registration, sharing, APIs, or an MCP e
 3. Copy `.env.example` to `.env.local` and replace the public placeholders with your Supabase project URL and anon key.
 4. Run `npm run dev`, then open `http://localhost:3000`. `GET /health` is a configuration-free liveness check and returns no configuration details.
 
-Run the baseline checks with `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build`, or run the first three with `pnpm check`.
+Run the baseline checks with `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build`, or run the first three with `pnpm check`. Format the repository with `pnpm format`; use `pnpm format:check` to verify formatting without changing files.
 
 Next.js generates `next-env.d.ts` while running development, type generation, and production builds. It is intentionally ignored by Git. The `pnpm typecheck` command runs `next typegen` first so generated Next.js types are always available.
 
@@ -40,12 +40,12 @@ service role—and explicitly applies the owner ID in addition to the migration'
 The version-controlled schema is in `supabase/migrations/20260916000000_recipe_vault.sql`.
 It uses four application tables:
 
-| Table | Purpose |
-| --- | --- |
-| `recipes` | The owner-scoped recipe record, timing, servings, tags, dietary flags, source, and notes. |
-| `recipe_ingredients` | Ordered ingredient rows belonging to one recipe. |
-| `recipe_steps` | Ordered preparation steps belonging to one recipe. |
-| `recipe_audit_events` | Append-only write-event history for later trusted application and MCP logging. |
+| Table                 | Purpose                                                                                   |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| `recipes`             | The owner-scoped recipe record, timing, servings, tags, dietary flags, source, and notes. |
+| `recipe_ingredients`  | Ordered ingredient rows belonging to one recipe.                                          |
+| `recipe_steps`        | Ordered preparation steps belonging to one recipe.                                        |
+| `recipe_audit_events` | Append-only write-event history for later trusted application and MCP logging.            |
 
 Every recipe has one `owner_id` referencing `auth.users(id)`. Ingredients and steps
 inherit ownership through their recipe. Audit events retain an `owner_id` so the owner
@@ -106,15 +106,15 @@ Supabase project, Auth provider, redirect URL, and Vercel account configuration 
 
 ## Architecture boundaries
 
-| Location | Responsibility |
-| --- | --- |
-| `src/app` | Next.js routes, layouts, and route handlers |
+| Location               | Responsibility                                          |
+| ---------------------- | ------------------------------------------------------- |
+| `src/app`              | Next.js routes, layouts, and route handlers             |
 | `src/features/recipes` | Recipe-specific UI, form conversion, and server actions |
-| `src/lib/auth` | Supabase browser/server clients and future auth policy |
-| `src/lib/db` | Database repositories and access adapters |
-| `src/lib/recipes` | Recipe-domain services and policy |
-| `src/lib/validation` | Shared validation schemas |
-| `src/mcp` | Future remote MCP transport and adapters |
+| `src/lib/auth`         | Supabase browser/server clients and future auth policy  |
+| `src/lib/db`           | Database repositories and access adapters               |
+| `src/lib/recipes`      | Recipe-domain services and policy                       |
+| `src/lib/validation`   | Shared validation schemas                               |
+| `src/mcp`              | Future remote MCP transport and adapters                |
 
 Features should use the domain and database boundaries rather than query Supabase directly. Route handlers should validate inputs before invoking domain services. The future MCP endpoint must use the same authorization and recipe-domain policies as the web/API surface.
 
