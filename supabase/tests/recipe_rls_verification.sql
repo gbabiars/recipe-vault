@@ -24,6 +24,11 @@ begin
   update public.recipes set title = 'Owner recipe updated' where id = recipe_id;
   if not found then raise exception 'Owner could not update their own recipe'; end if;
 
+  perform public.recipe_vault_record_audit_event(recipe_id, '11111111-1111-1111-1111-111111111111', 'recipe.updated', '{"verification":true}');
+  if not exists (select 1 from public.recipe_audit_events event where event.recipe_id = recipe_id and event.actor_id = '11111111-1111-1111-1111-111111111111') then
+    raise exception 'Owner-scoped audit function did not record an event';
+  end if;
+
   begin
     insert into public.recipe_ingredients (recipe_id, display_order, quantity, unit, ingredient_name)
     values (recipe_id, 1, -1, 'g', 'invalid');
@@ -51,8 +56,6 @@ end;
 $verify$;
 
 reset role;
-insert into public.recipe_audit_events (owner_id, recipe_id, event_type, event_data)
-select owner_id, id, 'recipe.created', '{"verification":true}' from public.recipes where title = 'Owner recipe updated';
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
@@ -79,6 +82,11 @@ begin
     delete from public.recipe_audit_events;
     raise exception 'Authenticated user could delete audit data';
   exception when insufficient_privilege then null;
+  end;
+  begin
+    perform public.recipe_vault_record_audit_event(recipe_id, '11111111-1111-1111-1111-111111111111', 'recipe.updated', '{}');
+    raise exception 'Other owner could write an audit event';
+  exception when raise_exception then null;
   end;
 end;
 $verify$;
