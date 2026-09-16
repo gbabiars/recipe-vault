@@ -8,13 +8,14 @@ type OAuthJwtClaims = {
 export function acceptsMcpOAuthClaims(
   claims: OAuthJwtClaims | null,
   supabaseUrl: string,
-  trustedClientId: string,
+  trustedClientIds: readonly string[],
 ) {
   const audience = claims?.aud;
   return (
     claims?.iss === `${supabaseUrl.replace(/\/$/, "")}/auth/v1` &&
     (audience === "authenticated" ||
       (Array.isArray(audience) && audience.includes("authenticated"))) &&
-    claims.client_id === trustedClientId
+    typeof claims.client_id === "string" &&
+    trustedClientIds.includes(claims.client_id)
   );
 }

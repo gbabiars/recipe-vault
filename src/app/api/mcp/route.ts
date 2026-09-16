@@ -7,10 +7,15 @@ import { handleMcpRequest } from "@/mcp/server";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-function trustedClientId() {
-  const value = process.env.MCP_TRUSTED_OAUTH_CLIENT_ID?.trim();
-  if (!value) throw new Error("MCP trusted OAuth client is not configured.");
-  return value;
+function trustedClientIds() {
+  const values = [
+    ...(process.env.MCP_TRUSTED_OAUTH_CLIENT_IDS ?? "").split(","),
+    process.env.MCP_TRUSTED_OAUTH_CLIENT_ID ?? "",
+  ]
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (values.length === 0) throw new Error("MCP trusted OAuth clients are not configured.");
+  return [...new Set(values)];
 }
 
 function ownerUserId() {
@@ -21,7 +26,7 @@ function ownerUserId() {
 
 function createHandler() {
   const { url, publishableKey } = getPublicSupabaseConfig();
-  const clientId = trustedClientId();
+  const clientIds = trustedClientIds();
   const ownerId = ownerUserId();
   return withOAuthProtectedResource(
     {
@@ -42,7 +47,7 @@ function createHandler() {
       },
       async (request, context) => {
         if (
-          !acceptsMcpOAuthClaims(context.jwtClaims, url, clientId) ||
+          !acceptsMcpOAuthClaims(context.jwtClaims, url, clientIds) ||
           context.userClaims?.id !== ownerId
         ) {
           logApiEvent({

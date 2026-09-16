@@ -69,6 +69,19 @@ test("MCP get does not enumerate another owner's recipe", async () => {
   assert.deepEqual(body, { error: "Recipe not found." });
 });
 
+test("MCP rejects malformed recipe IDs without querying or exposing recipe existence", async () => {
+  const { tools, rows } = setup();
+  rows.set("00000000-0000-4000-8000-000000000002", {
+    ...recipe,
+    id: "00000000-0000-4000-8000-000000000002",
+    ownerId: "owner-a",
+  });
+  const result = await tools.get_recipe({ recipeId: "not-a-uuid" });
+  assert.equal(result.isError, true);
+  assert.deepEqual(resultText(result), { error: "Recipe not found." });
+  assert.equal(rows.size, 1);
+});
+
 test("MCP save validates first, derives owner, and records a safe audit event", async () => {
   const { tools, rows, audit } = setup();
   const invalid = await tools.save_recipe({ ...recipe, ownerId: "attacker" });

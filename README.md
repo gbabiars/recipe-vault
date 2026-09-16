@@ -37,7 +37,7 @@ Reads are limited to 120 requests/minute/user and writes to 30 requests/minute/u
 
 Run the baseline checks with `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build`, or run the first three with `pnpm check`. Format the repository with `pnpm format`; use `pnpm format:check` to verify formatting without changing files.
 
-## MCP (Iteration 4)
+## MCP (Iterations 4–5)
 
 The private Streamable HTTP MCP endpoint is `/api/mcp`. It exposes only
 `search_recipes`, `get_recipe`, and the non-idempotent create-only `save_recipe`
@@ -46,11 +46,13 @@ is validated through Supabase JWKS and used exclusively to create the
 RLS-scoped client passed into the existing recipe service. No personal API keys,
 custom bearer tokens, service-role routines, or general-purpose tools are used.
 
-See [the private operator guide](docs/mcp-operator-guide.md) and
-[the deployment checklist](docs/mcp-deployment-checklist.md) for required
-Supabase and Vercel dashboard configuration. Production deployment requires a
-shared rate-limit provider; the bundled in-memory limiter is intentionally only
-a local-development fallback.
+Iteration 5 adds a private validation runbook, OpenAI Responses API smoke runner,
+and an allow-list that can contain separate pre-registered Codex and ChatGPT staging
+client IDs. See [the private operator guide](docs/mcp-operator-guide.md) and
+[the deployment checklist](docs/mcp-deployment-checklist.md) for required Supabase,
+Vercel, Codex, and ChatGPT account configuration. Production deployment requires a
+shared rate-limit provider; the bundled in-memory limiter is intentionally only a
+local-development fallback.
 
 ## Browser tests
 
