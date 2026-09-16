@@ -10,6 +10,8 @@ export function ensureAuthenticatedUser(user: User | null, onUnauthenticated: ()
 
 export async function requireUser(): Promise<User> {
   const client = await getServerSupabaseClient();
-  const { data: { user } } = await client.auth.getUser();
+  const {
+    data: { user },
+  } = await client.auth.getUser();
   return ensureAuthenticatedUser(user, () => redirect("/sign-in"));
 }

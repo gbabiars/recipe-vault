@@ -33,7 +33,10 @@ test("rejects invalid quantities, durations, servings, and ordering", () => {
 });
 
 test("rejects inconsistent total time and duplicate child ordering", () => {
-  assert.equal(recipeCreateInputSchema.safeParse({ ...validRecipe, totalTimeMinutes: 20 }).success, false);
+  assert.equal(
+    recipeCreateInputSchema.safeParse({ ...validRecipe, totalTimeMinutes: 20 }).success,
+    false,
+  );
   assert.equal(
     recipeCreateInputSchema.safeParse({
       ...validRecipe,

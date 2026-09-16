@@ -7,9 +7,12 @@ const labelSchema = z
   .max(64)
   .regex(/^[a-z0-9][a-z0-9 _-]*$/i, "Use letters, numbers, spaces, underscores, or hyphens.");
 
-const labelsSchema = z.array(labelSchema).max(32).transform((labels) => {
-  return [...new Set(labels.map((label) => label.toLowerCase()))];
-});
+const labelsSchema = z
+  .array(labelSchema)
+  .max(32)
+  .transform((labels) => {
+    return [...new Set(labels.map((label) => label.toLowerCase()))];
+  });
 
 const optionalText = (maxLength: number) => z.string().trim().min(1).max(maxLength).optional();
 
@@ -41,7 +44,12 @@ const recipeFieldsSchema = z
     servings: z.number().int().positive().optional(),
     tags: labelsSchema.default([]),
     dietaryFlags: labelsSchema.default([]),
-    sourceUrl: z.string().url().max(2_000).regex(/^https?:\/\/\S+$/i, "Use an HTTP(S) URL.").optional(),
+    sourceUrl: z
+      .string()
+      .url()
+      .max(2_000)
+      .regex(/^https?:\/\/\S+$/i, "Use an HTTP(S) URL.")
+      .optional(),
     notes: optionalText(10_000),
   })
   .strict();
@@ -70,7 +78,11 @@ export const recipeCreateInputSchema = recipeFieldsSchema
       ["steps", recipe.steps.map((step) => step.stepOrder)],
     ] as const) {
       if (new Set(values).size !== values.length) {
-        context.addIssue({ code: "custom", path: [field], message: "Display order values must be unique." });
+        context.addIssue({
+          code: "custom",
+          path: [field],
+          message: "Display order values must be unique.",
+        });
       }
     }
   });
@@ -87,7 +99,12 @@ const recipeUpdateFieldsSchema = z
     servings: z.number().int().positive().optional(),
     tags: labelsSchema.optional(),
     dietaryFlags: labelsSchema.optional(),
-    sourceUrl: z.string().url().max(2_000).regex(/^https?:\/\/\S+$/i, "Use an HTTP(S) URL.").optional(),
+    sourceUrl: z
+      .string()
+      .url()
+      .max(2_000)
+      .regex(/^https?:\/\/\S+$/i, "Use an HTTP(S) URL.")
+      .optional(),
     notes: optionalText(10_000),
   })
   .strict();
