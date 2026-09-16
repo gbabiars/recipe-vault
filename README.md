@@ -1,6 +1,8 @@
 # Recipe Vault
 
-Recipe Vault is a private-only recipe application. Iteration 1 adds the secure, migration-backed recipe data model; it deliberately does not include recipe UI, API routes, or an MCP endpoint.
+Recipe Vault is a private-only recipe application. Iteration 2 adds the authenticated
+owner web interface for creating, browsing, searching, editing, and deleting recipes.
+It deliberately does not include public registration, sharing, APIs, or an MCP endpoint.
 
 ## Local development
 
@@ -20,6 +22,18 @@ Next.js generates `next-env.d.ts` while running development, type generation, an
 Never place `SUPABASE_SERVICE_ROLE_KEY` in `NEXT_PUBLIC_*` variables or browser code. Iteration 0 does not require or use a service-role key. If a later server-only task requires it, configure it only as a server environment variable and keep its use isolated to server code.
 
 The app validates required public settings at client creation and names only missing variable names in errors; values are never logged or returned.
+
+## Private admin interface (Iteration 2)
+
+`/sign-in` accepts credentials for an account provisioned separately in Supabase. It has
+no sign-up, invitation, or password-recovery UI, and failures use a generic access-denied
+message. All `/recipes` pages and write actions obtain the authenticated user server-side
+before using the recipe service; unauthenticated requests redirect to `/sign-in`.
+
+The recipe list supports a title search plus optional tag and dietary-flag filters. Recipe
+forms use the shared Zod create schema and preserve browser-entered fields on validation
+errors. The repository remains backed by the authenticated user's anon-key session—not a
+service role—and explicitly applies the owner ID in addition to the migration's RLS policy.
 
 ## Recipe database (Iteration 1)
 
@@ -57,11 +71,14 @@ updates.
 
 ### Applying and verifying locally
 
-Install and start the Supabase CLI locally, then apply the migration using your normal
-local workflow (for example, `supabase start` followed by `supabase db reset`). The
+The Supabase CLI is installed as a development dependency, so no separate global CLI
+installation is needed. Start the local stack with `pnpm supabase:start`, inspect its
+connection details with `pnpm supabase:status`, and apply all migrations with
+`pnpm db:reset`. The reset command is for local development only; do not point it at a
+shared or production database. Use `pnpm db:push` to apply pending migrations to a
+linked remote project. The
 included local config deliberately disables automatic seeding, so reset works without
-an Auth fixture. Do not point reset commands at a shared or production database. Run
-ownership and constraint verification against the local database URL:
+an Auth fixture. Run ownership and constraint verification against the local database URL:
 
 ```sh
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_rls_verification.sql
@@ -92,7 +109,7 @@ Supabase project, Auth provider, redirect URL, and Vercel account configuration 
 | Location | Responsibility |
 | --- | --- |
 | `src/app` | Next.js routes, layouts, and route handlers |
-| `src/features/recipes` | Recipe-specific UI and feature composition |
+| `src/features/recipes` | Recipe-specific UI, form conversion, and server actions |
 | `src/lib/auth` | Supabase browser/server clients and future auth policy |
 | `src/lib/db` | Database repositories and access adapters |
 | `src/lib/recipes` | Recipe-domain services and policy |
@@ -103,7 +120,6 @@ Features should use the domain and database boundaries rather than query Supabas
 
 ## Deferred product decisions
 
-- **Sign-in:** choose either Google-only sign-in restricted to the owner email or magic-link email restricted to the owner email before auth is implemented. No provider or owner email is guessed or configured here.
 - **Recipe visibility:** private-only.
 - **First MCP client:** choose the initial client to validate in a later iteration; none is assumed here.
 
