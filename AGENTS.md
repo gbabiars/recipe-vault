@@ -13,6 +13,9 @@ foundation deployable without adding product behavior that has not been requeste
 - Run the narrowest relevant check while working: `pnpm lint`, `pnpm typecheck`,
   `pnpm test`, or `pnpm build`. Run `pnpm check` for changes that span linting,
   types, and tests.
+- Always run `pnpm format` after making changes, before running checks or
+  handing off work. The pre-commit hook formats staged files as a safeguard,
+  but it does not replace this required formatting step.
 - Add or update focused tests in `tests/` when changing observable behavior.
 - Do not hand-edit generated files such as `next-env.d.ts` or `.next/` output.
 

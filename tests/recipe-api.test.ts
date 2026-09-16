@@ -33,17 +33,15 @@ function setup(user: string | null = "owner-a", limiter?: RateLimiter) {
           flags.every((flag) => r.dietaryFlags.includes(flag)),
       );
       return {
-        items: rows
-          .slice(offset, offset + limit)
-          .map((recipe) => ({
-            id: recipe.id,
-            ownerId: recipe.ownerId,
-            title: recipe.title,
-            tags: recipe.tags,
-            dietaryFlags: recipe.dietaryFlags,
-            createdAt: recipe.createdAt,
-            updatedAt: recipe.updatedAt,
-          })),
+        items: rows.slice(offset, offset + limit).map((recipe) => ({
+          id: recipe.id,
+          ownerId: recipe.ownerId,
+          title: recipe.title,
+          tags: recipe.tags,
+          dietaryFlags: recipe.dietaryFlags,
+          createdAt: recipe.createdAt,
+          updatedAt: recipe.updatedAt,
+        })),
         total: rows.length,
       };
     },

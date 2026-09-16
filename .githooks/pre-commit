@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+
+set -eu
+
+# Format only files that will be committed, then restage any formatter changes.
+git diff --cached --name-only --diff-filter=ACMR | while IFS= read -r file; do
+  [ -n "$file" ] || continue
+  case "$file" in
+    *.css | *.cjs | *.cts | *.js | *.json | *.jsx | *.mjs | *.mts | *.ts | *.tsx)
+      pnpm exec oxfmt --write "$file"
+      git add -- "$file"
+      ;;
+  esac
+done
