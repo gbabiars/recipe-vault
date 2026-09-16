@@ -1,0 +1,24 @@
+# Dependencies and build output
+node_modules/
+.pnpm-store/
+.next/
+out/
+package-lock.json
+next-env.d.ts
+
+# Test and tooling output
+coverage/
+*.tsbuildinfo
+
+# Environment files: commit only the safe template below.
+.env*
+!.env.example
+
+# Local editor and operating-system files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Vercel's local project metadata
+.vercel/
