@@ -7,31 +7,34 @@ import { handleMcpRequest } from "../src/mcp/server";
 const resourceServer = "https://recipes.example.test/api/mcp";
 const authorizationServer = "https://project.example.supabase.co/auth/v1";
 
-test("MCP claim policy requires the Supabase issuer, authenticated audience, and trusted client", () => {
+test("MCP claim policy requires the Supabase issuer, authenticated audience, and an allow-listed client", () => {
   const base = { iss: authorizationServer, aud: "authenticated", client_id: "trusted" };
-  assert.equal(acceptsMcpOAuthClaims(base, "https://project.example.supabase.co", "trusted"), true);
+  assert.equal(
+    acceptsMcpOAuthClaims(base, "https://project.example.supabase.co", ["trusted", "chatgpt"]),
+    true,
+  );
   assert.equal(
     acceptsMcpOAuthClaims(
       { ...base, iss: "https://attacker.test" },
       "https://project.example.supabase.co",
-      "trusted",
+      ["trusted"],
     ),
     false,
   );
   assert.equal(
-    acceptsMcpOAuthClaims(
-      { ...base, aud: "other" },
-      "https://project.example.supabase.co",
+    acceptsMcpOAuthClaims({ ...base, aud: "other" }, "https://project.example.supabase.co", [
       "trusted",
-    ),
+    ]),
     false,
   );
   assert.equal(
-    acceptsMcpOAuthClaims(
-      { ...base, client_id: "other" },
-      "https://project.example.supabase.co",
+    acceptsMcpOAuthClaims({ ...base, client_id: "other" }, "https://project.example.supabase.co", [
       "trusted",
-    ),
+    ]),
+    false,
+  );
+  assert.equal(
+    acceptsMcpOAuthClaims(base, "https://project.example.supabase.co", ["chatgpt"]),
     false,
   );
 });
