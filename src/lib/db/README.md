@@ -1,8 +1,9 @@
 # Database boundary
 
 `recipe-repository.ts` is the sole application adapter for recipe, ingredient, and step
-queries. It accepts the authenticated owner ID explicitly and uses the request-scoped
-Supabase client, so every query remains protected by the caller's JWT and database RLS.
-Application features must not query Supabase directly.
+queries. It accepts the authenticated owner ID explicitly and normally uses the
+request-scoped Clerk session JWT, so every browser/API query remains protected by
+the caller's JWT and database RLS. Application features must not query Supabase
+directly.
 
-`recordAudit` invokes the narrowly scoped `recipe_vault_record_audit_event` database function. It uses the caller JWT and only accepts the current authenticated owner; it records request ID and method, never headers, credentials, or recipe content.
+`recordAudit` invokes the narrowly scoped `recipe_vault_record_audit_event` database function. It accepts Clerk string IDs, requires an owned target recipe, and records request ID and method—never headers, credentials, or recipe content. The verified API-key MCP adapter is the only server-side service-role caller; it performs its Clerk owner/scope check before creating this repository.

@@ -12,7 +12,7 @@ export function createMcpServer(client: SupabaseClient, userId: string, request:
     service: new RecipeService(new RecipeRepository(client)),
     requestId: requestId(request),
   });
-  const server = new McpServer({ name: "recipe-vault", version: "0.4.0" });
+  const server = new McpServer({ name: "recipe-vault", version: "0.5.0" });
 
   server.registerTool(
     "search_recipes",

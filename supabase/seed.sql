@@ -1,18 +1,19 @@
--- Development-only sample data. This file never creates an Auth user or stores a credential.
--- Before executing, replace the UUID below with an existing LOCAL development Auth user ID.
+-- Development-only sample data. This file never creates an identity or stores a credential.
+-- Before executing, replace the Clerk user ID below and add it to
+-- recipe_vault_private_owners through the local SQL editor.
 -- Do not run this against a shared, preview, or production project.
 
 do $seed$
 declare
-  seed_owner_id uuid := '00000000-0000-0000-0000-000000000000';
+  seed_owner_id text := 'user_replace_with_local_clerk_owner';
   sample_recipe_id uuid;
 begin
-  if seed_owner_id = '00000000-0000-0000-0000-000000000000' then
-    raise exception 'Replace seed_owner_id in supabase/seed.sql with a local Auth user UUID before running this file.';
+  if seed_owner_id = 'user_replace_with_local_clerk_owner' then
+    raise exception 'Replace seed_owner_id in supabase/seed.sql with a local Clerk user ID before running this file.';
   end if;
 
-  if not exists (select 1 from auth.users where id = seed_owner_id) then
-    raise exception 'The supplied seed_owner_id does not exist in auth.users.';
+  if not exists (select 1 from public.recipe_vault_private_owners where user_id = seed_owner_id) then
+    raise exception 'Add the supplied Clerk user ID to recipe_vault_private_owners before running this seed.';
   end if;
 
   insert into public.recipes (

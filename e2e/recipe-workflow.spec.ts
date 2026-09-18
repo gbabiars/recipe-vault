@@ -5,7 +5,7 @@ const password = process.env.E2E_PASSWORD;
 const configured = Boolean(email && password);
 
 test.describe("recipe creation", () => {
-  test.skip(!configured, "Set E2E_EMAIL and E2E_PASSWORD for a local Supabase test user.");
+  test.skip(!configured, "Set E2E_EMAIL and E2E_PASSWORD for the private Clerk test account.");
 
   test("validates and creates a recipe", async ({ page }) => {
     const title = `Playwright soup ${Date.now()}`;
