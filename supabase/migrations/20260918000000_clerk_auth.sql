@@ -6,6 +6,22 @@ begin;
 
 drop function if exists public.recipe_vault_record_audit_event(uuid, uuid, text, jsonb);
 
+-- PostgreSQL does not permit changing a column's type while an RLS policy
+-- references it, so remove the UUID-based policies before converting owner IDs.
+drop policy if exists "recipe owners can select recipes" on public.recipes;
+drop policy if exists "recipe owners can insert recipes" on public.recipes;
+drop policy if exists "recipe owners can update recipes" on public.recipes;
+drop policy if exists "recipe owners can delete recipes" on public.recipes;
+drop policy if exists "recipe owners can select ingredients" on public.recipe_ingredients;
+drop policy if exists "recipe owners can insert ingredients" on public.recipe_ingredients;
+drop policy if exists "recipe owners can update ingredients" on public.recipe_ingredients;
+drop policy if exists "recipe owners can delete ingredients" on public.recipe_ingredients;
+drop policy if exists "recipe owners can select steps" on public.recipe_steps;
+drop policy if exists "recipe owners can insert steps" on public.recipe_steps;
+drop policy if exists "recipe owners can update steps" on public.recipe_steps;
+drop policy if exists "recipe owners can delete steps" on public.recipe_steps;
+drop policy if exists "recipe owners can select audit events" on public.recipe_audit_events;
+
 alter table public.recipes drop constraint if exists recipes_owner_id_fkey;
 alter table public.recipe_audit_events drop constraint if exists recipe_audit_events_owner_id_fkey;
 alter table public.recipe_audit_events drop constraint if exists recipe_audit_events_actor_id_fkey;
@@ -52,20 +68,6 @@ revoke all on function public.recipe_vault_current_clerk_user_id() from public;
 revoke all on function public.recipe_vault_is_private_owner() from public;
 grant execute on function public.recipe_vault_current_clerk_user_id() to authenticated;
 grant execute on function public.recipe_vault_is_private_owner() to authenticated;
-
-drop policy if exists "recipe owners can select recipes" on public.recipes;
-drop policy if exists "recipe owners can insert recipes" on public.recipes;
-drop policy if exists "recipe owners can update recipes" on public.recipes;
-drop policy if exists "recipe owners can delete recipes" on public.recipes;
-drop policy if exists "recipe owners can select ingredients" on public.recipe_ingredients;
-drop policy if exists "recipe owners can insert ingredients" on public.recipe_ingredients;
-drop policy if exists "recipe owners can update ingredients" on public.recipe_ingredients;
-drop policy if exists "recipe owners can delete ingredients" on public.recipe_ingredients;
-drop policy if exists "recipe owners can select steps" on public.recipe_steps;
-drop policy if exists "recipe owners can insert steps" on public.recipe_steps;
-drop policy if exists "recipe owners can update steps" on public.recipe_steps;
-drop policy if exists "recipe owners can delete steps" on public.recipe_steps;
-drop policy if exists "recipe owners can select audit events" on public.recipe_audit_events;
 
 create policy "private Clerk owner can select recipes"
 on public.recipes for select to authenticated
