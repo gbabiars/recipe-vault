@@ -9,7 +9,10 @@ export function RecipeShell({ children }: { children: ReactNode }) {
         <Link href="/recipes" className="brand">
           Recipe Vault
         </Link>
-        <SignOutButton />
+        <div className="header-actions">
+          <Link href="/user-profile">Profile &amp; API keys</Link>
+          <SignOutButton />
+        </div>
       </header>
       {children}
     </main>

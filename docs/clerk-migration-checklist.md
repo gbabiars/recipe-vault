@@ -34,11 +34,12 @@ longer uses it, but it is the fastest rollback path.
    `RECIPE_VAULT_OWNER_ID` (the same Clerk ID). For MCP only, also set the
    server-only `SUPABASE_SERVICE_ROLE_KEY`. Never prefix either secret with
    `NEXT_PUBLIC_`, place a key in a client, or put it in logs.
-6. In Clerk Dashboard → API keys, enable **User API keys**. Create the MCP key
-   for the private owner with `recipes:read` for search/get and add
-   `recipes:write` only when save is needed. Store the displayed secret once in
-   the MCP client; it cannot be retrieved later. The app accepts it only as
-   `Authorization: Bearer …` on `/api/mcp`.
+6. In Clerk Dashboard → API keys, enable **User API keys**. The authenticated
+   private owner can then manage keys from the app's **Profile & API keys** page.
+   Create an MCP key with `recipes:read` for search/get and add `recipes:write`
+   only when save is needed. Store the displayed secret once in the MCP client;
+   it cannot be retrieved later. The app accepts it only on `/api/mcp` with a
+   Bearer authorization header.
 7. Deploy migrations before the application code. Verify browser sign-in, an
    owned recipe read/write, audit creation, and that a second Clerk account is
    denied. Verify a read-only key cannot call `save_recipe`, then revoke it in

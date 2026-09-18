@@ -140,3 +140,15 @@ test("the sign-in route accepts Clerk's nested authentication steps", async () =
   assert.equal(existsSync(signInPage), true);
   assert.match(readFileSync(signInPage, "utf8"), /<SignIn /);
 });
+
+test("the private user-profile route delegates API-key management to Clerk", async () => {
+  const { existsSync, readFileSync } = await import("node:fs");
+  const profilePage = new URL(
+    "../src/app/user-profile/[[...user-profile]]/page.tsx",
+    import.meta.url,
+  );
+  assert.equal(existsSync(profilePage), true);
+  const page = readFileSync(profilePage, "utf8");
+  assert.match(page, /<UserProfile /);
+  assert.match(page, /requireUser\(\)/);
+});
