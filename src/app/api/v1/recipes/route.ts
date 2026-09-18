@@ -1,9 +1,9 @@
-import { getServerSupabaseClient } from "@/lib/auth/server";
+import { getPrivateUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import { createRecipeApi } from "@/lib/api/recipe-handlers";
 
 const api = createRecipeApi({
-  getUser: async () => (await (await getServerSupabaseClient()).auth.getUser()).data.user,
+  getUser: getPrivateUser,
   getService: getRecipeService,
 });
 

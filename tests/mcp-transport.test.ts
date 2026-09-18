@@ -1,60 +1,40 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { withOAuthProtectedResource } from "@supabase/server/oauth-protected-resource";
-import { acceptsMcpOAuthClaims } from "../src/mcp/auth-policy";
+import { authorizesMcpApiKey, requiredMcpScope } from "../src/mcp/auth-policy";
 import { handleMcpRequest } from "../src/mcp/server";
 
 const resourceServer = "https://recipes.example.test/api/mcp";
-const authorizationServer = "https://project.example.supabase.co/auth/v1";
 
-test("MCP claim policy requires the Supabase issuer, authenticated audience, and an allow-listed client", () => {
-  const base = { iss: authorizationServer, aud: "authenticated", client_id: "trusted" };
+test("MCP API-key policy requires the private owner and exact tool scope", () => {
+  const base = {
+    isAuthenticated: true,
+    tokenType: "api_key",
+    subject: "user_owner",
+    scopes: ["recipes:read"],
+  };
+  assert.equal(authorizesMcpApiKey(base, "user_owner", "recipes:read"), true);
   assert.equal(
-    acceptsMcpOAuthClaims(base, "https://project.example.supabase.co", ["trusted", "chatgpt"]),
+    authorizesMcpApiKey({ ...base, subject: "user_other" }, "user_owner", "recipes:read"),
+    false,
+  );
+  assert.equal(authorizesMcpApiKey(base, "user_owner", "recipes:write"), false);
+  assert.equal(
+    authorizesMcpApiKey({ ...base, scopes: ["recipes:write"] }, "user_owner", "recipes:write"),
     true,
   );
   assert.equal(
-    acceptsMcpOAuthClaims(
-      { ...base, iss: "https://attacker.test" },
-      "https://project.example.supabase.co",
-      ["trusted"],
-    ),
+    authorizesMcpApiKey({ ...base, tokenType: "session_token" }, "user_owner", "recipes:read"),
     false,
   );
   assert.equal(
-    acceptsMcpOAuthClaims({ ...base, aud: "other" }, "https://project.example.supabase.co", [
-      "trusted",
-    ]),
-    false,
+    requiredMcpScope({ method: "tools/call", params: { name: "search_recipes" } }),
+    "recipes:read",
   );
   assert.equal(
-    acceptsMcpOAuthClaims({ ...base, client_id: "other" }, "https://project.example.supabase.co", [
-      "trusted",
-    ]),
-    false,
+    requiredMcpScope({ method: "tools/call", params: { name: "save_recipe" } }),
+    "recipes:write",
   );
-  assert.equal(
-    acceptsMcpOAuthClaims(base, "https://project.example.supabase.co", ["chatgpt"]),
-    false,
-  );
-});
-
-test("protected-resource discovery publishes metadata and enriches unauthenticated responses", async () => {
-  const handler = withOAuthProtectedResource(
-    { resourceServer, authorizationServer },
-    async () =>
-      new Response(JSON.stringify({ error: "Authentication required." }), { status: 401 }),
-  );
-  const metadata = await handler(new Request(`${resourceServer}/oauth-protected-resource`));
-  assert.equal(metadata.status, 200);
-  assert.deepEqual(await metadata.json(), {
-    resource: resourceServer,
-    authorization_servers: [authorizationServer],
-    bearer_methods_supported: ["header"],
-  });
-  const unauthorized = await handler(new Request(resourceServer, { method: "POST" }));
-  assert.equal(unauthorized.status, 401);
-  assert.match(unauthorized.headers.get("www-authenticate") ?? "", /resource_metadata=/);
+  assert.equal(requiredMcpScope({ method: "initialize" }), null);
 });
 
 test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools", async () => {

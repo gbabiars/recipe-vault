@@ -1,16 +1,14 @@
 /**
  * Manual, non-interactive OpenAI Responses API smoke test for the deployed MCP
- * server. It deliberately reads short-lived secrets only from the process
+ * server. It deliberately reads an API key only from the process
  * environment and prints a redacted structural result.
  */
 const endpoint = process.env.MCP_ENDPOINT?.trim();
 const openaiApiKey = process.env.OPENAI_API_KEY?.trim();
-const oauthAccessToken = process.env.MCP_OAUTH_ACCESS_TOKEN?.trim();
+const clerkApiKey = process.env.MCP_CLERK_API_KEY?.trim();
 
-if (!endpoint || !openaiApiKey || !oauthAccessToken) {
-  throw new Error(
-    "Set MCP_ENDPOINT, OPENAI_API_KEY, and a short-lived MCP_OAUTH_ACCESS_TOKEN in the shell.",
-  );
+if (!endpoint || !openaiApiKey || !clerkApiKey) {
+  throw new Error("Set MCP_ENDPOINT, OPENAI_API_KEY, and MCP_CLERK_API_KEY in the shell.");
 }
 
 const allowedTools = ["search_recipes", "get_recipe", "save_recipe"];
@@ -28,7 +26,7 @@ const response = await fetch("https://api.openai.com/v1/responses", {
         type: "mcp",
         server_label: "recipe_vault",
         server_url: endpoint,
-        authorization: oauthAccessToken,
+        authorization: clerkApiKey,
         allowed_tools: allowedTools,
         require_approval: "never",
       },

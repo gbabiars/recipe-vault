@@ -1,18 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { getBrowserSupabaseClient } from "@/lib/auth/browser";
+import { useClerk } from "@clerk/nextjs";
 
 export function SignOutButton() {
-  const router = useRouter();
+  const { signOut } = useClerk();
   return (
     <button
       type="button"
       className="text-button"
       onClick={async () => {
-        await getBrowserSupabaseClient().auth.signOut();
-        router.replace("/sign-in");
-        router.refresh();
+        await signOut({ redirectUrl: "/sign-in" });
       }}
     >
       Sign out
