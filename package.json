@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:local": "node --env-file=.env.local-db ./node_modules/next/dist/bin/next dev",
     "prepare": "git config core.hooksPath .githooks",
     "build": "next build",
     "start": "next start",

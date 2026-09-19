@@ -61,12 +61,23 @@ hosting, rollout, and verification instructions.
 
 1. Use Node.js 24 or newer and pnpm 11.23.0.
 2. Run `pnpm install`.
-3. Copy `.env.example` to `.env.local` and add development Clerk and Supabase
-   values.
-4. Confirm the Clerk development domain under `[auth.third_party.clerk]` in
+3. Copy `.env.example` to `.env.local` and add the remote Supabase and Clerk
+   values. `pnpm dev` uses this remote database by default.
+4. To use a local Supabase database instead, create an ignored `.env.local-db`
+   file containing local replacements for all three Supabase variables below.
+   Obtain the values after `pnpm supabase:start` with `pnpm supabase:status`.
+
+   ```dotenv
+   NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-local-publishable-key
+   SUPABASE_SERVICE_ROLE_KEY=your-local-service-role-key
+   ```
+
+5. Confirm the Clerk development domain under `[auth.third_party.clerk]` in
    `supabase/config.toml`.
-5. Run `pnpm supabase:start`, `pnpm db:reset`, and the database verification.
-6. Run `pnpm dev` and open `http://localhost:3000`.
+6. Run `pnpm supabase:start`, `pnpm db:reset`, and the database verification.
+7. Run `pnpm dev` for remote data or `pnpm dev:local` for local data, then open
+   `http://localhost:3000`.
 
 After edits, run `pnpm format`, then `pnpm check` and `pnpm build`.
 
