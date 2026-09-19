@@ -70,6 +70,15 @@ hosting, rollout, and verification instructions.
 
 After edits, run `pnpm format`, then `pnpm check` and `pnpm build`.
 
+## Component development
+
+Run `pnpm storybook` and open `http://localhost:6006` to develop and review
+components in isolation. Storybook discovers `.stories.*` and `.mdx` files
+under `src`; the starter stories in `src/stories` demonstrate the pattern.
+
+Use `pnpm build-storybook` to create a production Storybook build. Its output
+is written to `storybook-static/` and is not committed.
+
 ## Security configuration
 
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and

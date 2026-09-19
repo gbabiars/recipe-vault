@@ -22,3 +22,6 @@ coverage/
 
 # Vercel's local project metadata
 .vercel/
+
+*storybook.log
+storybook-static
