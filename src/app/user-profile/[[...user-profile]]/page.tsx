@@ -11,7 +11,7 @@ export default async function UserProfilePage() {
       <div className="page-heading">
         <div>
           <p className="eyebrow">Account</p>
-          <h1>Profile &amp; API keys</h1>
+          <h1>Profile</h1>
         </div>
       </div>
       <section className="profile-panel">

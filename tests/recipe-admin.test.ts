@@ -141,7 +141,7 @@ test("the sign-in route accepts Clerk's nested authentication steps", async () =
   assert.match(readFileSync(signInPage, "utf8"), /<SignIn /);
 });
 
-test("the private user-profile route delegates API-key management to Clerk", async () => {
+test("the private user-profile route remains available separately from MCP key management", async () => {
   const { existsSync, readFileSync } = await import("node:fs");
   const profilePage = new URL(
     "../src/app/user-profile/[[...user-profile]]/page.tsx",
@@ -151,4 +151,5 @@ test("the private user-profile route delegates API-key management to Clerk", asy
   const page = readFileSync(profilePage, "utf8");
   assert.match(page, /<UserProfile /);
   assert.match(page, /requireUser\(\)/);
+  assert.doesNotMatch(page, /MCP keys/);
 });

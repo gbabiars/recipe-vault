@@ -54,6 +54,11 @@ Supabase service credential for this narrowly constrained MCP path; it is not
 available to browser code or clients. Browser and `/api/v1` traffic still uses
 RLS-scoped Clerk session JWTs directly.
 
+The private owner creates MCP keys at `/mcp-keys`. Each key has either
+`recipes:read` or `recipes:read` plus `recipes:write`; the displayed secret is
+shown once and must be stored only in the intended MCP client. Existing keys can
+be revoked from the same page. The general Clerk profile remains separate.
+
 Use `MCP_ENDPOINT`, `OPENAI_API_KEY`, and `MCP_CLERK_API_KEY` only in a shell
 when running `pnpm test:mcp:openai`; do not save credentials in the repository
 or logs.
