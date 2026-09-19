@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { RecipeService } from "@/lib/recipes/recipe-service";
+import type { OwnerBoundRecipeService } from "@/lib/recipes/recipe-service";
 import { recipeCreateInputSchema } from "@/lib/validation/recipe";
 import {
   defaultRateLimiter,
@@ -10,7 +10,7 @@ import {
 
 export type McpToolContext = {
   userId: string;
-  service: RecipeService;
+  service: OwnerBoundRecipeService;
   requestId: string;
   limiter?: RateLimiter;
 };
@@ -39,8 +39,8 @@ function allowed(context: McpToolContext, write: boolean) {
 
 /**
  * The tool adapter stays independent of HTTP and receives only a verified user
- * context. The service's request-scoped repository still performs every query
- * with that user's JWT, so RLS remains the final authorization decision.
+ * context. The owner-bound service ensures the service-role MCP adapter cannot
+ * select a tenant from model-controlled tool input.
  */
 export function createRecipeMcpTools(context: McpToolContext) {
   return {
@@ -49,7 +49,7 @@ export function createRecipeMcpTools(context: McpToolContext) {
       if (!parsed.success) return text({ error: "Invalid search input." }, true);
       if (!allowed(context, false).allowed) return text({ error: "Rate limit exceeded." }, true);
       try {
-        const results = await context.service.listPage(context.userId, {
+        const results = await context.service.listPage({
           search: parsed.data.query,
           tags: parsed.data.tags.map((tag) => tag.toLowerCase()),
           dietaryFlags: parsed.data.dietaryFlags.map((flag) => flag.toLowerCase()),
@@ -83,7 +83,7 @@ export function createRecipeMcpTools(context: McpToolContext) {
       if (!parsed.success) return text({ error: "Recipe not found." }, true);
       if (!allowed(context, false).allowed) return text({ error: "Rate limit exceeded." }, true);
       try {
-        const recipe = await context.service.get(context.userId, parsed.data.recipeId);
+        const recipe = await context.service.get(parsed.data.recipeId);
         if (!recipe) return text({ error: "Recipe not found." }, true);
         return text({ recipe });
       } catch {
@@ -95,7 +95,7 @@ export function createRecipeMcpTools(context: McpToolContext) {
       if (!parsed.success) return text({ error: "Recipe validation failed." }, true);
       if (!allowed(context, true).allowed) return text({ error: "Rate limit exceeded." }, true);
       try {
-        const recipe = await context.service.create(context.userId, parsed.data, {
+        const recipe = await context.service.create(parsed.data, {
           requestId: context.requestId,
           method: "MCP save_recipe",
         });

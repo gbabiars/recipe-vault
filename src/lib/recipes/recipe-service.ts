@@ -74,3 +74,26 @@ export class RecipeService {
     return true;
   }
 }
+
+/**
+ * Binds a recipe service to one verified owner. MCP tools receive this wrapper
+ * so they cannot select or override a tenant ID from tool input.
+ */
+export class OwnerBoundRecipeService {
+  constructor(
+    readonly ownerId: string,
+    private readonly recipes: RecipeService,
+  ) {}
+
+  listPage(options: Parameters<RecipeService["listPage"]>[1]) {
+    return this.recipes.listPage(this.ownerId, options);
+  }
+
+  get(recipeId: string) {
+    return this.recipes.get(this.ownerId, recipeId);
+  }
+
+  create(input: RecipeCreateInput, audit?: AuditMetadata) {
+    return this.recipes.create(this.ownerId, input, audit);
+  }
+}

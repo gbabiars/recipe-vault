@@ -19,20 +19,20 @@ function setup(ownerId = "owner-a", limiter?: RateLimiter) {
   const rows = new Map<string, typeof recipe & { id: string; ownerId: string; notes?: string }>();
   const audit: unknown[] = [];
   const service = {
-    async listPage(id: string) {
+    async listPage() {
       return {
-        items: [...rows.values()].filter((row) => row.ownerId === id),
+        items: [...rows.values()].filter((row) => row.ownerId === ownerId),
         total: rows.size,
       };
     },
-    async get(id: string, recipeId: string) {
+    async get(recipeId: string) {
       const found = rows.get(recipeId);
-      return found?.ownerId === id ? found : null;
+      return found?.ownerId === ownerId ? found : null;
     },
-    async create(id: string, input: typeof recipe, metadata: unknown) {
-      const created = { ...input, id: `recipe-${rows.size + 1}`, ownerId: id };
+    async create(input: typeof recipe, metadata: unknown) {
+      const created = { ...input, id: `recipe-${rows.size + 1}`, ownerId };
       rows.set(created.id, created);
-      audit.push({ id, metadata });
+      audit.push({ id: ownerId, metadata });
       return created;
     },
   };

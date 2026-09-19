@@ -1,50 +1,36 @@
 import { auth } from "@clerk/nextjs/server";
-import { logApiEvent, requestId } from "@/lib/api/observability";
-import { getMcpSupabaseClient } from "@/lib/auth/server";
-import { authorizesMcpApiKey, requiredMcpScope } from "@/mcp/auth-policy";
-import { handleMcpRequest } from "@/mcp/server";
+import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
+import { withMcpAuth } from "mcp-handler";
+import { createRecipeMcpHandler } from "@/mcp/server";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-async function requestedScope(request: Request) {
-  if (request.method !== "POST") return null;
-  try {
-    return requiredMcpScope((await request.clone().json()) as Record<string, unknown>);
-  } catch {
-    return null;
-  }
-}
+const handler = createRecipeMcpHandler("/api/mcp");
 
-async function dispatch(request: Request) {
-  const id = requestId(request);
-  try {
+const authenticatedHandler = withMcpAuth(
+  handler,
+  async (_, token): Promise<AuthInfo | undefined> => {
+    if (!token) return undefined;
     const apiKey = await auth({ acceptsToken: "api_key" });
-    if (!apiKey.isAuthenticated) {
-      logApiEvent({ level: "warn", event: "mcp_auth_failed", requestId: id });
-      return new Response(JSON.stringify({ error: "Authentication is required." }), {
-        status: 401,
-        headers: { "content-type": "application/json", "www-authenticate": "Bearer" },
-      });
-    }
-    const scope = await requestedScope(request);
-    if (!authorizesMcpApiKey(apiKey, process.env.RECIPE_VAULT_OWNER_ID, scope)) {
-      logApiEvent({ level: "warn", event: "mcp_api_key_rejected", requestId: id });
-      return new Response(JSON.stringify({ error: "Access denied." }), {
-        status: 403,
-        headers: { "content-type": "application/json" },
-      });
-    }
-    return handleMcpRequest(getMcpSupabaseClient(), apiKey.subject, request);
-  } catch {
-    logApiEvent({ level: "error", event: "mcp_request_failed", requestId: id });
-    return new Response(JSON.stringify({ error: "Unable to process MCP request." }), {
-      status: 500,
-      headers: { "content-type": "application/json" },
-    });
-  }
-}
+    if (
+      !apiKey.isAuthenticated ||
+      apiKey.tokenType !== "api_key" ||
+      !apiKey.subject ||
+      !apiKey.scopes
+    )
+      return undefined;
+    return {
+      token,
+      clientId: "clerk-api-key",
+      scopes: apiKey.scopes,
+      extra: { userId: apiKey.subject, credentialType: "api_key" },
+    };
+  },
+  {
+    required: true,
+    resourceMetadataPath: "/.well-known/oauth-protected-resource/mcp",
+  },
+);
 
-export const GET = dispatch;
-export const POST = dispatch;
-export const DELETE = dispatch;
+export const POST = authenticatedHandler;

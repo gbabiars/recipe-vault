@@ -14,11 +14,17 @@ export async function createMcpKeyAction(
   const request = parseMcpKeyRequest({
     name: formData.get("name"),
     access: formData.get("access"),
+    expiration: formData.get("expiration"),
   });
   if ("error" in request) return { error: request.error };
   const user = await requireUser();
   try {
-    const key = await createMcpApiKey(user.id, request.name, [...mcpKeyAccess[request.access]]);
+    const key = await createMcpApiKey(
+      user.id,
+      request.name,
+      [...mcpKeyAccess[request.access]],
+      request.expirationDays,
+    );
     revalidatePath("/mcp-keys");
     return { name: key.name, secret: key.secret };
   } catch {

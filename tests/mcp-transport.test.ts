@@ -1,40 +1,25 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { authorizesMcpApiKey, requiredMcpScope } from "../src/mcp/auth-policy";
+import { authorizeMcpTool, mcpPrincipal, mcpScopes } from "../src/mcp/auth-policy";
 import { handleMcpRequest } from "../src/mcp/server";
 
 const resourceServer = "https://recipes.example.test/api/mcp";
 
-test("MCP API-key policy requires the private owner and exact tool scope", () => {
+test("MCP principal derives its user and enforces exact tool scopes", () => {
   const base = {
-    isAuthenticated: true,
-    tokenType: "api_key",
-    subject: "user_owner",
+    token: "redacted",
+    clientId: "client",
     scopes: ["recipes:read"],
+    extra: { userId: "user_owner", credentialType: "oauth" },
   };
-  assert.equal(authorizesMcpApiKey(base, "user_owner", "recipes:read"), true);
+  assert.equal(mcpPrincipal(base)?.userId, "user_owner");
+  assert.equal(authorizeMcpTool(base, mcpScopes.read)?.userId, "user_owner");
+  assert.equal(authorizeMcpTool(base, mcpScopes.write), null);
   assert.equal(
-    authorizesMcpApiKey({ ...base, subject: "user_other" }, "user_owner", "recipes:read"),
-    false,
+    authorizeMcpTool({ ...base, scopes: ["recipes:write"] }, mcpScopes.write)?.userId,
+    "user_owner",
   );
-  assert.equal(authorizesMcpApiKey(base, "user_owner", "recipes:write"), false);
-  assert.equal(
-    authorizesMcpApiKey({ ...base, scopes: ["recipes:write"] }, "user_owner", "recipes:write"),
-    true,
-  );
-  assert.equal(
-    authorizesMcpApiKey({ ...base, tokenType: "session_token" }, "user_owner", "recipes:read"),
-    false,
-  );
-  assert.equal(
-    requiredMcpScope({ method: "tools/call", params: { name: "search_recipes" } }),
-    "recipes:read",
-  );
-  assert.equal(
-    requiredMcpScope({ method: "tools/call", params: { name: "save_recipe" } }),
-    "recipes:write",
-  );
-  assert.equal(requiredMcpScope({ method: "initialize" }), null);
+  assert.equal(mcpPrincipal({ ...base, extra: { userId: "user_owner" } }), null);
 });
 
 test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools", async () => {
