@@ -8,18 +8,11 @@ export function ensureAuthenticatedUser(user: User | null, onUnauthenticated: ()
   return user;
 }
 
-export function isPrivateOwner(user: User | null, ownerId: string | undefined): user is User {
-  return Boolean(user && ownerId?.trim() && user.id === ownerId.trim());
-}
-
-export async function getPrivateUser(): Promise<User | null> {
-  const user = await getCurrentUser();
-  return isPrivateOwner(user, process.env.RECIPE_VAULT_OWNER_ID) ? user : null;
+/** Returns any user authenticated by this application's Clerk instance. */
+export async function getAuthenticatedUser(): Promise<User | null> {
+  return getCurrentUser();
 }
 
 export async function requireUser(): Promise<User> {
-  const user = await getCurrentUser();
-  const authenticated = ensureAuthenticatedUser(user, () => redirect("/sign-in"));
-  if (!isPrivateOwner(authenticated, process.env.RECIPE_VAULT_OWNER_ID)) redirect("/access-denied");
-  return authenticated;
+  return ensureAuthenticatedUser(await getCurrentUser(), () => redirect("/sign-in"));
 }

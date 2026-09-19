@@ -16,7 +16,10 @@ export function McpKeyManager() {
   return (
     <section className="mcp-key-panel">
       <h2>Create an MCP key</h2>
-      <p>Use a separate key for each MCP client. The secret is shown only once.</p>
+      <p>
+        Use this only when a client cannot connect through OAuth. Create a separate key for each
+        client; the secret is shown only once.
+      </p>
       <form action={action} className="mcp-key-form">
         <label className="field">
           Key name
@@ -29,6 +32,18 @@ export function McpKeyManager() {
           </label>
           <label>
             <input type="radio" name="access" value="write" /> Read and save recipes
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Expiration</legend>
+          <label>
+            <input type="radio" name="expiration" value="30" /> 30 days
+          </label>
+          <label>
+            <input type="radio" name="expiration" value="90" defaultChecked /> 90 days
+          </label>
+          <label>
+            <input type="radio" name="expiration" value="365" /> 1 year
           </label>
         </fieldset>
         {state.error && (

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ensureAuthenticatedUser, isPrivateOwner } from "../src/lib/auth/require-user";
+import { ensureAuthenticatedUser } from "../src/lib/auth/require-user";
 import { deleteRecipeAction } from "../src/features/recipes/actions";
 import { parseRecipeFormData } from "../src/features/recipes/recipe-form-data";
 import { emptyRecipeFormState } from "../src/features/recipes/recipe-form-state";
@@ -38,10 +38,19 @@ test("unauthenticated recipe requests are redirected to sign-in", () => {
   );
 });
 
-test("a signed-in Clerk user must match the configured private owner", () => {
-  assert.equal(isPrivateOwner({ id: "user_owner" }, "user_owner"), true);
-  assert.equal(isPrivateOwner({ id: "user_other" }, "user_owner"), false);
-  assert.equal(isPrivateOwner({ id: "user_owner" }, undefined), false);
+test("every signed-in Clerk user receives an authenticated application identity", () => {
+  assert.deepEqual(
+    ensureAuthenticatedUser({ id: "user_one" }, () => {
+      throw new Error("unreachable");
+    }),
+    { id: "user_one" },
+  );
+  assert.deepEqual(
+    ensureAuthenticatedUser({ id: "user_two" }, () => {
+      throw new Error("unreachable");
+    }),
+    { id: "user_two" },
+  );
 });
 
 test("recipe form validation retains the shared schema rules", () => {

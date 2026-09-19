@@ -1,6 +1,7 @@
 # MCP key feature boundary
 
-This feature provides the private owner with a small, purpose-built UI for
-creating and revoking Clerk API keys used by Recipe Vault's MCP endpoint. It
-offers only the scopes accepted by the MCP authorization policy. Clerk remains
-the system of record for opaque API-key issuance and revocation.
+This feature provides each authenticated user with a purpose-built compatibility
+UI for creating and revoking expiring Clerk API keys for `/api/mcp`. OAuth at
+`/mcp` is the default. The UI offers only Recipe Vault scopes and 30-, 90-, or
+365-day expirations. Clerk's Backend SDK remains the system of record for opaque
+API-key issuance, verification, and revocation.

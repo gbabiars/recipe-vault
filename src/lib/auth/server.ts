@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import { getPublicSupabaseConfig } from "@/lib/env";
 
-/** Creates an RLS-scoped client using the active Clerk browser session token. */
+/** Creates an RLS-scoped client using the active Clerk session token. */
 export async function getServerSupabaseClient() {
   const { url, publishableKey } = getPublicSupabaseConfig();
   const { getToken } = await auth();
@@ -16,9 +16,9 @@ export async function getCurrentUser() {
 }
 
 /**
- * This credential bypasses RLS and is reserved for the API-key MCP adapter.
- * That adapter authenticates a Clerk key, checks the sole private owner and
- * scope before this client is constructed. Never use it for browser traffic.
+ * This credential bypasses RLS and is reserved for the authenticated MCP
+ * adapter. The adapter binds every operation to the verified Clerk user before
+ * this client is constructed. Never use it for browser or /api/v1 traffic.
  */
 export function getMcpSupabaseClient() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();

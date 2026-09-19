@@ -1,38 +1,78 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
+import type { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
+import type { ServerNotification, ServerRequest } from "@modelcontextprotocol/sdk/types.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createMcpHandler } from "mcp-handler";
 import { RecipeRepository } from "@/lib/db/recipe-repository";
-import { RecipeService } from "@/lib/recipes/recipe-service";
-import { requestId } from "@/lib/api/observability";
+import { getOwnerBoundMcpRecipeService } from "@/lib/recipes";
+import { OwnerBoundRecipeService, RecipeService } from "@/lib/recipes/recipe-service";
+import { authorizeMcpTool, mcpScopes, type McpScope } from "./auth-policy";
 import { createRecipeMcpTools, mcpToolSchemas } from "./tools";
 
-export function createMcpServer(client: SupabaseClient, userId: string, request: Request) {
-  const tools = createRecipeMcpTools({
-    userId,
-    service: new RecipeService(new RecipeRepository(client)),
-    requestId: requestId(request),
-  });
-  const server = new McpServer({ name: "recipe-vault", version: "0.5.0" });
+type McpExtra = RequestHandlerExtra<ServerRequest, ServerNotification>;
+type OwnedServiceFactory = (userId: string) => OwnerBoundRecipeService;
 
+function denied() {
+  return {
+    content: [{ type: "text" as const, text: JSON.stringify({ error: "Access denied." }) }],
+    isError: true,
+  };
+}
+
+function toolContext(extra: McpExtra, scope: McpScope, getService: OwnedServiceFactory) {
+  const principal = authorizeMcpTool(extra.authInfo, scope);
+  if (!principal) return null;
+  return {
+    userId: principal.userId,
+    service: getService(principal.userId),
+    requestId: String(extra.requestId),
+  };
+}
+
+/** Creates a stateless Streamable HTTP handler for one concrete route. */
+export function createRecipeMcpHandler(
+  endpoint: string,
+  getService: OwnedServiceFactory = getOwnerBoundMcpRecipeService,
+) {
+  return createMcpHandler(
+    (server) => registerRecipeTools(server, getService),
+    { serverInfo: { name: "recipe-vault", version: "0.6.0" } },
+    {
+      streamableHttpEndpoint: endpoint,
+      disableSse: true,
+      sessionIdGenerator: undefined,
+    },
+  );
+}
+
+function registerRecipeTools(server: McpServer, getService: OwnedServiceFactory) {
   server.registerTool(
     "search_recipes",
     {
       title: "Search recipes",
-      description: "Search concise cards from the signed-in owner's recipe vault.",
+      description: "Search concise cards from the authenticated user's recipe vault.",
       inputSchema: mcpToolSchemas.search,
       annotations: { readOnlyHint: true },
     },
-    tools.search_recipes,
+    async (input, extra) => {
+      const context = toolContext(extra, mcpScopes.read, getService);
+      return context ? createRecipeMcpTools(context).search_recipes(input) : denied();
+    },
   );
   server.registerTool(
     "get_recipe",
     {
       title: "Get recipe",
-      description: "Get one complete recipe owned by the signed-in user.",
+      description: "Get one complete recipe owned by the authenticated user.",
       inputSchema: mcpToolSchemas.recipeId,
       annotations: { readOnlyHint: true },
     },
-    tools.get_recipe,
+    async (input, extra) => {
+      const context = toolContext(extra, mcpScopes.read, getService);
+      return context ? createRecipeMcpTools(context).get_recipe(input) : denied();
+    },
   );
   server.registerTool(
     "save_recipe",
@@ -43,17 +83,31 @@ export function createMcpServer(client: SupabaseClient, userId: string, request:
       inputSchema: mcpToolSchemas.recipe,
       annotations: { readOnlyHint: false, idempotentHint: false, destructiveHint: false },
     },
-    tools.save_recipe,
+    async (input, extra) => {
+      const context = toolContext(extra, mcpScopes.write, getService);
+      return context ? createRecipeMcpTools(context).save_recipe(input) : denied();
+    },
   );
-  return server;
 }
 
+/** Test adapter that runs the production transport with an already verified principal. */
 export async function handleMcpRequest(client: SupabaseClient, userId: string, request: Request) {
+  const service = new OwnerBoundRecipeService(
+    userId,
+    new RecipeService(new RecipeRepository(client)),
+  );
+  const authInfo = {
+    token: "test-token",
+    clientId: "test-client",
+    scopes: [mcpScopes.read, mcpScopes.write],
+    extra: { userId, credentialType: "oauth" },
+  } satisfies AuthInfo;
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,
   });
-  const server = createMcpServer(client, userId, request);
+  const server = new McpServer({ name: "recipe-vault", version: "0.6.0" });
+  registerRecipeTools(server, () => service);
   await server.connect(transport);
-  return transport.handleRequest(request);
+  return transport.handleRequest(request, { authInfo });
 }

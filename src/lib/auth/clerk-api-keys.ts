@@ -1,116 +1,75 @@
-type ClerkApiKeyResponse = {
-  id: string;
-  name: string;
-  subject: string;
-  scopes: string[];
-  secret?: string;
-  created_at?: number;
-  createdAt?: number;
-  last_used_at?: number | null;
-  lastUsedAt?: number | null;
-  revoked?: boolean;
-  expired?: boolean;
-};
+import { clerkClient } from "@clerk/nextjs/server";
 
 export type ManagedMcpApiKey = {
   id: string;
   name: string;
   scopes: string[];
-  createdAt: number | null;
+  createdAt: number;
   lastUsedAt: number | null;
+  expiration: number | null;
   revoked: boolean;
   expired: boolean;
 };
 
 export type CreatedMcpApiKey = ManagedMcpApiKey & { secret: string };
 
-const clerkApiUrl = "https://api.clerk.com/v1";
+type ClerkApiKey = Awaited<ReturnType<Awaited<ReturnType<typeof clerkClient>>["apiKeys"]["get"]>>;
 
-function getClerkSecretKey() {
-  const key = process.env.CLERK_SECRET_KEY?.trim();
-  if (!key) throw new Error("Clerk server credentials are not configured.");
-  return key;
+function isMcpKey(key: Pick<ClerkApiKey, "scopes">) {
+  return key.scopes.includes("recipes:read") || key.scopes.includes("recipes:write");
 }
 
-async function clerkRequest(path: string, init?: RequestInit) {
-  const response = await fetch(`${clerkApiUrl}${path}`, {
-    ...init,
-    headers: {
-      authorization: `Bearer ${getClerkSecretKey()}`,
-      "content-type": "application/json",
-      ...init?.headers,
-    },
-    cache: "no-store",
-  });
-  if (!response.ok) throw new Error("Clerk API key request failed.");
-  return response.json() as Promise<unknown>;
-}
-
-function asApiKey(value: unknown): ClerkApiKeyResponse {
-  if (!value || typeof value !== "object") throw new Error("Invalid Clerk API key response.");
-  const key = value as Partial<ClerkApiKeyResponse>;
-  if (
-    typeof key.id !== "string" ||
-    typeof key.name !== "string" ||
-    typeof key.subject !== "string" ||
-    !Array.isArray(key.scopes)
-  )
-    throw new Error("Invalid Clerk API key response.");
-  return key as ClerkApiKeyResponse;
-}
-
-function toManagedKey(key: ClerkApiKeyResponse): ManagedMcpApiKey {
+function toManagedKey(key: ClerkApiKey): ManagedMcpApiKey {
   return {
     id: key.id,
     name: key.name,
     scopes: key.scopes,
-    createdAt: key.created_at ?? key.createdAt ?? null,
-    lastUsedAt: key.last_used_at ?? key.lastUsedAt ?? null,
-    revoked: Boolean(key.revoked),
-    expired: Boolean(key.expired),
+    createdAt: key.createdAt,
+    lastUsedAt: key.lastUsedAt,
+    expiration: key.expiration,
+    revoked: key.revoked,
+    expired: key.expired,
   };
 }
 
-/** Creates an opaque Clerk key that is restricted to Recipe Vault's MCP scopes. */
+/** Creates a scoped, expiring Clerk key for an OAuth-incompatible MCP client. */
 export async function createMcpApiKey(
   userId: string,
   name: string,
   scopes: string[],
+  expirationDays: 30 | 90 | 365,
 ): Promise<CreatedMcpApiKey> {
-  const key = asApiKey(
-    await clerkRequest("/api_keys", {
-      method: "POST",
-      body: JSON.stringify({ name, subject: userId, scopes, created_by: userId }),
-    }),
-  );
-  if (typeof key.secret !== "string") throw new Error("Clerk did not return the API key secret.");
+  const clerk = await clerkClient();
+  const key = await clerk.apiKeys.create({
+    name,
+    subject: userId,
+    description: "Recipe Vault MCP compatibility key",
+    scopes,
+    createdBy: userId,
+    secondsUntilExpiration: expirationDays * 24 * 60 * 60,
+  });
+  if (!key.secret) throw new Error("Clerk did not return the API key secret.");
   return { ...toManagedKey(key), secret: key.secret };
 }
 
-/** Lists only keys that were created for this MCP integration. */
+/** Lists only Recipe Vault MCP keys owned by the signed-in user. */
 export async function listMcpApiKeys(userId: string): Promise<ManagedMcpApiKey[]> {
-  const query = new URLSearchParams({ subject: userId, limit: "100", include_invalid: "true" });
-  const response = await clerkRequest(`/api_keys?${query}`);
-  if (
-    !response ||
-    typeof response !== "object" ||
-    !Array.isArray((response as { data?: unknown }).data)
-  )
-    throw new Error("Invalid Clerk API key list response.");
-  return (response as { data: unknown[] }).data
-    .map(asApiKey)
-    .filter((key) => key.subject === userId)
-    .filter((key) => key.scopes.includes("recipes:read") || key.scopes.includes("recipes:write"))
-    .map(toManagedKey);
+  const clerk = await clerkClient();
+  const response = await clerk.apiKeys.list({
+    subject: userId,
+    limit: 100,
+    includeInvalid: true,
+  });
+  return response.data.filter((key) => key.subject === userId && isMcpKey(key)).map(toManagedKey);
 }
 
-/** Revokes a key only after confirming that it belongs to the signed-in private owner. */
+/** Revokes a key only after confirming it belongs to this user and integration. */
 export async function revokeMcpApiKey(userId: string, apiKeyId: string): Promise<void> {
-  const key = asApiKey(await clerkRequest(`/api_keys/${encodeURIComponent(apiKeyId)}`));
-  if (
-    key.subject !== userId ||
-    (!key.scopes.includes("recipes:read") && !key.scopes.includes("recipes:write"))
-  )
-    throw new Error("MCP API key was not found.");
-  await clerkRequest(`/api_keys/${encodeURIComponent(apiKeyId)}/revoke`, { method: "POST" });
+  const clerk = await clerkClient();
+  const key = await clerk.apiKeys.get(apiKeyId);
+  if (key.subject !== userId || !isMcpKey(key)) throw new Error("MCP API key was not found.");
+  await clerk.apiKeys.revoke({
+    apiKeyId,
+    revocationReason: "Revoked by the Recipe Vault user",
+  });
 }

@@ -29,6 +29,10 @@ export default async function McpKeysPage() {
       <p className="lead">Create narrowly scoped keys for trusted MCP clients.</p>
       <McpKeyManager />
       <section className="mcp-key-panel">
+        <p>
+          OAuth at <code>/mcp</code> is the recommended connection method. These keys are for
+          clients that cannot complete OAuth and connect to <code>/api/mcp</code> instead.
+        </p>
         <h2>Your MCP keys</h2>
         {error ? (
           <p className="error-panel" role="alert">
@@ -45,6 +49,7 @@ export default async function McpKeysPage() {
                   <p>{key.scopes.join(", ")}</p>
                   <small>
                     Created {formatDate(key.createdAt)} · Last used {formatDate(key.lastUsedAt)}
+                    {` · Expires ${key.expiration ? formatDate(key.expiration) : "Never"}`}
                   </small>
                 </div>
                 {key.revoked || key.expired ? (
