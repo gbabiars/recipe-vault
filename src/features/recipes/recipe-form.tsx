@@ -108,9 +108,9 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
       <section>
         <div className="section-heading">
           <h2>Ingredients</h2>
-          <button type="button" onClick={() => setIngredients([...ingredients, blankIngredient])}>
+          <Button type="button" onClick={() => setIngredients([...ingredients, blankIngredient])}>
             Add ingredient
-          </button>
+          </Button>
         </div>
         <input type="hidden" name="ingredientCount" value={ingredients.length} />
         {ingredients.map((ingredient, index) => (
@@ -163,9 +163,9 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
       <section>
         <div className="section-heading">
           <h2>Steps</h2>
-          <button type="button" onClick={() => setSteps([...steps, blankStep])}>
+          <Button type="button" onClick={() => setSteps([...steps, blankStep])}>
             Add step
-          </button>
+          </Button>
         </div>
         <input type="hidden" name="stepCount" value={steps.length} />
         {steps.map((step, index) => (

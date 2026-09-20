@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
@@ -44,7 +45,7 @@ export default async function RecipesPage({
           Dietary flag
           <input name="dietary" defaultValue={dietary} placeholder="vegetarian" />
         </label>
-        <button type="submit">Filter</button>
+        <Button type="submit">Filter</Button>
       </form>
       {error ? (
         <p className="error-panel" role="alert">
