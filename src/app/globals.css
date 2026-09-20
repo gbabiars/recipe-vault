@@ -233,12 +233,6 @@ button:disabled {
   font-size: 0.85rem;
   color: #52645c;
 }
-.chips span {
-  background: #d9ece2;
-  color: #164735;
-  border-radius: 999px;
-  padding: 0.15rem 0.55rem;
-}
 .empty-state,
 .error-panel,
 .auth-card,

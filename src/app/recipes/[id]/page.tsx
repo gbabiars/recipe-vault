@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/ui/button-link";
+import { Chip } from "@/components/ui/chip";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import { RecipeShell } from "@/features/recipes/recipe-shell";
@@ -58,7 +59,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           )}
           <div className="chips">
             {[...recipe.tags, ...recipe.dietaryFlags].map((label) => (
-              <span key={label}>{label}</span>
+              <Chip key={label}>{label}</Chip>
             ))}
           </div>
         </section>
