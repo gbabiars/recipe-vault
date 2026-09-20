@@ -15,6 +15,7 @@ test("renders as a primary button and handles clicks", () => {
 
   expect(button).toBeInstanceOf(HTMLButtonElement);
   expect(button.getAttribute("type")).toBe("button");
+  expect(button.getAttribute("data-variant")).toBe("default");
   expect(button.classList.contains(styles.button)).toBe(true);
 
   fireEvent.click(button);
@@ -26,6 +27,15 @@ test("allows an explicit button type", () => {
   render(<Button type="submit">Save changes</Button>);
 
   expect(screen.getByRole("button", { name: "Save changes" }).getAttribute("type")).toBe("submit");
+});
+
+test("renders the danger variant through a data attribute", () => {
+  render(<Button variant="danger">Delete recipe</Button>);
+
+  const button = screen.getByRole("button", { name: "Delete recipe" });
+
+  expect(button.getAttribute("data-variant")).toBe("danger");
+  expect(button.className).toBe(styles.button);
 });
 
 test("does not handle clicks while disabled", () => {

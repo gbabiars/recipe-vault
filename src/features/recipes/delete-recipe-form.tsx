@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Button } from "@/components/ui/button";
 import { deleteRecipeAction } from "./actions";
 import { emptyRecipeFormState } from "./recipe-form-state";
 
@@ -23,9 +24,9 @@ export function DeleteRecipeForm({ recipeId }: { recipeId: string }) {
           {state.message}
         </p>
       )}
-      <button className="danger-button" disabled={pending}>
+      <Button variant="danger" disabled={pending}>
         {pending ? "Deleting…" : "Delete recipe"}
-      </button>
+      </Button>
     </form>
   );
 }

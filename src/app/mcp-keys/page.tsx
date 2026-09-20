@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { RecipeShell } from "@/features/recipes/recipe-shell";
 import { McpKeyManager } from "@/features/mcp-keys/mcp-key-manager";
 import { revokeMcpKeyAction } from "@/features/mcp-keys/actions";
@@ -57,9 +58,9 @@ export default async function McpKeysPage() {
                 ) : (
                   <form action={revokeMcpKeyAction}>
                     <input type="hidden" name="apiKeyId" value={key.id} />
-                    <button type="submit" className="danger-button">
+                    <Button type="submit" variant="danger">
                       Revoke
-                    </button>
+                    </Button>
                   </form>
                 )}
               </li>

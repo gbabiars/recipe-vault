@@ -139,7 +139,6 @@ button:disabled {
 .lead {
   font-size: 1.15rem;
 }
-.danger-button,
 .filters button,
 .section-heading button {
   display: inline-block;
@@ -150,9 +149,6 @@ button:disabled {
   font-weight: 700;
   background: #075f55;
   color: white;
-}
-.danger-button {
-  background: #ae2c28;
 }
 .consent-actions {
   display: flex;

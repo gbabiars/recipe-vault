@@ -8,3 +8,7 @@
   background: #075f55;
   color: white;
 }
+
+.button[data-variant="danger"] {
+  background: #ae2c28;
+}
