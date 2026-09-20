@@ -18,6 +18,13 @@ type Story = StoryObj<typeof meta>;
 
 export const NativeAnchor: Story = {};
 
+export const Danger: Story = {
+  args: {
+    variant: "danger",
+    children: "Delete recipe",
+  },
+};
+
 export const NextLink: Story = {
   args: {
     href: undefined,

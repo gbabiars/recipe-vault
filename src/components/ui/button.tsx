@@ -9,7 +9,8 @@ type BaseButtonProps = React.ComponentPropsWithoutRef<typeof BaseButton>;
 type ButtonClassName = Exclude<NonNullable<BaseButtonProps["className"]>, string>;
 type ButtonState = Parameters<ButtonClassName>[0];
 
-export type ButtonProps = BaseButtonProps;
+export type ButtonVariant = "default" | "danger";
+export type ButtonProps = BaseButtonProps & { variant?: ButtonVariant };
 
 function withButtonClassName(className: ButtonProps["className"]) {
   if (typeof className === "function") {
@@ -20,8 +21,16 @@ function withButtonClassName(className: ButtonProps["className"]) {
 }
 
 export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button(
-  { className, type = "button", ...props },
+  { className, type = "button", variant = "default", ...props },
   ref,
 ) {
-  return <BaseButton {...props} ref={ref} type={type} className={withButtonClassName(className)} />;
+  return (
+    <BaseButton
+      {...props}
+      ref={ref}
+      type={type}
+      data-variant={variant}
+      className={withButtonClassName(className)}
+    />
+  );
 });
