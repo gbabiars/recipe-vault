@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ButtonLink } from "@/components/ui/button-link";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import { RecipeShell } from "@/features/recipes/recipe-shell";
@@ -28,9 +29,7 @@ export default async function RecipesPage({
           <p className="eyebrow">Private collection</p>
           <h1>Your recipes</h1>
         </div>
-        <Link className="primary-button" href="/recipes/new">
-          Create recipe
-        </Link>
+        <ButtonLink render={<Link href="/recipes/new" />}>Create recipe</ButtonLink>
       </div>
       <form className="filters" method="get">
         <label>

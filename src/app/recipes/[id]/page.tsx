@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ButtonLink } from "@/components/ui/button-link";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import { RecipeShell } from "@/features/recipes/recipe-shell";
@@ -17,9 +18,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           <h1>{recipe.title}</h1>
           {recipe.summary && <p className="lead">{recipe.summary}</p>}
         </div>
-        <Link className="primary-button" href={`/recipes/${recipe.id}/edit`}>
-          Edit recipe
-        </Link>
+        <ButtonLink render={<Link href={`/recipes/${recipe.id}/edit`} />}>Edit recipe</ButtonLink>
       </div>
       <div className="recipe-detail">
         <section>

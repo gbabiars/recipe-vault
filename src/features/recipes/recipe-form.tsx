@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import type { Recipe } from "@/lib/db/recipe-repository";
 import { saveRecipeAction } from "./actions";
 import { emptyRecipeFormState } from "./recipe-form-state";
@@ -210,9 +211,9 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
           </fieldset>
         ))}
       </section>
-      <button type="submit" className="primary-button" disabled={pending}>
+      <Button type="submit" disabled={pending}>
         {pending ? "Saving…" : recipe ? "Save changes" : "Create recipe"}
-      </button>
+      </Button>
     </form>
   );
 }
