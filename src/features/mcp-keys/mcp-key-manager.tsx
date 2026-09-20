@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
 import { createMcpKeyAction, type McpKeyFormState } from "./actions";
 
 const initialState: McpKeyFormState = {};
@@ -51,9 +52,9 @@ export function McpKeyManager() {
             {state.error}
           </p>
         )}
-        <button type="submit" className="primary-button" disabled={pending}>
+        <Button type="submit" disabled={pending}>
           {pending ? "Creating…" : "Create MCP key"}
-        </button>
+        </Button>
       </form>
       {state.secret && (
         <div className="mcp-key-secret" role="status">
