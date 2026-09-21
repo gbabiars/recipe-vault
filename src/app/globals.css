@@ -228,9 +228,8 @@ button:disabled {
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.65rem;
-  font-size: 0.85rem;
+  gap: var(--space-100);
+  margin-top: var(--space-150);
   color: #52645c;
 }
 .empty-state,
