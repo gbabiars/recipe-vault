@@ -3,13 +3,15 @@ import type { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/proto
 import type { ServerNotification, ServerRequest } from "@modelcontextprotocol/sdk/types.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createMcpHandler } from "mcp-handler";
 import { RecipeRepository } from "@/lib/db/recipe-repository";
 import { getOwnerBoundMcpRecipeService } from "@/lib/recipes";
 import { OwnerBoundRecipeService, RecipeService } from "@/lib/recipes/recipe-service";
 import { authorizeMcpTool, mcpScopes, type McpScope } from "./auth-policy";
-import { createRecipeMcpTools, mcpToolSchemas } from "./tools";
+import { createRecipeMcpTools, mcpGetRecipeOutputSchema, mcpToolSchemas } from "./tools";
+import { registerRecipeViewResource, recipeViewUri } from "./recipe-view-resource";
 
 type McpExtra = RequestHandlerExtra<ServerRequest, ServerNotification>;
 type OwnedServiceFactory = (userId: string) => OwnerBoundRecipeService;
@@ -48,6 +50,7 @@ export function createRecipeMcpHandler(
 }
 
 function registerRecipeTools(server: McpServer, getService: OwnedServiceFactory) {
+  registerRecipeViewResource(server);
   server.registerTool(
     "search_recipes",
     {
@@ -61,13 +64,17 @@ function registerRecipeTools(server: McpServer, getService: OwnedServiceFactory)
       return context ? createRecipeMcpTools(context).search_recipes(input) : denied();
     },
   );
-  server.registerTool(
+  registerAppTool(
+    server,
     "get_recipe",
     {
       title: "Get recipe",
-      description: "Get one complete recipe owned by the authenticated user.",
+      description:
+        "Get one complete recipe owned by the authenticated user. First use search_recipes to find a matching recipe ID; call this only with an ID returned by that search.",
       inputSchema: mcpToolSchemas.recipeId,
+      outputSchema: mcpGetRecipeOutputSchema,
       annotations: { readOnlyHint: true },
+      _meta: { ui: { resourceUri: recipeViewUri, visibility: ["model"] } },
     },
     async (input, extra) => {
       const context = toolContext(extra, mcpScopes.read, getService);

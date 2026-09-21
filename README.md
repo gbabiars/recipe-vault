@@ -50,6 +50,12 @@ The server exposes `search_recipes`, `get_recipe`, and create-only
 `save_recipe`. Read tools require `recipes:read`; save requires
 `recipes:write`.
 
+For MCP Apps-capable hosts, `get_recipe` also renders a portable, read-only
+recipe view after the model searches for and selects a recipe ID. The same tool
+continues to return its existing JSON text response in hosts without MCP Apps
+support. The view has no new scopes, authentication policy, external network
+access, or write behavior; it receives only recipe fields needed for display.
+
 `/api/mcp` is a compatibility endpoint for clients that cannot complete OAuth.
 It accepts expiring, scoped Clerk user API keys created at `/mcp-keys`. OAuth is
 the default and should be preferred for every compatible client.

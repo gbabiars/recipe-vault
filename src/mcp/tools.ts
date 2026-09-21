@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Recipe } from "@/lib/db/recipe-repository";
 import type { OwnerBoundRecipeService } from "@/lib/recipes/recipe-service";
 import { recipeCreateInputSchema } from "@/lib/validation/recipe";
 import {
@@ -25,6 +26,70 @@ const searchInputSchema = z
   .strict();
 
 const recipeIdInputSchema = z.object({ recipeId: z.string().uuid() }).strict();
+
+const recipeDisplaySchema = z
+  .object({
+    title: z.string(),
+    summary: z.string().optional(),
+    prepTimeMinutes: z.number().int().nonnegative().optional(),
+    cookTimeMinutes: z.number().int().nonnegative().optional(),
+    totalTimeMinutes: z.number().int().nonnegative().optional(),
+    servings: z.number().int().positive().optional(),
+    tags: z.array(z.string()),
+    dietaryFlags: z.array(z.string()),
+    ingredients: z.array(
+      z
+        .object({
+          quantity: z.number().finite().nonnegative(),
+          unit: z.string(),
+          ingredientName: z.string(),
+          notes: z.string().optional(),
+        })
+        .strict(),
+    ),
+    steps: z.array(
+      z
+        .object({
+          instruction: z.string(),
+          durationMinutes: z.number().int().nonnegative().optional(),
+        })
+        .strict(),
+    ),
+    notes: z.string().optional(),
+    sourceUrl: z.string().url().optional(),
+  })
+  .strict();
+
+export const mcpGetRecipeOutputSchema = z.object({ recipe: recipeDisplaySchema }).strict();
+
+function displayRecipe(recipe: Recipe) {
+  return mcpGetRecipeOutputSchema.parse({
+    recipe: {
+      title: recipe.title,
+      ...(recipe.summary !== undefined ? { summary: recipe.summary } : {}),
+      ...(recipe.prepTimeMinutes !== undefined ? { prepTimeMinutes: recipe.prepTimeMinutes } : {}),
+      ...(recipe.cookTimeMinutes !== undefined ? { cookTimeMinutes: recipe.cookTimeMinutes } : {}),
+      ...(recipe.totalTimeMinutes !== undefined
+        ? { totalTimeMinutes: recipe.totalTimeMinutes }
+        : {}),
+      ...(recipe.servings !== undefined ? { servings: recipe.servings } : {}),
+      tags: recipe.tags,
+      dietaryFlags: recipe.dietaryFlags,
+      ingredients: recipe.ingredients.map(({ quantity, unit, ingredientName, notes }) => ({
+        quantity,
+        unit,
+        ingredientName,
+        ...(notes !== undefined ? { notes } : {}),
+      })),
+      steps: recipe.steps.map(({ instruction, durationMinutes }) => ({
+        instruction,
+        ...(durationMinutes !== undefined ? { durationMinutes } : {}),
+      })),
+      ...(recipe.notes !== undefined ? { notes: recipe.notes } : {}),
+      ...(recipe.sourceUrl !== undefined ? { sourceUrl: recipe.sourceUrl } : {}),
+    },
+  });
+}
 
 function text(value: unknown, isError = false) {
   return { content: [{ type: "text" as const, text: JSON.stringify(value) }], isError };
@@ -85,7 +150,10 @@ export function createRecipeMcpTools(context: McpToolContext) {
       try {
         const recipe = await context.service.get(parsed.data.recipeId);
         if (!recipe) return text({ error: "Recipe not found." }, true);
-        return text({ recipe });
+        return {
+          ...text({ recipe }),
+          structuredContent: displayRecipe(recipe),
+        };
       } catch {
         return text({ error: "Unable to load recipe." }, true);
       }

@@ -9,7 +9,9 @@ next-env.d.ts
 # Test and tooling output
 coverage/
 .vitest/
+test-results/
 *.tsbuildinfo
+src/mcp/recipe-view/.dist/
 
 # Environment files: commit only the safe template below.
 .env*
