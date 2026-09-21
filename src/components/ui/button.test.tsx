@@ -38,6 +38,15 @@ test("renders the danger variant through a data attribute", () => {
   expect(button.className).toBe(styles.button);
 });
 
+test("merges a consumer class name with the button class", () => {
+  render(<Button className="recipe-button">Create recipe</Button>);
+
+  const button = screen.getByRole("button", { name: "Create recipe" });
+
+  expect(button.classList.contains(styles.button)).toBe(true);
+  expect(button.classList.contains("recipe-button")).toBe(true);
+});
+
 test("does not handle clicks while disabled", () => {
   const handleClick = vi.fn();
 
