@@ -2,6 +2,38 @@
   color-scheme: light;
   font-family: var(--fontFamily-default);
 
+  --color-text-primary: #20332b;
+  --color-text-secondary: #52645c;
+  --color-text-brand: #075f55;
+  --color-text-success: #17603f;
+  --color-text-warning: #8a4b08;
+  --color-text-danger: #ae2c28;
+  --color-text-info: #155e75;
+  --color-text-inverse: #ffffff;
+  --color-text-disabled: #77817b;
+
+  --color-background-canvas: #f7f4ed;
+  --color-background-surface: #ffffff;
+  --color-background-neutral-subtle: #ece8dc;
+  --color-background-neutral-emphasis: #20332b;
+  --color-background-brand-subtle: #e1f2ef;
+  --color-background-brand-emphasis: #075f55;
+  --color-background-success-subtle: #e2f1e7;
+  --color-background-success-emphasis: #17603f;
+  --color-background-warning-subtle: #fff5dc;
+  --color-background-warning-emphasis: #a04e16;
+  --color-background-danger-subtle: #fbe8e6;
+  --color-background-danger-emphasis: #ae2c28;
+  --color-background-info-subtle: #e5f1f7;
+  --color-background-info-emphasis: #155e75;
+
+  --color-border-subtle: #e0ddd3;
+  --color-border-default: #d7d5ca;
+  --color-border-strong: #9aa69f;
+  --color-border-neutral: #c8cec5;
+  --color-border-danger: #d69791;
+  --color-focus-ring: #d97706;
+
   --space-0: 0rem;
   --space-025: 0.125rem;
   --space-050: 0.25rem;
@@ -48,8 +80,8 @@
 body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  background: #f7f4ed;
-  color: #20332b;
+  background: var(--color-background-canvas);
+  color: var(--color-text-primary);
 }
 
 img,
@@ -97,13 +129,13 @@ h6 {
 }
 
 a {
-  color: #075f55;
+  color: var(--color-text-brand);
 }
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid #d97706;
+  outline: 3px solid var(--color-focus-ring);
   outline-offset: 2px;
 }
 button {
@@ -132,7 +164,7 @@ button:disabled {
   gap: 1rem;
 }
 .site-header {
-  border-bottom: 1px solid #d7d5ca;
+  border-bottom: 1px solid var(--color-border-default);
   padding-bottom: 1rem;
   margin-bottom: 2.5rem;
 }
@@ -142,7 +174,7 @@ button:disabled {
   gap: 1rem;
 }
 .brand {
-  color: #20332b;
+  color: var(--color-text-primary);
   font-weight: 800;
   font-size: 1.2rem;
   text-decoration: none;
@@ -155,7 +187,7 @@ button:disabled {
   margin: 0;
 }
 .eyebrow {
-  color: #a04e16;
+  color: var(--color-text-warning);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -173,7 +205,7 @@ button:disabled {
 .text-button {
   border: 0;
   background: transparent;
-  color: #075f55;
+  color: var(--color-text-brand);
   text-decoration: underline;
   padding: 0.4rem;
 }
@@ -183,7 +215,7 @@ button:disabled {
   gap: 0.75rem;
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: #ece8dc;
+  background: var(--color-background-neutral-subtle);
   border-radius: 0.5rem;
 }
 .filters label {
@@ -202,8 +234,8 @@ button:disabled {
   gap: 0.75rem;
 }
 .recipe-list li {
-  background: white;
-  border: 1px solid #e0ddd3;
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 0.6rem;
 }
 .recipe-list a {
@@ -213,7 +245,7 @@ button:disabled {
   text-decoration: none;
 }
 .recipe-list a:hover {
-  border-left: 4px solid #d97706;
+  border-left: 4px solid var(--color-focus-ring);
   padding-left: calc(1.25rem - 4px);
 }
 .recipe-list h2 {
@@ -222,7 +254,7 @@ button:disabled {
 }
 .recipe-list p {
   margin: 0.35rem 0;
-  color: #52645c;
+  color: var(--color-text-secondary);
 }
 .metadata,
 .chips {
@@ -230,20 +262,20 @@ button:disabled {
   flex-wrap: wrap;
   gap: var(--space-100);
   margin-top: var(--space-150);
-  color: #52645c;
+  color: var(--color-text-secondary);
 }
 .empty-state,
 .error-panel,
 .auth-card,
 .profile-panel {
-  background: white;
-  border: 1px solid #e0ddd3;
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-subtle);
   padding: 2rem;
   border-radius: 0.6rem;
 }
 .error-panel,
 .field-error {
-  color: #ae2c28;
+  color: var(--color-text-danger);
 }
 .field-error {
   display: block;
@@ -251,7 +283,7 @@ button:disabled {
   margin-top: 0.2rem;
 }
 .form-message {
-  background: #fff5dc;
+  background: var(--color-background-danger-subtle);
   padding: 0.75rem;
   border-radius: 0.4rem;
 }
@@ -262,9 +294,9 @@ button:disabled {
 }
 .recipe-form section,
 .recipe-detail section {
-  background: white;
+  background: var(--color-background-surface);
   padding: 1.25rem;
-  border: 1px solid #e0ddd3;
+  border: 1px solid var(--color-border-subtle);
   border-radius: 0.6rem;
 }
 .recipe-form h2,
@@ -282,10 +314,10 @@ button:disabled {
   display: block;
   width: 100%;
   margin-top: 0.25rem;
-  border: 1px solid #9aa69f;
+  border: 1px solid var(--color-border-strong);
   border-radius: 0.35rem;
   padding: 0.55rem;
-  background: white;
+  background: var(--color-background-surface);
 }
 .field textarea {
   min-height: 5rem;
@@ -293,7 +325,7 @@ button:disabled {
 }
 .field small {
   display: block;
-  color: #52645c;
+  color: var(--color-text-secondary);
   font-weight: 400;
 }
 .form-grid {
@@ -302,7 +334,7 @@ button:disabled {
   gap: 0 1rem;
 }
 .repeat-row {
-  border: 1px solid #c8cec5;
+  border: 1px solid var(--color-border-neutral);
   border-radius: 0.4rem;
   margin: 0.85rem 0;
   padding: 0.75rem;
@@ -332,13 +364,13 @@ button:disabled {
 }
 .recipe-detail small {
   display: block;
-  color: #52645c;
+  color: var(--color-text-secondary);
 }
 .preserve-lines {
   white-space: pre-wrap;
 }
 .danger-zone {
-  border-color: #d69791 !important;
+  border-color: var(--color-border-danger) !important;
 }
 .delete-form {
   display: grid;
@@ -346,8 +378,8 @@ button:disabled {
   max-width: 28rem;
 }
 .mcp-key-panel {
-  background: white;
-  border: 1px solid #e0ddd3;
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 0.6rem;
   margin: 1.5rem 0;
   max-width: 52rem;
@@ -365,7 +397,7 @@ button:disabled {
 .mcp-key-form fieldset {
   display: grid;
   gap: 0.5rem;
-  border: 1px solid #c8cec5;
+  border: 1px solid var(--color-border-neutral);
   border-radius: 0.4rem;
   padding: 0.75rem;
 }
@@ -374,7 +406,7 @@ button:disabled {
   padding: 0 0.25rem;
 }
 .mcp-key-secret {
-  background: #fff5dc;
+  background: var(--color-background-warning-subtle);
   border-radius: 0.4rem;
   margin-top: 1.25rem;
   padding: 1rem;
@@ -394,7 +426,7 @@ button:disabled {
 }
 .mcp-key-list li {
   align-items: center;
-  border: 1px solid #e0ddd3;
+  border: 1px solid var(--color-border-subtle);
   border-radius: 0.45rem;
   display: flex;
   gap: 1rem;
@@ -406,7 +438,7 @@ button:disabled {
   margin: 0;
 }
 .mcp-key-list small {
-  color: #52645c;
+  color: var(--color-text-secondary);
 }
 @media (max-width: 640px) {
   .app-shell {
