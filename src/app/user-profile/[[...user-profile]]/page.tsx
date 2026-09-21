@@ -1,4 +1,5 @@
 import { UserProfile } from "@clerk/nextjs";
+import { Card } from "@/components/ui/card";
 import { RecipeShell } from "@/features/recipes/recipe-shell";
 import { requireUser } from "@/lib/auth/require-user";
 
@@ -14,9 +15,9 @@ export default async function UserProfilePage() {
           <h1>Profile</h1>
         </div>
       </div>
-      <section className="profile-panel">
+      <Card as="section" padding="large">
         <UserProfile path="/user-profile" routing="path" />
-      </section>
+      </Card>
     </RecipeShell>
   );
 }
