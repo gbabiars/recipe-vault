@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { createMcpKeyAction, type McpKeyFormState } from "./actions";
 
 const initialState: McpKeyFormState = {};
@@ -15,7 +16,7 @@ export function McpKeyManager() {
   }, [state.secret]);
 
   return (
-    <section className="mcp-key-panel">
+    <Card as="section" className="mcp-key-section" padding="large">
       <h2>Create an MCP key</h2>
       <p>
         Use this only when a client cannot connect through OAuth. Create a separate key for each
@@ -63,6 +64,6 @@ export function McpKeyManager() {
           <input aria-label="New MCP API key" readOnly value={state.secret} />
         </div>
       )}
-    </section>
+    </Card>
   );
 }

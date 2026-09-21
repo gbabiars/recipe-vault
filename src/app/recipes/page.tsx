@@ -50,11 +50,11 @@ export default async function RecipesPage({
         <Button type="submit">Filter</Button>
       </form>
       {error ? (
-        <p className="error-panel" role="alert">
+        <Card as="p" className="error-message" role="alert">
           {error}
-        </p>
+        </Card>
       ) : recipes.length === 0 ? (
-        <section className="empty-state">
+        <Card as="section" padding="large">
           <h2>No recipes found</h2>
           <p>
             {q || tag || dietary
@@ -62,31 +62,34 @@ export default async function RecipesPage({
               : "Start your private collection with your first recipe."}
           </p>
           <Link href="/recipes/new">Create a recipe</Link>
-        </section>
+        </Card>
       ) : (
         <ul className="recipe-list">
           {recipes.map((recipe) => (
-            <Card as="li" key={recipe.id} padding="none">
-              <Link href={`/recipes/${recipe.id}`}>
-                <h2>{recipe.title}</h2>
-                {recipe.summary && <p>{recipe.summary}</p>}
-                <div className="metadata">
-                  {recipe.totalTimeMinutes !== undefined && (
-                    <span>{recipe.totalTimeMinutes} min</span>
+            <Card
+              as="li"
+              key={recipe.id}
+              label={`View ${recipe.title}`}
+              render={<Link href={`/recipes/${recipe.id}`} />}
+            >
+              <h2>{recipe.title}</h2>
+              {recipe.summary && <p>{recipe.summary}</p>}
+              <div className="metadata">
+                {recipe.totalTimeMinutes !== undefined && (
+                  <span>{recipe.totalTimeMinutes} min</span>
+                )}
+                <span>
+                  Updated{" "}
+                  {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
+                    new Date(recipe.updatedAt),
                   )}
-                  <span>
-                    Updated{" "}
-                    {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
-                      new Date(recipe.updatedAt),
-                    )}
-                  </span>
-                </div>
-                <div className="chips">
-                  {[...recipe.tags, ...recipe.dietaryFlags].map((label) => (
-                    <Chip key={label}>{label}</Chip>
-                  ))}
-                </div>
-              </Link>
+                </span>
+              </div>
+              <div className="chips">
+                {[...recipe.tags, ...recipe.dietaryFlags].map((label) => (
+                  <Chip key={label}>{label}</Chip>
+                ))}
+              </div>
             </Card>
           ))}
         </ul>

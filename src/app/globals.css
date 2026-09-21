@@ -237,16 +237,6 @@ button:disabled {
   display: grid;
   gap: 0.75rem;
 }
-.recipe-list a {
-  display: block;
-  color: inherit;
-  padding: 1.25rem;
-  text-decoration: none;
-}
-.recipe-list a:hover {
-  border-left: 4px solid var(--color-focus-ring);
-  padding-left: calc(1.25rem - 4px);
-}
 .recipe-list h2 {
   margin: 0;
   font-size: 1.15rem;
@@ -263,16 +253,7 @@ button:disabled {
   margin-top: var(--space-150);
   color: var(--color-text-secondary);
 }
-.empty-state,
-.error-panel,
-.auth-card,
-.profile-panel {
-  background: var(--color-background-surface);
-  border: 1px solid var(--color-border-subtle);
-  padding: 2rem;
-  border-radius: 0.6rem;
-}
-.error-panel,
+.error-message,
 .field-error {
   color: var(--color-text-danger);
 }
@@ -369,16 +350,12 @@ button:disabled {
   gap: 0.75rem;
   max-width: 28rem;
 }
-.mcp-key-panel {
-  background: var(--color-background-surface);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 0.6rem;
+.mcp-key-section {
   margin: 1.5rem 0;
   max-width: 52rem;
-  padding: 1.5rem;
 }
-.mcp-key-panel h2,
-.mcp-key-panel h3 {
+.mcp-key-section h2,
+.mcp-key-section h3 {
   margin-top: 0;
 }
 .mcp-key-form {
@@ -418,12 +395,9 @@ button:disabled {
 }
 .mcp-key-list li {
   align-items: center;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 0.45rem;
   display: flex;
   gap: 1rem;
   justify-content: space-between;
-  padding: 1rem;
 }
 .mcp-key-list h3,
 .mcp-key-list p {

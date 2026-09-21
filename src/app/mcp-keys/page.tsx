@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { RecipeShell } from "@/features/recipes/recipe-shell";
 import { McpKeyManager } from "@/features/mcp-keys/mcp-key-manager";
 import { revokeMcpKeyAction } from "@/features/mcp-keys/actions";
@@ -29,22 +30,22 @@ export default async function McpKeysPage() {
       </div>
       <p className="lead">Create narrowly scoped keys for trusted MCP clients.</p>
       <McpKeyManager />
-      <section className="mcp-key-panel">
+      <Card as="section" className="mcp-key-section" padding="large">
         <p>
           OAuth at <code>/mcp</code> is the recommended connection method. These keys are for
           clients that cannot complete OAuth and connect to <code>/api/mcp</code> instead.
         </p>
         <h2>Your MCP keys</h2>
         {error ? (
-          <p className="error-panel" role="alert">
+          <Card as="p" className="error-message" role="alert">
             {error}
-          </p>
+          </Card>
         ) : keys.length === 0 ? (
-          <p className="empty-state">No MCP keys have been created.</p>
+          <Card as="p">No MCP keys have been created.</Card>
         ) : (
           <ul className="mcp-key-list">
             {keys.map((key) => (
-              <li key={key.id}>
+              <Card as="li" key={key.id}>
                 <div>
                   <h3>{key.name}</h3>
                   <p>{key.scopes.join(", ")}</p>
@@ -63,11 +64,11 @@ export default async function McpKeysPage() {
                     </Button>
                   </form>
                 )}
-              </li>
+              </Card>
             ))}
           </ul>
         )}
-      </section>
+      </Card>
     </RecipeShell>
   );
 }
