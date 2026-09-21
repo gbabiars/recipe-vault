@@ -50,6 +50,10 @@
   --space-1000: 5rem;
   --space-1200: 6rem;
 
+  --space-surface-small: var(--space-100);
+  --space-surface-medium: var(--space-200);
+  --space-surface-large: var(--space-300);
+
   --radius-0: 0rem;
   --radius-025: 0.125rem;
   --radius-050: 0.25rem;

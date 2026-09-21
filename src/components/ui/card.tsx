@@ -3,7 +3,7 @@ import { cn } from "cn";
 
 import styles from "./card.module.css";
 
-export type CardPadding = "default" | "none";
+export type CardPadding = "small" | "medium" | "large" | "none";
 
 type CardElement = keyof React.JSX.IntrinsicElements;
 
@@ -17,7 +17,7 @@ type CardComponent = <T extends CardElement = "div">(
 ) => React.ReactElement | null;
 
 const CardImpl = <T extends CardElement = "div">(
-  { as, className, padding = "default", ...props }: CardProps<T>,
+  { as, className, padding = "medium", ...props }: CardProps<T>,
   ref: React.ForwardedRef<React.ComponentRef<T>>,
 ) => {
   const Component = (as ?? "div") as React.ElementType;

@@ -6,14 +6,14 @@ import styles from "./card.module.css";
 
 afterEach(cleanup);
 
-test("renders a div with the default card styling and padding", () => {
+test("renders a div with the default card styling and medium padding", () => {
   render(<Card>Recipe details</Card>);
 
   const card = screen.getByText("Recipe details");
 
   expect(card).toBeInstanceOf(HTMLDivElement);
   expect(card.classList.contains(styles.card)).toBe(true);
-  expect(card.getAttribute("data-padding")).toBe("default");
+  expect(card.getAttribute("data-padding")).toBe("medium");
 });
 
 test.each([
@@ -29,14 +29,14 @@ test.each([
   expect(screen.getByTestId("card").tagName).toBe(tagName);
 });
 
-test("supports removing the default padding", () => {
+test.each(["small", "medium", "large", "none"] as const)("supports %s padding", (padding) => {
   render(
-    <Card padding="none" data-testid="card">
+    <Card padding={padding} data-testid="card">
       Recipe summary
     </Card>,
   );
 
-  expect(screen.getByTestId("card").getAttribute("data-padding")).toBe("none");
+  expect(screen.getByTestId("card").getAttribute("data-padding")).toBe(padding);
 });
 
 test("forwards native props, refs, and consumer class names", () => {
