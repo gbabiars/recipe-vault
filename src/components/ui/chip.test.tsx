@@ -16,9 +16,9 @@ test("renders a span with its content", () => {
 });
 
 test("applies the chip CSS module class", () => {
-  render(<Chip>vegetarian</Chip>);
+  render(<Chip data-testid="vegetarian-chip">vegetarian</Chip>);
 
-  expect(screen.getByText("vegetarian").classList.contains(styles.chip)).toBe(true);
+  expect(screen.getByTestId("vegetarian-chip").classList.contains(styles.chip)).toBe(true);
 });
 
 test("forwards standard span attributes", () => {
@@ -35,9 +35,13 @@ test("forwards standard span attributes", () => {
 });
 
 test("merges consumer class names with the chip class", () => {
-  render(<Chip className="highlighted">weeknight</Chip>);
+  render(
+    <Chip className="highlighted" data-testid="weeknight-chip">
+      weeknight
+    </Chip>,
+  );
 
-  const chip = screen.getByText("weeknight");
+  const chip = screen.getByTestId("weeknight-chip");
 
   expect(chip.classList.contains(styles.chip)).toBe(true);
   expect(chip.classList.contains("highlighted")).toBe(true);
