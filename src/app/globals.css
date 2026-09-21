@@ -1,6 +1,6 @@
 :root {
   color-scheme: light;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--fontFamily-default);
 
   --space-0: 0rem;
   --space-025: 0.125rem;
