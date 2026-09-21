@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import type { Recipe } from "@/lib/db/recipe-repository";
 import { saveRecipeAction } from "./actions";
 import { emptyRecipeFormState } from "./recipe-form-state";
@@ -56,7 +57,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
           {state.message}
         </p>
       )}
-      <section>
+      <Card as="section">
         <h2>Recipe details</h2>
         {field("title", "Title", "text", recipe?.title)}
         <label className="field">
@@ -104,8 +105,8 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
             </span>
           )}
         </label>
-      </section>
-      <section>
+      </Card>
+      <Card as="section">
         <div className="section-heading">
           <h2>Ingredients</h2>
           <Button type="button" onClick={() => setIngredients([...ingredients, blankIngredient])}>
@@ -159,8 +160,8 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
             )}
           </fieldset>
         ))}
-      </section>
-      <section>
+      </Card>
+      <Card as="section">
         <div className="section-heading">
           <h2>Steps</h2>
           <Button type="button" onClick={() => setSteps([...steps, blankStep])}>
@@ -210,7 +211,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
             )}
           </fieldset>
         ))}
-      </section>
+      </Card>
       <Button type="submit" disabled={pending}>
         {pending ? "Saving…" : recipe ? "Save changes" : "Create recipe"}
       </Button>

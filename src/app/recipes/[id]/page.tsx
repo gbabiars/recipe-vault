@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/ui/button-link";
+import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
@@ -22,7 +23,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
         <ButtonLink render={<Link href={`/recipes/${recipe.id}/edit`} />}>Edit recipe</ButtonLink>
       </div>
       <div className="recipe-detail">
-        <section>
+        <Card as="section">
           <h2>Details</h2>
           <dl>
             {recipe.servings !== undefined && (
@@ -62,8 +63,8 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
               <Chip key={label}>{label}</Chip>
             ))}
           </div>
-        </section>
-        <section>
+        </Card>
+        <Card as="section">
           <h2>Ingredients</h2>
           <ul>
             {recipe.ingredients.map((item) => (
@@ -73,8 +74,8 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
               </li>
             ))}
           </ul>
-        </section>
-        <section>
+        </Card>
+        <Card as="section">
           <h2>Method</h2>
           <ol>
             {recipe.steps.map((step) => (
@@ -86,18 +87,18 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
               </li>
             ))}
           </ol>
-        </section>
+        </Card>
         {recipe.notes && (
-          <section>
+          <Card as="section">
             <h2>Notes</h2>
             <p className="preserve-lines">{recipe.notes}</p>
-          </section>
+          </Card>
         )}
-        <section className="danger-zone">
+        <Card as="section" className="danger-zone">
           <h2>Delete recipe</h2>
           <p>This cannot be undone.</p>
           <DeleteRecipeForm recipeId={recipe.id} />
-        </section>
+        </Card>
       </div>
     </RecipeShell>
   );

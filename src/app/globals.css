@@ -233,11 +233,6 @@ button:disabled {
   display: grid;
   gap: 0.75rem;
 }
-.recipe-list li {
-  background: var(--color-background-surface);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 0.6rem;
-}
 .recipe-list a {
   display: block;
   color: inherit;
@@ -291,13 +286,6 @@ button:disabled {
   display: grid;
   gap: 1.75rem;
   max-width: 52rem;
-}
-.recipe-form section,
-.recipe-detail section {
-  background: var(--color-background-surface);
-  padding: 1.25rem;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 0.6rem;
 }
 .recipe-form h2,
 .recipe-detail h2 {
