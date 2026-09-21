@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
+import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
@@ -65,7 +66,7 @@ export default async function RecipesPage({
       ) : (
         <ul className="recipe-list">
           {recipes.map((recipe) => (
-            <li key={recipe.id}>
+            <Card as="li" key={recipe.id} padding="none">
               <Link href={`/recipes/${recipe.id}`}>
                 <h2>{recipe.title}</h2>
                 {recipe.summary && <p>{recipe.summary}</p>}
@@ -86,7 +87,7 @@ export default async function RecipesPage({
                   ))}
                 </div>
               </Link>
-            </li>
+            </Card>
           ))}
         </ul>
       )}
