@@ -1,4 +1,5 @@
 import * as React from "react";
+import { cn } from "cn";
 
 import styles from "./text.module.css";
 
@@ -24,7 +25,7 @@ const TextImpl = <T extends TextElement = "span">(
   return React.createElement(Component, {
     ...props,
     ref,
-    className: [styles.text, className].filter(Boolean).join(" "),
+    className: cn(styles.text, className),
     "data-size": size,
   });
 };
