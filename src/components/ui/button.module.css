@@ -1,14 +1,38 @@
 .button {
   display: inline-block;
-  border: 0;
+  border: 1px solid var(--color-action-primary-border);
   border-radius: var(--radius-100);
   padding: var(--space-100) var(--space-200);
   text-decoration: none;
   font-weight: 700;
-  background: var(--color-background-brand-emphasis);
-  color: var(--color-text-inverse);
+  background: var(--color-action-primary-background);
+  color: var(--color-action-primary-text);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--color-action-primary-background-hover);
+  color: var(--color-action-primary-text);
+}
+
+.button:active:not(:disabled) {
+  background: var(--color-action-primary-background-active);
+  color: var(--color-action-primary-text);
 }
 
 .button[data-variant="danger"] {
-  background: var(--color-background-danger-emphasis);
+  background: var(--color-action-secondary-background);
+  color: var(--color-error-text);
+  border-color: var(--color-error-border);
+}
+
+.button[data-variant="danger"]:hover:not(:disabled) {
+  background: var(--color-error-background);
+}
+
+.button[data-variant="danger"]:active:not(:disabled) {
+  background: var(--color-error-border);
 }
