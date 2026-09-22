@@ -35,7 +35,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: "components",
-          include: ["src/components/**/*.test.tsx"],
+          include: ["src/**/*.test.tsx"],
           browser: {
             enabled: true,
             headless: true,

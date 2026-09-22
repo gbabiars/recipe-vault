@@ -113,6 +113,7 @@ them.
 | Location               | Responsibility                                                    |
 | ---------------------- | ----------------------------------------------------------------- |
 | `src/app`              | Thin pages, API routes, OAuth metadata, and MCP route handlers.   |
+| `src/components/app`   | Shared private sidebar, navigation, and brand.                    |
 | `src/features/recipes` | Recipe UI and feature composition.                                |
 | `src/lib/auth`         | Clerk identity, API-key SDK adapter, and Supabase clients.        |
 | `src/lib/db`           | Recipe persistence and Supabase access.                           |
