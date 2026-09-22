@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
-import { RecipeShell } from "@/features/recipes/recipe-shell";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
 
 export default async function RecipesPage({
@@ -26,7 +25,7 @@ export default async function RecipesPage({
     error = "Recipes could not be loaded. Refresh the page to try again.";
   }
   return (
-    <RecipeShell>
+    <>
       <div className="page-heading">
         <div>
           <p className="eyebrow">Private collection</p>
@@ -94,6 +93,6 @@ export default async function RecipesPage({
           ))}
         </ul>
       )}
-    </RecipeShell>
+    </>
   );
 }

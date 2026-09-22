@@ -1,6 +1,5 @@
 import { UserProfile } from "@clerk/nextjs";
 import { Card } from "@/components/ui/card";
-import { RecipeShell } from "@/features/recipes/recipe-shell";
 import { requireUser } from "@/lib/auth/require-user";
 
 /** Clerk owns account and API-key lifecycle; this route only applies app access policy. */
@@ -8,7 +7,7 @@ export default async function UserProfilePage() {
   await requireUser();
 
   return (
-    <RecipeShell>
+    <>
       <div className="page-heading">
         <div>
           <p className="eyebrow">Account</p>
@@ -18,6 +17,6 @@ export default async function UserProfilePage() {
       <Card as="section" padding="large">
         <UserProfile path="/user-profile" routing="path" />
       </Card>
-    </RecipeShell>
+    </>
   );
 }

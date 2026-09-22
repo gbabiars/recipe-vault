@@ -4,6 +4,10 @@ Recipe Vault is a private, multi-user recipe application built with Next.js,
 Clerk, and Supabase. Every authenticated Clerk user receives an isolated vault;
 the application has no public recipes, sharing, or cross-user access.
 
+Private pages share a sidebar with Recipes and Settings. Settings at `/settings`
+links to Profile (`/user-profile`) and MCP keys (`/mcp-keys`); sign-in remains a
+standalone page. The root URL redirects to `/recipes`.
+
 ## Authentication and data access
 
 Clerk is the only identity provider. Browser and `/api/v1` requests use Clerk
@@ -115,3 +119,11 @@ them.
 | `src/lib/recipes`      | Ownership-aware domain services.                                  |
 | `src/lib/validation`   | Shared input schemas.                                             |
 | `src/mcp`              | MCP transport composition, principals, scopes, and tool adapters. |
+
+## Design token follow-up
+
+The private layout uses shared sidebar and content width tokens alongside the
+existing semantic color, spacing, and radius tokens. Typography sizes and
+motion durations are still hard-coded, including 150ms transitions. Some page
+rules also use literal spacing and radius values. A later design-system pass can
+consolidate those without changing this layout.
