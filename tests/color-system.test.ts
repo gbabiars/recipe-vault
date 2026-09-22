@@ -98,6 +98,11 @@ const semanticTokens = [
   "action-primary-background-active",
   "action-primary-text",
   "action-primary-border",
+  "action-danger-background",
+  "action-danger-background-hover",
+  "action-danger-background-active",
+  "action-danger-text",
+  "action-danger-border",
   "action-secondary-background",
   "action-secondary-background-hover",
   "action-secondary-background-active",
@@ -205,6 +210,7 @@ test("key foreground and background pairs meet normal-text contrast", () => {
     ["#15803d", "#f0fdf4"],
     ["#92400e", "#fffbeb"],
     ["#b91c1c", "#fef2f2"],
+    ["#ffffff", "#dc2626"],
     ["#f5f5f5", "#0a0a0a"],
     ["#a3a3a3", "#0a0a0a"],
     ["#60a5fa", "#0a0a0a"],
@@ -212,6 +218,7 @@ test("key foreground and background pairs meet normal-text contrast", () => {
     ["#86efac", "#052e16"],
     ["#fcd34d", "#451a03"],
     ["#fca5a5", "#450a0a"],
+    ["#0a0a0a", "#ef4444"],
   ] as const;
 
   for (const [foreground, background] of passingPairs) {

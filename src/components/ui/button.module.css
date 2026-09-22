@@ -24,15 +24,19 @@
 }
 
 .button[data-variant="danger"] {
-  background: var(--color-action-secondary-background);
-  color: var(--color-error-text);
-  border-color: var(--color-error-border);
+  background: var(--color-action-danger-background);
+  color: var(--color-action-danger-text);
+  border-color: var(--color-action-danger-border);
 }
 
 .button[data-variant="danger"]:hover:not(:disabled) {
-  background: var(--color-error-background);
+  background: var(--color-action-danger-background-hover);
+  border-color: var(--color-action-danger-background-hover);
+  color: var(--color-action-danger-text);
 }
 
 .button[data-variant="danger"]:active:not(:disabled) {
-  background: var(--color-error-border);
+  background: var(--color-action-danger-background-active);
+  border-color: var(--color-action-danger-background-active);
+  color: var(--color-action-danger-text);
 }
