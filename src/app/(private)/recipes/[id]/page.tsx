@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
-import { RecipeShell } from "@/features/recipes/recipe-shell";
 import { DeleteRecipeForm } from "@/features/recipes/delete-recipe-form";
 export default async function RecipePage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
@@ -13,7 +12,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
   const recipe = await (await getRecipeService()).get(user.id, id);
   if (!recipe) notFound();
   return (
-    <RecipeShell>
+    <>
       <div className="page-heading">
         <div>
           <Link href="/recipes">← All recipes</Link>
@@ -100,6 +99,6 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           <DeleteRecipeForm recipeId={recipe.id} />
         </Card>
       </div>
-    </RecipeShell>
+    </>
   );
 }

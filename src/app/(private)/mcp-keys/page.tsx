@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { RecipeShell } from "@/features/recipes/recipe-shell";
 import { McpKeyManager } from "@/features/mcp-keys/mcp-key-manager";
 import { revokeMcpKeyAction } from "@/features/mcp-keys/actions";
 import { listMcpApiKeys } from "@/lib/auth/clerk-api-keys";
@@ -21,7 +20,7 @@ export default async function McpKeysPage() {
   }
 
   return (
-    <RecipeShell>
+    <>
       <div className="page-heading">
         <div>
           <p className="eyebrow">Access</p>
@@ -69,6 +68,6 @@ export default async function McpKeysPage() {
           </ul>
         )}
       </Card>
-    </RecipeShell>
+    </>
   );
 }
