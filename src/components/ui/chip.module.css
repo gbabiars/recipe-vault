@@ -1,5 +1,5 @@
 .chip {
-  background: var(--color-background-neutral-subtle);
+  background: var(--color-background-surface-subtle);
   color: var(--color-text-primary);
   border-radius: var(--radius-full);
   padding: var(--space-050) var(--space-100);

@@ -13,17 +13,19 @@
 }
 
 .card[data-interactive]:hover {
-  background: var(--color-background-brand-subtle);
-  border-color: var(--color-border-strong);
+  background: var(--color-background-surface-hover);
+  border-color: var(--color-border-default);
 }
 
 .card[data-interactive]:active {
+  background: var(--color-background-surface-active);
   transform: translateY(1px);
 }
 
 .card[data-interactive]:has(.primaryControl:focus-visible) {
-  outline: 3px solid var(--color-focus-ring);
+  outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--color-focus-ring-outer);
 }
 
 .primaryControl {
