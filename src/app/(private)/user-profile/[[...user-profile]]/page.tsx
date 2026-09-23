@@ -1,5 +1,6 @@
 import { UserProfile } from "@clerk/nextjs";
 import { Card } from "@/components/ui/card";
+import { Heading } from "@/components/ui/heading";
 import { requireUser } from "@/lib/auth/require-user";
 
 /** Clerk owns account and API-key lifecycle; this route only applies app access policy. */
@@ -11,7 +12,7 @@ export default async function UserProfilePage() {
       <div className="page-heading">
         <div>
           <p className="eyebrow">Account</p>
-          <h1>Profile</h1>
+          <Heading>Profile</Heading>
         </div>
       </div>
       <Card as="section" padding="large">

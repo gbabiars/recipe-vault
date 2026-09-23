@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
+import { Heading } from "@/components/ui/heading";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import { DeleteRecipeForm } from "@/features/recipes/delete-recipe-form";
@@ -16,14 +17,16 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
       <div className="page-heading">
         <div>
           <Link href="/recipes">← All recipes</Link>
-          <h1>{recipe.title}</h1>
+          <Heading>{recipe.title}</Heading>
           {recipe.summary && <p className="lead">{recipe.summary}</p>}
         </div>
         <ButtonLink render={<Link href={`/recipes/${recipe.id}/edit`} />}>Edit recipe</ButtonLink>
       </div>
       <div className="recipe-detail">
         <Card as="section">
-          <h2>Details</h2>
+          <Heading as="h2" level={5}>
+            Details
+          </Heading>
           <dl>
             {recipe.servings !== undefined && (
               <>
@@ -64,7 +67,9 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           </div>
         </Card>
         <Card as="section">
-          <h2>Ingredients</h2>
+          <Heading as="h2" level={5}>
+            Ingredients
+          </Heading>
           <ul>
             {recipe.ingredients.map((item) => (
               <li key={item.displayOrder}>
@@ -75,7 +80,9 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           </ul>
         </Card>
         <Card as="section">
-          <h2>Method</h2>
+          <Heading as="h2" level={5}>
+            Method
+          </Heading>
           <ol>
             {recipe.steps.map((step) => (
               <li key={step.stepOrder}>
@@ -89,12 +96,16 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
         </Card>
         {recipe.notes && (
           <Card as="section">
-            <h2>Notes</h2>
+            <Heading as="h2" level={5}>
+              Notes
+            </Heading>
             <p className="preserve-lines">{recipe.notes}</p>
           </Card>
         )}
         <Card as="section">
-          <h2>Delete recipe</h2>
+          <Heading as="h2" level={5}>
+            Delete recipe
+          </Heading>
           <p>This cannot be undone.</p>
           <DeleteRecipeForm recipeId={recipe.id} />
         </Card>

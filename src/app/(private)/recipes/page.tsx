@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
+import { Heading } from "@/components/ui/heading";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
@@ -29,7 +30,7 @@ export default async function RecipesPage({
       <div className="page-heading">
         <div>
           <p className="eyebrow">Private collection</p>
-          <h1>Your recipes</h1>
+          <Heading>Your recipes</Heading>
         </div>
         <ButtonLink render={<Link href="/recipes/new" />}>Create recipe</ButtonLink>
       </div>
@@ -54,7 +55,9 @@ export default async function RecipesPage({
         </Card>
       ) : recipes.length === 0 ? (
         <Card as="section" padding="large">
-          <h2>No recipes found</h2>
+          <Heading as="h2" level={3}>
+            No recipes found
+          </Heading>
           <p>
             {q || tag || dietary
               ? "Try a different search or filter."
@@ -71,7 +74,9 @@ export default async function RecipesPage({
               label={`View ${recipe.title}`}
               render={<Link href={`/recipes/${recipe.id}`} />}
             >
-              <h2>{recipe.title}</h2>
+              <Heading as="h2" level={5}>
+                {recipe.title}
+              </Heading>
               {recipe.summary && <p>{recipe.summary}</p>}
               <div className="metadata">
                 {recipe.totalTimeMinutes !== undefined && (

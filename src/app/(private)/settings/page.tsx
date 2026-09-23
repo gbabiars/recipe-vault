@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { Heading } from "@/components/ui/heading";
 
 export default function SettingsPage() {
   return (
@@ -7,20 +8,20 @@ export default function SettingsPage() {
       <div className="page-heading">
         <div>
           <p className="eyebrow">Account</p>
-          <h1>Settings</h1>
+          <Heading>Settings</Heading>
         </div>
       </div>
       <div className="settings-links">
         <Card as="section" padding="large">
-          <h2>
+          <Heading as="h2" level={5}>
             <Link href="/user-profile">Profile</Link>
-          </h2>
+          </Heading>
           <p>Manage your account details.</p>
         </Card>
         <Card as="section" padding="large">
-          <h2>
+          <Heading as="h2" level={5}>
             <Link href="/mcp-keys">MCP keys</Link>
-          </h2>
+          </Heading>
           <p>Manage keys for MCP clients.</p>
         </Card>
       </div>
