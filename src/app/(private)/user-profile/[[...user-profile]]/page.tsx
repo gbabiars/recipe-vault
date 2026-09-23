@@ -11,7 +11,6 @@ export default async function UserProfilePage() {
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Account</p>
           <Heading>Profile</Heading>
         </div>
       </div>

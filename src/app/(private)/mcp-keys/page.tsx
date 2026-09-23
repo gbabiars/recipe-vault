@@ -24,7 +24,6 @@ export default async function McpKeysPage() {
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Access</p>
           <Heading>MCP keys</Heading>
         </div>
       </div>

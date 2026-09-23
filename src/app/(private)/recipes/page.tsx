@@ -29,7 +29,6 @@ export default async function RecipesPage({
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Private collection</p>
           <Heading>Your recipes</Heading>
         </div>
         <ButtonLink render={<Link href="/recipes/new" />}>Create recipe</ButtonLink>
