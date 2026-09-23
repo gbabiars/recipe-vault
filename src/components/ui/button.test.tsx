@@ -23,6 +23,14 @@ test("renders as a primary button and handles clicks", () => {
   expect(handleClick).toHaveBeenCalledTimes(1);
 });
 
+test("keeps button labels on one line", () => {
+  render(<Button>Edit recipe</Button>);
+
+  const button = screen.getByRole("button", { name: "Edit recipe" });
+
+  expect(window.getComputedStyle(button).whiteSpace).toBe("nowrap");
+});
+
 test("allows an explicit button type", () => {
   render(<Button type="submit">Save changes</Button>);
 
