@@ -424,9 +424,6 @@ button:disabled {
   margin-bottom: 1.5rem;
   align-items: end;
 }
-.page-heading h1 {
-  margin: 0;
-}
 .eyebrow {
   color: var(--color-text-tertiary);
   font-weight: 700;
@@ -475,10 +472,6 @@ button:disabled {
   display: grid;
   gap: 0.75rem;
 }
-.recipe-list h2 {
-  margin: 0;
-  font-size: 1.15rem;
-}
 .recipe-list p {
   margin: 0.35rem 0;
   color: var(--color-text-secondary);
@@ -510,11 +503,6 @@ button:disabled {
   display: grid;
   gap: 1.75rem;
   max-width: 52rem;
-}
-.recipe-form h2,
-.recipe-detail h2 {
-  margin-top: 0;
-  font-size: 1.15rem;
 }
 .field {
   display: block;
@@ -590,10 +578,6 @@ button:disabled {
   margin: 1.5rem 0;
   max-width: 52rem;
 }
-.mcp-key-section h2,
-.mcp-key-section h3 {
-  margin-top: 0;
-}
 .mcp-key-form {
   display: grid;
   gap: 1rem;
@@ -636,7 +620,6 @@ button:disabled {
   gap: 1rem;
   justify-content: space-between;
 }
-.mcp-key-list h3,
 .mcp-key-list p {
   margin: 0;
 }
@@ -647,9 +630,6 @@ button:disabled {
   display: grid;
   gap: var(--space-200);
   max-width: 52rem;
-}
-.settings-links h2 {
-  font-size: 1.15rem;
 }
 .settings-links p {
   color: var(--color-text-secondary);

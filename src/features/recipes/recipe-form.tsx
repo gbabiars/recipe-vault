@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Heading } from "@/components/ui/heading";
 import type { Recipe } from "@/lib/db/recipe-repository";
 import { saveRecipeAction } from "./actions";
 import { emptyRecipeFormState } from "./recipe-form-state";
@@ -58,7 +59,9 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
         </p>
       )}
       <Card as="section">
-        <h2>Recipe details</h2>
+        <Heading as="h2" level={5}>
+          Recipe details
+        </Heading>
         {field("title", "Title", "text", recipe?.title)}
         <label className="field">
           Summary
@@ -108,7 +111,9 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
       </Card>
       <Card as="section">
         <div className="section-heading">
-          <h2>Ingredients</h2>
+          <Heading as="h2" level={5}>
+            Ingredients
+          </Heading>
           <Button type="button" onClick={() => setIngredients([...ingredients, blankIngredient])}>
             Add ingredient
           </Button>
@@ -163,7 +168,9 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
       </Card>
       <Card as="section">
         <div className="section-heading">
-          <h2>Steps</h2>
+          <Heading as="h2" level={5}>
+            Steps
+          </Heading>
           <Button type="button" onClick={() => setSteps([...steps, blankStep])}>
             Add step
           </Button>

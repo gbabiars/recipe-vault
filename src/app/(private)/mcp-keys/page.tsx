@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Heading } from "@/components/ui/heading";
 import { McpKeyManager } from "@/features/mcp-keys/mcp-key-manager";
 import { revokeMcpKeyAction } from "@/features/mcp-keys/actions";
 import { listMcpApiKeys } from "@/lib/auth/clerk-api-keys";
@@ -24,7 +25,7 @@ export default async function McpKeysPage() {
       <div className="page-heading">
         <div>
           <p className="eyebrow">Access</p>
-          <h1>MCP keys</h1>
+          <Heading>MCP keys</Heading>
         </div>
       </div>
       <p className="lead">Create narrowly scoped keys for trusted MCP clients.</p>
@@ -34,7 +35,9 @@ export default async function McpKeysPage() {
           OAuth at <code>/mcp</code> is the recommended connection method. These keys are for
           clients that cannot complete OAuth and connect to <code>/api/mcp</code> instead.
         </p>
-        <h2>Your MCP keys</h2>
+        <Heading as="h2" level={3}>
+          Your MCP keys
+        </Heading>
         {error ? (
           <Card as="p" className="error-message" role="alert">
             {error}
@@ -46,7 +49,9 @@ export default async function McpKeysPage() {
             {keys.map((key) => (
               <Card as="li" key={key.id}>
                 <div>
-                  <h3>{key.name}</h3>
+                  <Heading as="h3" level={5}>
+                    {key.name}
+                  </Heading>
                   <p>{key.scopes.join(", ")}</p>
                   <small>
                     Created {formatDate(key.createdAt)} · Last used {formatDate(key.lastUsedAt)}
