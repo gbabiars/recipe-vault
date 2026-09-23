@@ -581,9 +581,6 @@ button:disabled {
 .preserve-lines {
   white-space: pre-wrap;
 }
-.danger-zone {
-  border-color: var(--color-error-border) !important;
-}
 .delete-form {
   display: grid;
   gap: 0.75rem;

@@ -93,7 +93,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
             <p className="preserve-lines">{recipe.notes}</p>
           </Card>
         )}
-        <Card as="section" className="danger-zone">
+        <Card as="section">
           <h2>Delete recipe</h2>
           <p>This cannot be undone.</p>
           <DeleteRecipeForm recipeId={recipe.id} />
