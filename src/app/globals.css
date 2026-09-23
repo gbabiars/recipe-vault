@@ -424,14 +424,6 @@ button:disabled {
   margin-bottom: 1.5rem;
   align-items: end;
 }
-.eyebrow {
-  color: var(--color-text-tertiary);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.75rem;
-  margin: 0 0 0.25rem;
-}
 .lead {
   font-size: 1.15rem;
 }

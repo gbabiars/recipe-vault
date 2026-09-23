@@ -7,7 +7,6 @@ export default function SettingsPage() {
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Account</p>
           <Heading>Settings</Heading>
         </div>
       </div>
