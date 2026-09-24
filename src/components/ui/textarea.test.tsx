@@ -141,7 +141,7 @@ test("keeps a visually hidden label accessible and separates wrapper and control
   );
   const textarea = screen.getByRole("textbox", { name: "Private notes" }) as HTMLTextAreaElement;
   const label = screen.getByText("Private notes");
-  expect(label.classList.contains(styles.visuallyHidden)).toBe(true);
+  expect(label.classList.contains("visually-hidden")).toBe(true);
   expect(textarea.classList.contains("textarea-custom")).toBe(true);
   expect(textarea.parentElement?.classList.contains("field-custom")).toBe(true);
   expect(textarea.parentElement?.style.marginTop).toBe("8px");
