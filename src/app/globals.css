@@ -100,6 +100,8 @@
   --color-action-primary-background-active: var(--color-blue-800);
   --color-action-primary-text: var(--color-neutral-0);
   --color-action-primary-border: var(--color-blue-600);
+  --color-choice-checked-background: var(--color-action-primary-background);
+  --color-choice-checked-mark: var(--color-action-primary-text);
 
   --color-action-danger-background: var(--color-red-600);
   --color-action-danger-background-hover: var(--color-red-700);
@@ -199,6 +201,7 @@
   --height-button-small: 2rem;
   --height-button-medium: 2.25rem;
   --height-button-large: 2.5rem;
+  --size-choice-control: 1.125rem;
 
   --radius-0: 0rem;
   --radius-025: 0.125rem;
