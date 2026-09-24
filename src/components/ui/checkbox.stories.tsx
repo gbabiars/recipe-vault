@@ -1,19 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { Checkbox, CheckboxGroup } from "./checkbox";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldItem,
-  FieldLabel,
-  Fieldset,
-  FieldsetLegend,
-} from "./field";
+import { CheckboxGroup, CheckboxGroupItem, CheckboxInput } from "./checkbox";
 
 const meta = {
   title: "UI/Checkbox",
-  component: Checkbox,
+  component: CheckboxInput,
   decorators: [
     (Story) => (
       <div style={{ width: "24rem" }}>
@@ -21,93 +12,58 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof Checkbox>;
+} satisfies Meta<typeof CheckboxInput>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Standalone: Story = {
+  args: { label: "Email me updates" },
   render: () => (
-    <Field name="updates" layout="choice">
-      <FieldLabel>
-        <Checkbox value="yes" />
-        Email me updates
-      </FieldLabel>
-      <FieldDescription>Occasional recipe news.</FieldDescription>
-      <FieldError />
-    </Field>
+    <CheckboxInput
+      name="updates"
+      value="yes"
+      label="Email me updates"
+      helpText="Occasional recipe news."
+    />
   ),
 };
 
 export const Group: Story = {
+  args: { label: "Email me updates" },
   render: () => (
-    <Fieldset>
-      <FieldsetLegend id="ingredients-legend">Ingredients</FieldsetLegend>
-      <CheckboxGroup
-        aria-labelledby="ingredients-legend"
-        defaultValue={["basil"]}
-        allValues={["basil", "parsley"]}
-      >
-        <Field name="ingredients">
-          <FieldItem>
-            <FieldLabel>
-              <Checkbox parent />
-              All ingredients
-            </FieldLabel>
-          </FieldItem>
-          <FieldItem>
-            <FieldLabel>
-              <Checkbox value="basil" />
-              Basil
-            </FieldLabel>
-            <FieldDescription>Fresh leaves.</FieldDescription>
-          </FieldItem>
-          <FieldItem>
-            <FieldLabel>
-              <Checkbox value="parsley" />
-              Parsley
-            </FieldLabel>
-          </FieldItem>
-          <FieldError />
-        </Field>
-      </CheckboxGroup>
-    </Fieldset>
+    <CheckboxGroup
+      label="Ingredients"
+      name="ingredients"
+      defaultValue={["basil"]}
+      allValues={["basil", "parsley"]}
+    >
+      <CheckboxGroupItem parent label="All ingredients" />
+      <CheckboxGroupItem value="basil" label="Basil" helpText="Fresh leaves." />
+      <CheckboxGroupItem value="parsley" label="Parsley" />
+    </CheckboxGroup>
   ),
 };
 
 export const Disabled: Story = {
+  args: { label: "Email me updates" },
   render: () => (
-    <Field name="updates" layout="choice" disabled>
-      <FieldLabel>
-        <Checkbox defaultChecked />
-        Email me updates
-      </FieldLabel>
-      <FieldDescription>This preference is locked.</FieldDescription>
-    </Field>
+    <CheckboxInput
+      label="Email me updates"
+      name="updates"
+      defaultChecked
+      disabled
+      helpText="This preference is locked."
+    />
   ),
 };
 
 export const Invalid: Story = {
+  args: { label: "Email me updates" },
   render: () => (
-    <Fieldset>
-      <FieldsetLegend id="invalid-ingredients-legend">Ingredients</FieldsetLegend>
-      <CheckboxGroup aria-labelledby="invalid-ingredients-legend">
-        <Field name="ingredients" invalid>
-          <FieldItem>
-            <FieldLabel>
-              <Checkbox value="basil" />
-              Basil
-            </FieldLabel>
-          </FieldItem>
-          <FieldItem>
-            <FieldLabel>
-              <Checkbox value="parsley" />
-              Parsley
-            </FieldLabel>
-          </FieldItem>
-          <FieldError match={true}>Choose an ingredient.</FieldError>
-        </Field>
-      </CheckboxGroup>
-    </Fieldset>
+    <CheckboxGroup label="Ingredients" name="ingredients" error="Choose an ingredient.">
+      <CheckboxGroupItem value="basil" label="Basil" />
+      <CheckboxGroupItem value="parsley" label="Parsley" />
+    </CheckboxGroup>
   ),
 };

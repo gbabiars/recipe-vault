@@ -1,15 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldItem,
-  FieldLabel,
-  Fieldset,
-  FieldsetLegend,
-} from "./field";
-import { Radio, RadioGroup } from "./radio";
+import { RadioGroup, RadioGroupItem } from "./radio";
 
 const meta = {
   title: "UI/Radio",
@@ -27,76 +18,31 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Group: Story = {
+  args: { label: "Visibility" },
   render: () => (
-    <Fieldset>
-      <FieldsetLegend>Visibility</FieldsetLegend>
-      <RadioGroup name="visibility" defaultValue="private" required>
-        <Field name="visibility">
-          <FieldItem>
-            <FieldLabel>
-              <Radio value="private" />
-              Private
-            </FieldLabel>
-            <FieldDescription>Only you can see it.</FieldDescription>
-          </FieldItem>
-          <FieldItem>
-            <FieldLabel>
-              <Radio value="shared" />
-              Shared
-            </FieldLabel>
-          </FieldItem>
-          <FieldError />
-        </Field>
-      </RadioGroup>
-    </Fieldset>
+    <RadioGroup label="Visibility" name="visibility" defaultValue="private" required>
+      <RadioGroupItem value="private" label="Private" helpText="Only you can see it." />
+      <RadioGroupItem value="shared" label="Shared" />
+    </RadioGroup>
   ),
 };
 
 export const Disabled: Story = {
+  args: { label: "Visibility" },
   render: () => (
-    <Fieldset>
-      <FieldsetLegend>Visibility</FieldsetLegend>
-      <RadioGroup name="visibility" defaultValue="private" disabled>
-        <Field name="visibility" disabled>
-          <FieldItem>
-            <FieldLabel>
-              <Radio value="private" />
-              Private
-            </FieldLabel>
-          </FieldItem>
-          <FieldItem>
-            <FieldLabel>
-              <Radio value="shared" />
-              Shared
-            </FieldLabel>
-          </FieldItem>
-        </Field>
-      </RadioGroup>
-    </Fieldset>
+    <RadioGroup label="Visibility" name="visibility" defaultValue="private" disabled>
+      <RadioGroupItem value="private" label="Private" />
+      <RadioGroupItem value="shared" label="Shared" />
+    </RadioGroup>
   ),
 };
 
 export const Invalid: Story = {
+  args: { label: "Visibility" },
   render: () => (
-    <Fieldset>
-      <FieldsetLegend>Visibility</FieldsetLegend>
-      <RadioGroup name="visibility">
-        <Field name="visibility" invalid>
-          <FieldItem>
-            <FieldLabel>
-              <Radio value="private" />
-              Private
-            </FieldLabel>
-          </FieldItem>
-          <FieldItem>
-            <FieldLabel>
-              <Radio value="shared" />
-              Shared
-            </FieldLabel>
-          </FieldItem>
-          <FieldError match={true}>Choose a visibility setting.</FieldError>
-        </Field>
-      </RadioGroup>
-    </Fieldset>
+    <RadioGroup label="Visibility" name="visibility" error="Choose a visibility setting.">
+      <RadioGroupItem value="private" label="Private" />
+      <RadioGroupItem value="shared" label="Shared" />
+    </RadioGroup>
   ),
 };
