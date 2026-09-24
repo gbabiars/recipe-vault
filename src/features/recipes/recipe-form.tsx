@@ -3,9 +3,8 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Heading } from "@/components/ui/heading";
-import { Input } from "@/components/ui/input";
 import { TextInput } from "@/components/ui/text-input";
 import { Textarea } from "@/components/ui/textarea";
 import type { Recipe } from "@/lib/db/recipe-repository";
@@ -38,25 +37,15 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
     errorKey = name,
   ) => {
     const error = errorFor(state.errors, errorKey);
-    if (type !== "number") {
-      return (
-        <TextInput
-          name={name}
-          label={label}
-          type={type}
-          defaultValue={defaultValue}
-          helpText={hint}
-          error={error}
-        />
-      );
-    }
     return (
-      <Field name={name} invalid={Boolean(error)}>
-        <FieldLabel>{label}</FieldLabel>
-        <Input type={type} defaultValue={defaultValue} />
-        {hint && <FieldDescription>{hint}</FieldDescription>}
-        {error && <FieldError match={true}>{error}</FieldError>}
-      </Field>
+      <TextInput
+        name={name}
+        label={label}
+        type={type}
+        defaultValue={defaultValue}
+        helpText={hint}
+        error={error}
+      />
     );
   };
   const textarea = (name: string, label: string, defaultValue?: string, errorKey = name) => {

@@ -1,6 +1,8 @@
 import * as React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
+
+import "../../app/globals.css";
 import { TextInput } from "./text-input";
 import styles from "./text-input.module.css";
 
@@ -30,6 +32,56 @@ test("associates its label and help text and submits an uncontrolled value", () 
   expect(input.value).toBe("Tomato soup");
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
   expect(onSubmit).toHaveReturnedWith({ title: "Tomato soup" });
+});
+
+test("forwards native input props, classes, and Base UI value callbacks", () => {
+  const onValueChange = vi.fn();
+
+  render(
+    <TextInput
+      label="Recipe title"
+      name="title"
+      placeholder="Title"
+      autoComplete="off"
+      inputClassName="custom-input"
+      onValueChange={onValueChange}
+    />,
+  );
+
+  const input = screen.getByRole("textbox", { name: "Recipe title" }) as HTMLInputElement;
+  expect(input.name).toBe("title");
+  expect(input.placeholder).toBe("Title");
+  expect(input.autocomplete).toBe("off");
+  expect(input.classList.contains(styles.input)).toBe(true);
+  expect(input.classList.contains("custom-input")).toBe(true);
+
+  fireEvent.change(input, { target: { value: "Soup" } });
+  expect(onValueChange).toHaveBeenCalledWith("Soup", expect.any(Object));
+});
+
+test("submits a numeric default value through a native form", () => {
+  const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    return Object.fromEntries(new FormData(event.currentTarget));
+  });
+  render(
+    <form onSubmit={onSubmit}>
+      <TextInput label="Servings" name="servings" type="number" defaultValue={2} />
+      <button type="submit">Save</button>
+    </form>,
+  );
+
+  const input = screen.getByRole("spinbutton", { name: "Servings" }) as HTMLInputElement;
+  expect(input.value).toBe("2");
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  expect(onSubmit).toHaveReturnedWith({ servings: "2" });
+});
+
+test("keeps the existing 36px input height", () => {
+  render(<TextInput label="Recipe title" />);
+
+  const input = screen.getByRole("textbox", { name: "Recipe title" });
+  expect(window.getComputedStyle(input).height).toBe("36px");
 });
 
 test("supports controlled values, string callbacks, native events, and input refs", () => {

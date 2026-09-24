@@ -1,3 +1,40 @@
+.input {
+  display: block;
+  width: 100%;
+  height: var(--height-button-medium);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-100);
+  padding-inline: var(--space-150);
+  background: var(--color-background-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.input:focus-visible {
+  border-color: var(--color-border-focus);
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.input:disabled {
+  border-color: var(--color-border-disabled);
+  background: var(--color-background-surface-disabled);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.input[data-invalid] {
+  border-color: var(--color-error-text);
+}
+
+.input[data-invalid]:focus-visible {
+  outline-color: var(--color-error-text);
+}
+
 .visuallyHidden {
   position: absolute;
   width: 1px;

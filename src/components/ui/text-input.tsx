@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { Input as BaseInput } from "@base-ui/react/input";
+import { cn } from "cn";
 import { Field, FieldDescription, FieldError, FieldLabel } from "./field";
-import { Input, type InputProps } from "./input";
 import styles from "./text-input.module.css";
 
 export type TextInputType =
@@ -20,7 +21,7 @@ export type TextInputType =
   | "week";
 
 export type TextInputProps = Omit<
-  InputProps,
+  React.ComponentPropsWithoutRef<typeof BaseInput>,
   | "children"
   | "render"
   | "className"
@@ -77,7 +78,13 @@ export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(func
       <FieldLabel className={visuallyHiddenLabel ? styles.visuallyHidden : undefined}>
         {label}
       </FieldLabel>
-      <Input {...inputProps} ref={ref} type={type} className={inputClassName} style={inputStyle} />
+      <BaseInput
+        {...inputProps}
+        ref={ref}
+        type={type}
+        className={cn(styles.input, inputClassName)}
+        style={inputStyle}
+      />
       {helpText != null && <FieldDescription>{helpText}</FieldDescription>}
       <FieldError match={hasError ? true : undefined}>{hasError ? error : undefined}</FieldError>
     </Field>
