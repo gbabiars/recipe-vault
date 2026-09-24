@@ -23,7 +23,6 @@
 
 .card[data-interactive]:active {
   background: var(--color-background-surface-active);
-  transform: translateY(1px);
 }
 
 .card[data-interactive]:has(.primaryControl:focus-visible) {
