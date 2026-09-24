@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import Link from "next/link";
 import type * as React from "react";
 
-import { Card, type CardPadding, type CardRender } from "./card";
+import { Card, type CardPadding, type CardRender, type CardVariant } from "./card";
 
 type CardStoryArgs = {
   as?: "section";
@@ -10,6 +10,7 @@ type CardStoryArgs = {
   label?: string;
   padding?: CardPadding;
   render?: CardRender;
+  variant?: CardVariant;
 };
 
 const meta = {
@@ -47,6 +48,12 @@ export const Large: Story = {
 export const None: Story = {
   args: {
     padding: "none",
+  },
+};
+
+export const Subtle: Story = {
+  args: {
+    variant: "subtle",
   },
 };
 

@@ -4,6 +4,10 @@
   border-radius: var(--radius-150);
 }
 
+.card[data-variant="subtle"] {
+  background: var(--color-background-surface-subtle);
+}
+
 .card[data-interactive] {
   cursor: pointer;
   transition:
