@@ -2,77 +2,54 @@ import * as React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 
-import { Checkbox, CheckboxGroup } from "./checkbox";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldItem,
-  FieldLabel,
-  Fieldset,
-  FieldsetLegend,
-} from "./field";
+import { CheckboxGroup, CheckboxGroupItem, CheckboxInput } from "./checkbox";
 
 afterEach(cleanup);
 
-test("labels a standalone checkbox and submits its value", () => {
+test("standalone checkbox owns its label, help text, and form value", () => {
   const inputRef = React.createRef<HTMLInputElement>();
   const ref = React.createRef<HTMLElement>();
   const { container } = render(
     <form>
-      <Field name="updates" layout="choice">
-        <FieldLabel>
-          <Checkbox value="yes" inputRef={inputRef} ref={ref} />
-          Email me updates
-        </FieldLabel>
-        <FieldDescription>Occasional recipe news.</FieldDescription>
-        <FieldError />
-      </Field>
+      <CheckboxInput
+        name="updates"
+        value="yes"
+        label="Email me updates"
+        helpText="Occasional recipe news."
+        inputRef={inputRef}
+        ref={ref}
+      />
     </form>,
   );
-
-  const checkbox = screen.getByRole("checkbox", {
-    name: "Email me updates",
-    description: "Occasional recipe news.",
-  });
+  const checkbox = screen.getByRole("checkbox", { name: "Email me updates" });
+  expect(
+    screen.getByRole("checkbox", {
+      name: "Email me updates",
+      description: "Occasional recipe news.",
+    }),
+  ).toBe(checkbox);
   expect(ref.current).toBe(checkbox);
   expect(inputRef.current).toBeInstanceOf(HTMLInputElement);
   fireEvent.click(screen.getByText("Email me updates"));
-  expect(checkbox.getAttribute("aria-checked")).toBe("true");
   expect(new FormData(container.querySelector("form")!).get("updates")).toBe("yes");
   fireEvent.click(checkbox);
   expect(new FormData(container.querySelector("form")!).has("updates")).toBe(false);
 });
 
-test("controlled, read-only, disabled, and invalid standalone states", () => {
+test("standalone checkbox supports controlled, read-only, disabled, invalid, and mixed states", () => {
   const onCheckedChange = vi.fn();
   render(
     <>
-      <Field name="controlled" layout="choice" invalid>
-        <FieldLabel>
-          <Checkbox checked onCheckedChange={onCheckedChange} />
-          Controlled
-        </FieldLabel>
-        <FieldError match={true}>Check this setting.</FieldError>
-      </Field>
-      <Field name="locked" layout="choice">
-        <FieldLabel>
-          <Checkbox readOnly defaultChecked />
-          Locked
-        </FieldLabel>
-      </Field>
-      <Field name="disabled" layout="choice" disabled>
-        <FieldLabel>
-          <Checkbox />
-          Disabled
-        </FieldLabel>
-      </Field>
-      <Field name="mixed" layout="choice">
-        <FieldLabel>
-          <Checkbox indeterminate />
-          Mixed
-        </FieldLabel>
-      </Field>
+      <CheckboxInput
+        name="controlled"
+        label="Controlled"
+        checked
+        onCheckedChange={onCheckedChange}
+        error="Check this setting."
+      />
+      <CheckboxInput name="locked" label="Locked" readOnly defaultChecked />
+      <CheckboxInput name="disabled" label="Disabled" disabled />
+      <CheckboxInput name="mixed" label="Mixed" indeterminate visuallyHiddenLabel />
     </>,
   );
   const controlled = screen.getByRole("checkbox", { name: "Controlled" });
@@ -80,7 +57,9 @@ test("controlled, read-only, disabled, and invalid standalone states", () => {
   expect(onCheckedChange).toHaveBeenCalledWith(false, expect.anything());
   expect(controlled.getAttribute("aria-checked")).toBe("true");
   expect(controlled.hasAttribute("data-invalid")).toBe(true);
-  expect(screen.getByText("Check this setting.")).toBeTruthy();
+  expect(
+    screen.getByRole("checkbox", { name: "Controlled", description: "Check this setting." }),
+  ).toBe(controlled);
   fireEvent.click(screen.getByRole("checkbox", { name: "Locked" }));
   expect(screen.getByRole("checkbox", { name: "Locked" }).getAttribute("aria-checked")).toBe(
     "true",
@@ -91,50 +70,40 @@ test("controlled, read-only, disabled, and invalid standalone states", () => {
   expect(screen.getByRole("checkbox", { name: "Mixed" }).getAttribute("aria-checked")).toBe(
     "mixed",
   );
+  expect(screen.getByText("Mixed").className).toContain("visually-hidden");
 });
 
 test("checkbox group has a legend, repeated form values, and select-all mixed state", () => {
   const onValueChange = vi.fn();
+  const groupRef = React.createRef<HTMLDivElement>();
+  const itemRef = React.createRef<HTMLElement>();
   const { container } = render(
     <form>
-      <Fieldset>
-        <FieldsetLegend id="ingredients-legend">Ingredients</FieldsetLegend>
-        <CheckboxGroup
-          aria-labelledby="ingredients-legend"
-          defaultValue={["basil"]}
-          allValues={["basil", "parsley"]}
-          onValueChange={onValueChange}
-        >
-          <Field name="ingredients" invalid>
-            <FieldItem>
-              <FieldLabel>
-                <Checkbox parent />
-                All ingredients
-              </FieldLabel>
-            </FieldItem>
-            <FieldItem>
-              <FieldLabel>
-                <Checkbox value="basil" />
-                Basil
-              </FieldLabel>
-              <FieldDescription>Fresh leaves.</FieldDescription>
-            </FieldItem>
-            <FieldItem>
-              <FieldLabel>
-                <Checkbox value="parsley" />
-                Parsley
-              </FieldLabel>
-            </FieldItem>
-            <FieldError match={true}>Choose an ingredient.</FieldError>
-          </Field>
-        </CheckboxGroup>
-      </Fieldset>
+      <CheckboxGroup
+        label="Ingredients"
+        name="ingredients"
+        helpText="Choose ingredients."
+        error="Choose an ingredient."
+        defaultValue={["basil"]}
+        allValues={["basil", "parsley"]}
+        onValueChange={onValueChange}
+        ref={groupRef}
+      >
+        <CheckboxGroupItem parent label="All ingredients" />
+        <CheckboxGroupItem value="basil" label="Basil" helpText="Fresh leaves." ref={itemRef} />
+        <CheckboxGroupItem value="parsley" label="Parsley" />
+      </CheckboxGroup>
     </form>,
   );
-  expect(screen.getAllByRole("group", { name: "Ingredients" })).toHaveLength(2);
-  expect(container.querySelector("fieldset")?.children[1].getAttribute("role")).toBe("group");
+  const group = screen.getAllByRole("group", { name: "Ingredients" })[1];
+  expect(groupRef.current).toBe(group);
+  expect(itemRef.current).toBe(screen.getByRole("checkbox", { name: "Basil" }));
+  expect(group.closest("fieldset")?.firstElementChild?.textContent).toBe("Ingredients");
   expect(
-    screen.getByRole("checkbox", { name: "Basil" }).getAttribute("aria-describedby"),
+    screen.getByRole("checkbox", {
+      name: "Basil",
+      description: "Choose ingredients. Choose an ingredient. Fresh leaves.",
+    }),
   ).toBeTruthy();
   expect(
     screen.getByRole("checkbox", { name: "All ingredients" }).getAttribute("aria-checked"),
@@ -149,15 +118,19 @@ test("checkbox group has a legend, repeated form values, and select-all mixed st
   expect(new FormData(container.querySelector("form")!).getAll("ingredients")).toEqual([]);
 });
 
-test("space toggles a checkbox from the keyboard", () => {
+test("disabled checkbox group and hidden legend", () => {
   render(
-    <Field name="updates" layout="choice">
-      <FieldLabel>
-        <Checkbox />
-        Updates
-      </FieldLabel>
-    </Field>,
+    <CheckboxGroup label="Ingredients" name="ingredients" disabled visuallyHiddenLabel>
+      <CheckboxGroupItem value="basil" label="Basil" />
+    </CheckboxGroup>,
   );
+  expect(screen.getAllByRole("group", { name: "Ingredients" })).toHaveLength(2);
+  expect(screen.getByText("Ingredients").className).toContain("visually-hidden");
+  expect(screen.getByRole("checkbox", { name: "Basil" }).hasAttribute("data-disabled")).toBe(true);
+});
+
+test("space toggles a standalone checkbox", () => {
+  render(<CheckboxInput label="Updates" />);
   const checkbox = screen.getByRole("checkbox", { name: "Updates" });
   checkbox.focus();
   fireEvent.keyDown(checkbox, { key: " " });

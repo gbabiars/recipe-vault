@@ -100,6 +100,26 @@ under `src`; the starter stories in `src/stories` demonstrate the pattern.
 Use `pnpm build-storybook` to create a production Storybook build. Its output
 is written to `storybook-static/` and is not committed.
 
+Checkbox and radio choices own their labels and optional help text:
+
+```tsx
+import { CheckboxGroup, CheckboxGroupItem, CheckboxInput } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio";
+
+<CheckboxInput label="Email me updates" name="updates" value="yes" />
+
+<CheckboxGroup label="Ingredients" name="ingredients" allValues={["basil", "parsley"]}>
+  <CheckboxGroupItem parent label="All ingredients" />
+  <CheckboxGroupItem value="basil" label="Basil" helpText="Fresh leaves." />
+  <CheckboxGroupItem value="parsley" label="Parsley" />
+</CheckboxGroup>
+
+<RadioGroup label="Visibility" name="visibility" required>
+  <RadioGroupItem value="private" label="Private" />
+  <RadioGroupItem value="shared" label="Shared" helpText="Visible to others." />
+</RadioGroup>
+```
+
 `Grid` in `src/components/ui/grid` supports fixed equal columns or card columns
 that reflow from a minimum width. Use the optional `GridItem` for spans in fixed
 column layouts; responsive spans use the grid's width at 40rem (`sm`) and 60rem
