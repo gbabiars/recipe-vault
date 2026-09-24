@@ -96,6 +96,8 @@ After edits, run `pnpm format`, then `pnpm check` and `pnpm build`.
 Run `pnpm storybook` and open `http://localhost:6006` to develop and review
 components in isolation. Storybook discovers `.stories.*` and `.mdx` files
 under `src`; the starter stories in `src/stories` demonstrate the pattern.
+Select a story in the sidebar, then open the Code panel below its canvas to
+view the rendered source snippet with that story's args.
 
 Use `pnpm build-storybook` to create a production Storybook build. Its output
 is written to `storybook-static/` and is not committed.
