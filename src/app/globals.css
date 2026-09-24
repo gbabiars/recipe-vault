@@ -67,28 +67,10 @@
   /* Primitive typography tokens remain stable across themes. */
   --font-family-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --font-size-100: 0.75rem;
-  --font-size-200: 0.875rem;
-  --font-size-300: 1rem;
-  --font-size-400: 1.125rem;
-  --font-size-500: 1.25rem;
-  --font-size-600: 1.5rem;
-  --font-size-700: 1.875rem;
-  --font-size-800: 2.25rem;
-
-  --line-height-100: 1rem;
-  --line-height-200: 1.25rem;
-  --line-height-300: 1.375rem;
-  --line-height-400: 1.5rem;
-  --line-height-500: 1.625rem;
-  --line-height-600: 1.875rem;
-  --line-height-700: 2.25rem;
-  --line-height-800: 2.75rem;
-
   --font-weight-regular: 400;
+  --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  --font-weight-extrabold: 800;
 
   /* Light semantic theme. Components consume these aliases. */
   --color-background-canvas: var(--color-neutral-050);
@@ -158,40 +140,40 @@
   --color-error-text: var(--color-red-700);
   --color-error-icon: var(--color-red-600);
 
-  --font-size-text-small: var(--font-size-100);
-  --line-height-text-small: var(--line-height-100);
+  --font-size-text-small: 0.75rem;
+  --line-height-text-small: 1rem;
   --font-weight-text-small: var(--font-weight-regular);
 
-  --font-size-text-medium: var(--font-size-200);
-  --line-height-text-medium: var(--line-height-200);
+  --font-size-text-medium: 0.875rem;
+  --line-height-text-medium: 1.25rem;
   --font-weight-text-medium: var(--font-weight-regular);
 
-  --font-size-text-large: var(--font-size-300);
-  --line-height-text-large: var(--line-height-400);
+  --font-size-text-large: 1rem;
+  --line-height-text-large: 1.5rem;
   --font-weight-text-large: var(--font-weight-regular);
 
-  --font-size-heading-1: var(--font-size-800);
-  --line-height-heading-1: var(--line-height-800);
+  --font-size-heading-1: 2.25rem;
+  --line-height-heading-1: 2.75rem;
   --font-weight-heading-1: var(--font-weight-semibold);
 
-  --font-size-heading-2: var(--font-size-700);
-  --line-height-heading-2: var(--line-height-700);
+  --font-size-heading-2: 1.875rem;
+  --line-height-heading-2: 2.25rem;
   --font-weight-heading-2: var(--font-weight-semibold);
 
-  --font-size-heading-3: var(--font-size-600);
-  --line-height-heading-3: var(--line-height-600);
+  --font-size-heading-3: 1.5rem;
+  --line-height-heading-3: 1.875rem;
   --font-weight-heading-3: var(--font-weight-semibold);
 
-  --font-size-heading-4: var(--font-size-500);
-  --line-height-heading-4: var(--line-height-500);
+  --font-size-heading-4: 1.25rem;
+  --line-height-heading-4: 1.625rem;
   --font-weight-heading-4: var(--font-weight-semibold);
 
-  --font-size-heading-5: var(--font-size-400);
-  --line-height-heading-5: var(--line-height-400);
+  --font-size-heading-5: 1.125rem;
+  --line-height-heading-5: 1.5rem;
   --font-weight-heading-5: var(--font-weight-semibold);
 
-  --font-size-heading-6: var(--font-size-300);
-  --line-height-heading-6: var(--line-height-300);
+  --font-size-heading-6: 1rem;
+  --line-height-heading-6: 1.375rem;
   --font-weight-heading-6: var(--font-weight-semibold);
 
   --space-0: 0rem;
