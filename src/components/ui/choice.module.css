@@ -1,0 +1,82 @@
+.group {
+  display: grid;
+  gap: var(--space-150);
+}
+
+.control {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-choice-control);
+  height: var(--size-choice-control);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-surface);
+  color: var(--color-choice-checked-mark);
+  vertical-align: middle;
+}
+
+.checkbox {
+  border-radius: var(--radius-050);
+}
+
+.radio {
+  border-radius: var(--radius-full);
+}
+
+.control[data-checked],
+.control[data-indeterminate] {
+  border-color: var(--color-choice-checked-background);
+  background: var(--color-choice-checked-background);
+}
+
+.control:focus-visible {
+  border-color: var(--color-border-focus);
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.control[data-disabled] {
+  border-color: var(--color-border-disabled);
+  background: var(--color-background-surface-disabled);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.control[data-invalid] {
+  border-color: var(--color-error-text);
+}
+
+.control[data-invalid]:focus-visible {
+  outline-color: var(--color-error-text);
+}
+
+.indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.check,
+.mixed {
+  width: 14px;
+  height: 14px;
+}
+
+.mixed,
+.control[data-indeterminate] .check {
+  display: none;
+}
+
+.control[data-indeterminate] .mixed {
+  display: block;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+}

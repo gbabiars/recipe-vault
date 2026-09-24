@@ -3,6 +3,15 @@
   gap: var(--space-050);
 }
 
+.field[data-layout="choice"] {
+  gap: var(--space-025);
+}
+
+.field[data-layout="choice"] > .description,
+.field[data-layout="choice"] > .error {
+  margin-inline-start: calc(var(--size-choice-control) + var(--space-100));
+}
+
 .label {
   font-size: var(--font-size-text-medium);
   line-height: var(--line-height-text-medium);
@@ -26,5 +35,55 @@
 
 .label[data-disabled],
 .description[data-disabled] {
+  color: var(--color-text-disabled);
+}
+
+.field[data-layout="choice"] > .label,
+.item > .label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-100);
+  width: fit-content;
+  cursor: pointer;
+}
+
+.field[data-layout="choice"] > .label[data-disabled],
+.item > .label[data-disabled] {
+  cursor: not-allowed;
+}
+
+.item {
+  display: grid;
+  gap: var(--space-025);
+}
+
+.field > .item + .item {
+  margin-block-start: calc(var(--space-150) - var(--space-050));
+}
+
+.item > .description,
+.item > .error {
+  margin-inline-start: calc(var(--size-choice-control) + var(--space-100));
+}
+
+.fieldset {
+  display: grid;
+  gap: var(--space-150);
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.legend {
+  margin-block-end: var(--space-050);
+  padding: 0;
+  font-size: var(--font-size-text-medium);
+  line-height: var(--line-height-text-medium);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.legend[data-disabled] {
   color: var(--color-text-disabled);
 }
