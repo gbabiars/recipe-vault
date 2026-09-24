@@ -3,9 +3,8 @@
 import { useActionState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Field, FieldLabel } from "@/components/ui/field";
 import { Heading } from "@/components/ui/heading";
-import { Input } from "@/components/ui/input";
+import { TextInput } from "@/components/ui/text-input";
 import { createMcpKeyAction, type McpKeyFormState } from "./actions";
 
 const initialState: McpKeyFormState = {};
@@ -28,10 +27,14 @@ export function McpKeyManager() {
         client; the secret is shown only once.
       </p>
       <form action={action} className="mcp-key-form">
-        <Field name="name">
-          <FieldLabel>Key name</FieldLabel>
-          <Input ref={nameRef} maxLength={100} required placeholder="My MCP client" />
-        </Field>
+        <TextInput
+          ref={nameRef}
+          name="name"
+          label="Key name"
+          maxLength={100}
+          required
+          placeholder="My MCP client"
+        />
         <fieldset>
           <legend>Permissions</legend>
           <label>

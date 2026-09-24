@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Heading } from "@/components/ui/heading";
 import { Input } from "@/components/ui/input";
+import { TextInput } from "@/components/ui/text-input";
 import { Textarea } from "@/components/ui/textarea";
 import type { Recipe } from "@/lib/db/recipe-repository";
 import { saveRecipeAction } from "./actions";
@@ -31,12 +32,24 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
   const field = (
     name: string,
     label: string,
-    type = "text",
+    type: "text" | "number" | "url" = "text",
     defaultValue?: string | number,
     hint?: string,
     errorKey = name,
   ) => {
     const error = errorFor(state.errors, errorKey);
+    if (type !== "number") {
+      return (
+        <TextInput
+          name={name}
+          label={label}
+          type={type}
+          defaultValue={defaultValue}
+          helpText={hint}
+          error={error}
+        />
+      );
+    }
     return (
       <Field name={name} invalid={Boolean(error)}>
         <FieldLabel>{label}</FieldLabel>
