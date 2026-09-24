@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Heading } from "@/components/ui/heading";
+import { Input } from "@/components/ui/input";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
@@ -36,18 +38,18 @@ export default async function RecipesPage({
         </ButtonLink>
       </div>
       <form className="filters" method="get">
-        <label>
-          Search title
-          <input name="q" type="search" defaultValue={q} />
-        </label>
-        <label>
-          Tag
-          <input name="tag" defaultValue={tag} placeholder="weeknight" />
-        </label>
-        <label>
-          Dietary flag
-          <input name="dietary" defaultValue={dietary} placeholder="vegetarian" />
-        </label>
+        <Field name="q">
+          <FieldLabel>Search title</FieldLabel>
+          <Input type="search" defaultValue={q} />
+        </Field>
+        <Field name="tag">
+          <FieldLabel>Tag</FieldLabel>
+          <Input defaultValue={tag} placeholder="weeknight" />
+        </Field>
+        <Field name="dietary">
+          <FieldLabel>Dietary flag</FieldLabel>
+          <Input defaultValue={dietary} placeholder="vegetarian" />
+        </Field>
         <Button type="submit">Filter</Button>
       </form>
       {error ? (
