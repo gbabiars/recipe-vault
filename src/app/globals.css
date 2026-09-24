@@ -454,17 +454,9 @@ button:disabled {
   grid-template-columns: 2fr 1fr 1fr auto;
   gap: var(--space-150);
 }
-.recipe-list {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  gap: 0.75rem;
-}
-.recipe-list p {
-  margin: 0.35rem 0;
+.recipe-metadata {
   color: var(--color-text-secondary);
 }
-.metadata,
 .chips {
   display: flex;
   flex-wrap: wrap;
