@@ -1,0 +1,24 @@
+.field {
+  display: grid;
+  gap: var(--space-050);
+}
+
+.label {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.description {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.error {
+  color: var(--color-error-text);
+  font-size: 0.875rem;
+}
+
+.label[data-disabled],
+.description[data-disabled] {
+  color: var(--color-text-disabled);
+}
