@@ -7,6 +7,7 @@ import { cn } from "cn";
 import styles from "./card.module.css";
 
 export type CardPadding = "small" | "medium" | "large" | "none";
+export type CardVariant = "default" | "subtle";
 
 type CardElement = keyof React.JSX.IntrinsicElements;
 type InteractiveCardElement =
@@ -33,19 +34,28 @@ export type CardRender =
 type CardBaseProps<T extends CardElement> = {
   as?: T;
   padding?: CardPadding;
+  variant?: CardVariant;
 };
 
 type StaticCardProps<T extends CardElement> = CardBaseProps<T> & {
   label?: never;
   render?: never;
-} & Omit<React.ComponentPropsWithoutRef<T>, "as" | "label" | "padding" | "render">;
+} & Omit<React.ComponentPropsWithoutRef<T>, "as" | "label" | "padding" | "render" | "variant">;
 
 type InteractiveCardProps<T extends NonInteractiveCardElement> = CardBaseProps<T> & {
   label: string;
   render: CardRender;
 } & Omit<
     React.ComponentPropsWithoutRef<T>,
-    "as" | "label" | "onAuxClick" | "onClick" | "padding" | "render" | "role" | "tabIndex"
+    | "as"
+    | "label"
+    | "onAuxClick"
+    | "onClick"
+    | "padding"
+    | "render"
+    | "role"
+    | "tabIndex"
+    | "variant"
   >;
 
 export type CardProps<T extends CardElement = "div"> =
@@ -68,6 +78,7 @@ type CardImplementationProps = {
   label?: string;
   padding?: CardPadding;
   render?: CardRender;
+  variant?: CardVariant;
 } & React.HTMLAttributes<HTMLElement>;
 
 const interactiveCardElements = new Set<InteractiveCardElement>([
@@ -124,7 +135,7 @@ function isSupportedRender(render: CardRender) {
 
 const InteractiveCard = React.forwardRef<HTMLElement, CardImplementationProps>(
   function InteractiveCard(
-    { as, children, className, label, padding = "medium", render, ...props },
+    { as, children, className, label, padding = "medium", render, variant = "default", ...props },
     ref,
   ) {
     const primaryControlRef = React.useRef<HTMLAnchorElement | HTMLButtonElement>(null);
@@ -191,6 +202,7 @@ const InteractiveCard = React.forwardRef<HTMLElement, CardImplementationProps>(
         className: cn(styles.card, className),
         "data-interactive": "",
         "data-padding": padding,
+        "data-variant": variant,
         onAuxClick: activatePrimaryControl,
         onClick: activatePrimaryControl,
         role: undefined,
@@ -203,7 +215,14 @@ const InteractiveCard = React.forwardRef<HTMLElement, CardImplementationProps>(
 );
 
 const CardImpl = (
-  { as, className, padding = "medium", render, ...props }: CardImplementationProps,
+  {
+    as,
+    className,
+    padding = "medium",
+    render,
+    variant = "default",
+    ...props
+  }: CardImplementationProps,
   ref: React.ForwardedRef<HTMLElement>,
 ) => {
   const Component = (as ?? "div") as React.ElementType;
@@ -217,6 +236,7 @@ const CardImpl = (
         padding={padding}
         ref={ref}
         render={render}
+        variant={variant}
       />
     );
   }
@@ -226,6 +246,7 @@ const CardImpl = (
     ref,
     className: cn(styles.card, className),
     "data-padding": padding,
+    "data-variant": variant,
   });
 };
 

@@ -25,6 +25,17 @@ test("renders a div with the default card styling and medium padding", () => {
   expect(card).toBeInstanceOf(HTMLDivElement);
   expect(card.classList.contains(styles.card)).toBe(true);
   expect(card.getAttribute("data-padding")).toBe("medium");
+  expect(card.getAttribute("data-variant")).toBe("default");
+});
+
+test("supports the subtle variant", () => {
+  render(
+    <Card data-testid="card" variant="subtle">
+      Recipe details
+    </Card>,
+  );
+
+  expect(screen.getByTestId("card").getAttribute("data-variant")).toBe("subtle");
 });
 
 test.each([
@@ -97,6 +108,21 @@ test("renders one named native anchor inside a non-interactive card", () => {
   expect(card.tagName).toBe("DIV");
   expect(card.getAttribute("role")).toBeNull();
   expect(card.getAttribute("tabindex")).toBeNull();
+});
+
+test("supports the subtle variant on an interactive card", () => {
+  render(
+    <Card
+      data-testid="card"
+      label="View Tomato Soup"
+      render={<a href="https://example.com/recipes/tomato-soup" />}
+      variant="subtle"
+    >
+      Tomato Soup
+    </Card>,
+  );
+
+  expect(screen.getByTestId("card").getAttribute("data-variant")).toBe("subtle");
 });
 
 test("composes the primary control with Next.js Link", () => {
