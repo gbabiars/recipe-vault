@@ -11,15 +11,15 @@ export default function SettingsPage() {
         </div>
       </div>
       <div className="settings-links">
-        <Card as="section" padding="large">
+        <Card as="section" label="Profile" render={<Link href="/user-profile" />}>
           <Heading as="h2" level={5}>
-            <Link href="/user-profile">Profile</Link>
+            Profile
           </Heading>
           <p>Manage your account details.</p>
         </Card>
-        <Card as="section" padding="large">
+        <Card as="section" label="MCP keys" render={<Link href="/mcp-keys" />}>
           <Heading as="h2" level={5}>
-            <Link href="/mcp-keys">MCP keys</Link>
+            MCP keys
           </Heading>
           <p>Manage keys for MCP clients.</p>
         </Card>
