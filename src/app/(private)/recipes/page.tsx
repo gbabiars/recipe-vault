@@ -5,8 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Heading } from "@/components/ui/heading";
+import { Inline } from "@/components/ui/inline";
 import { Input } from "@/components/ui/input";
 import { Stack } from "@/components/ui/stack";
+import { Text } from "@/components/ui/text";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
@@ -74,7 +76,7 @@ export default async function RecipesPage({
           <Link href="/recipes/new">Create a recipe</Link>
         </Card>
       ) : (
-        <ul className="recipe-list">
+        <Stack as="ul" gap="150" style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {recipes.map((recipe) => (
             <Card
               as="li"
@@ -82,29 +84,37 @@ export default async function RecipesPage({
               label={`View ${recipe.title}`}
               render={<Link href={`/recipes/${recipe.id}`} />}
             >
-              <Heading as="h2" level={5}>
-                {recipe.title}
-              </Heading>
-              {recipe.summary && <p>{recipe.summary}</p>}
-              <div className="metadata">
-                {recipe.totalTimeMinutes !== undefined && (
-                  <span>{recipe.totalTimeMinutes} min</span>
-                )}
-                <span>
-                  Updated{" "}
-                  {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
-                    new Date(recipe.updatedAt),
+              <Stack gap="150">
+                <Stack gap="050">
+                  <Heading as="h2" level={5}>
+                    {recipe.title}
+                  </Heading>
+                  {recipe.summary && (
+                    <Text as="p" size="large">
+                      {recipe.summary}
+                    </Text>
                   )}
-                </span>
-              </div>
-              <div className="chips">
-                {[...recipe.tags, ...recipe.dietaryFlags].map((label) => (
-                  <Chip key={label}>{label}</Chip>
-                ))}
-              </div>
+                </Stack>
+                <Inline className="recipe-metadata" gap="100">
+                  {recipe.totalTimeMinutes !== undefined && (
+                    <Text size="large">{recipe.totalTimeMinutes} min</Text>
+                  )}
+                  <Text size="large">
+                    Updated{" "}
+                    {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
+                      new Date(recipe.updatedAt),
+                    )}
+                  </Text>
+                </Inline>
+                <Inline gap="100">
+                  {[...recipe.tags, ...recipe.dietaryFlags].map((label) => (
+                    <Chip key={label}>{label}</Chip>
+                  ))}
+                </Inline>
+              </Stack>
             </Card>
           ))}
-        </ul>
+        </Stack>
       )}
     </>
   );
