@@ -3,7 +3,10 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Heading } from "@/components/ui/heading";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import type { Recipe } from "@/lib/db/recipe-repository";
 import { saveRecipeAction } from "./actions";
 import { emptyRecipeFormState } from "./recipe-form-state";
@@ -32,24 +35,27 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
     defaultValue?: string | number,
     hint?: string,
     errorKey = name,
-  ) => (
-    <label className="field">
-      {label}
-      <input
-        name={name}
-        type={type}
-        defaultValue={defaultValue}
-        aria-invalid={errorFor(state.errors, errorKey) ? true : undefined}
-        aria-describedby={errorFor(state.errors, errorKey) ? `${name}-error` : undefined}
-      />
-      {hint && <small>{hint}</small>}
-      {errorFor(state.errors, errorKey) && (
-        <span id={`${name}-error`} className="field-error">
-          {errorFor(state.errors, errorKey)}
-        </span>
-      )}
-    </label>
-  );
+  ) => {
+    const error = errorFor(state.errors, errorKey);
+    return (
+      <Field name={name} invalid={Boolean(error)}>
+        <FieldLabel>{label}</FieldLabel>
+        <Input type={type} defaultValue={defaultValue} />
+        {hint && <FieldDescription>{hint}</FieldDescription>}
+        {error && <FieldError match={true}>{error}</FieldError>}
+      </Field>
+    );
+  };
+  const textarea = (name: string, label: string, defaultValue?: string, errorKey = name) => {
+    const error = errorFor(state.errors, errorKey);
+    return (
+      <Field name={name} invalid={Boolean(error)}>
+        <FieldLabel>{label}</FieldLabel>
+        <Textarea defaultValue={defaultValue} />
+        {error && <FieldError match={true}>{error}</FieldError>}
+      </Field>
+    );
+  };
   return (
     <form ref={formRef} action={action} className="recipe-form" noValidate>
       {recipe && <input type="hidden" name="recipeId" value={recipe.id} />}
@@ -63,20 +69,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
           Recipe details
         </Heading>
         {field("title", "Title", "text", recipe?.title)}
-        <label className="field">
-          Summary
-          <textarea
-            name="summary"
-            defaultValue={recipe?.summary}
-            aria-invalid={errorFor(state.errors, "summary") ? true : undefined}
-            aria-describedby={errorFor(state.errors, "summary") ? "summary-error" : undefined}
-          />
-          {errorFor(state.errors, "summary") && (
-            <span id="summary-error" className="field-error">
-              {errorFor(state.errors, "summary")}
-            </span>
-          )}
-        </label>
+        {textarea("summary", "Summary", recipe?.summary)}
         <div className="form-grid">
           {field("servings", "Servings", "number", recipe?.servings)}
           {field("prepTimeMinutes", "Prep time (minutes)", "number", recipe?.prepTimeMinutes)}
@@ -94,20 +87,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
           )}
         </div>
         {field("sourceUrl", "Source URL", "url", recipe?.sourceUrl)}
-        <label className="field">
-          Notes
-          <textarea
-            name="notes"
-            defaultValue={recipe?.notes}
-            aria-invalid={errorFor(state.errors, "notes") ? true : undefined}
-            aria-describedby={errorFor(state.errors, "notes") ? "notes-error" : undefined}
-          />
-          {errorFor(state.errors, "notes") && (
-            <span id="notes-error" className="field-error">
-              {errorFor(state.errors, "notes")}
-            </span>
-          )}
-        </label>
+        {textarea("notes", "Notes", recipe?.notes)}
       </Card>
       <Card as="section">
         <div className="section-heading">
@@ -179,26 +159,12 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
         {steps.map((step, index) => (
           <fieldset className="repeat-row" key={index}>
             <legend>Step {index + 1}</legend>
-            <label className="field">
-              Instruction
-              <textarea
-                name={`step-${index}-instruction`}
-                defaultValue={step.instruction}
-                aria-invalid={
-                  errorFor(state.errors, `steps.${index}.instruction`) ? true : undefined
-                }
-                aria-describedby={
-                  errorFor(state.errors, `steps.${index}.instruction`)
-                    ? `step-${index}-instruction-error`
-                    : undefined
-                }
-              />
-              {errorFor(state.errors, `steps.${index}.instruction`) && (
-                <span id={`step-${index}-instruction-error`} className="field-error">
-                  {errorFor(state.errors, `steps.${index}.instruction`)}
-                </span>
-              )}
-            </label>
+            {textarea(
+              `step-${index}-instruction`,
+              "Instruction",
+              step.instruction,
+              `steps.${index}.instruction`,
+            )}
             {field(
               `step-${index}-durationMinutes`,
               "Duration (minutes, optional)",
