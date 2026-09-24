@@ -2,10 +2,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
-import { Field, FieldLabel } from "@/components/ui/field";
 import { Heading } from "@/components/ui/heading";
-import { Input } from "@/components/ui/input";
 import { Stack } from "@/components/ui/stack";
+import { TextInput } from "@/components/ui/text-input";
 import { RecipeListCard } from "@/features/recipes/recipe-list-card";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
@@ -40,18 +39,14 @@ export default async function RecipesPage({
       </div>
       <Card as="form" className="filters" method="get" variant="subtle">
         <div className="filters-grid">
-          <Field name="q">
-            <FieldLabel>Search title</FieldLabel>
-            <Input type="search" defaultValue={q} />
-          </Field>
-          <Field name="tag">
-            <FieldLabel>Tag</FieldLabel>
-            <Input defaultValue={tag} placeholder="weeknight" />
-          </Field>
-          <Field name="dietary">
-            <FieldLabel>Dietary flag</FieldLabel>
-            <Input defaultValue={dietary} placeholder="vegetarian" />
-          </Field>
+          <TextInput name="q" label="Search title" type="search" defaultValue={q} />
+          <TextInput name="tag" label="Tag" defaultValue={tag} placeholder="weeknight" />
+          <TextInput
+            name="dietary"
+            label="Dietary flag"
+            defaultValue={dietary}
+            placeholder="vegetarian"
+          />
           <Stack justify="end">
             <Button type="submit">Filter</Button>
           </Stack>
