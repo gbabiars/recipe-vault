@@ -8,11 +8,12 @@ import styles from "./button.module.css";
 
 type BaseButtonProps = React.ComponentPropsWithoutRef<typeof BaseButton>;
 
-export type ButtonVariant = "default" | "danger";
-export type ButtonProps = BaseButtonProps & { variant?: ButtonVariant };
+export type ButtonVariant = "default" | "primary" | "subtle" | "danger";
+export type ButtonSize = "small" | "medium" | "large";
+export type ButtonProps = BaseButtonProps & { variant?: ButtonVariant; size?: ButtonSize };
 
 export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button(
-  { className, type = "button", variant = "default", ...props },
+  { className, type = "button", variant = "default", size = "medium", ...props },
   ref,
 ) {
   return (
@@ -21,6 +22,7 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       data-variant={variant}
+      data-size={size}
       className={cn(styles.button, className)}
     />
   );

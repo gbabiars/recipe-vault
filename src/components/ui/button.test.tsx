@@ -6,7 +6,7 @@ import styles from "./button.module.css";
 
 afterEach(cleanup);
 
-test("renders as a primary button and handles clicks", () => {
+test("renders a medium default button and handles clicks", () => {
   const handleClick = vi.fn();
 
   render(<Button onClick={handleClick}>Create recipe</Button>);
@@ -16,6 +16,7 @@ test("renders as a primary button and handles clicks", () => {
   expect(button).toBeInstanceOf(HTMLButtonElement);
   expect(button.getAttribute("type")).toBe("button");
   expect(button.getAttribute("data-variant")).toBe("default");
+  expect(button.getAttribute("data-size")).toBe("medium");
   expect(button.classList.contains(styles.button)).toBe(true);
 
   fireEvent.click(button);
@@ -37,13 +38,25 @@ test("allows an explicit button type", () => {
   expect(screen.getByRole("button", { name: "Save changes" }).getAttribute("type")).toBe("submit");
 });
 
-test("renders the danger variant through a data attribute", () => {
-  render(<Button variant="danger">Delete recipe</Button>);
+test.each(["default", "primary", "subtle", "danger"] as const)(
+  "renders the %s variant",
+  (variant) => {
+    render(<Button variant={variant}>Action</Button>);
 
-  const button = screen.getByRole("button", { name: "Delete recipe" });
+    const button = screen.getByRole("button", { name: "Action" });
 
-  expect(button.getAttribute("data-variant")).toBe("danger");
-  expect(button.className).toBe(styles.button);
+    expect(button.getAttribute("data-variant")).toBe(variant);
+    expect(button.className).toBe(styles.button);
+  },
+);
+
+test.each(["small", "medium", "large"] as const)("renders the %s size", (size) => {
+  render(<Button size={size}>Action</Button>);
+
+  const button = screen.getByRole("button", { name: "Action" });
+
+  expect(button.getAttribute("data-size")).toBe(size);
+  expect(button.hasAttribute("size")).toBe(false);
 });
 
 test("merges a consumer class name with the button class", () => {

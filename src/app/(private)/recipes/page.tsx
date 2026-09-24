@@ -31,7 +31,9 @@ export default async function RecipesPage({
         <div>
           <Heading>Your recipes</Heading>
         </div>
-        <ButtonLink render={<Link href="/recipes/new" />}>Create recipe</ButtonLink>
+        <ButtonLink variant="primary" render={<Link href="/recipes/new" />}>
+          Create recipe
+        </ButtonLink>
       </div>
       <form className="filters" method="get">
         <label>
