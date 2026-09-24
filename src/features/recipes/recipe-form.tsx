@@ -3,7 +3,6 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Heading } from "@/components/ui/heading";
 import { TextInput } from "@/components/ui/text-input";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,13 +48,13 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
     );
   };
   const textarea = (name: string, label: string, defaultValue?: string, errorKey = name) => {
-    const error = errorFor(state.errors, errorKey);
     return (
-      <Field name={name} invalid={Boolean(error)}>
-        <FieldLabel>{label}</FieldLabel>
-        <Textarea defaultValue={defaultValue} />
-        {error && <FieldError match={true}>{error}</FieldError>}
-      </Field>
+      <Textarea
+        name={name}
+        label={label}
+        defaultValue={defaultValue}
+        error={errorFor(state.errors, errorKey)}
+      />
     );
   };
   return (

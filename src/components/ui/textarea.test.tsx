@@ -3,131 +3,147 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 
 import "../../app/globals.css";
-import { Field, FieldDescription, FieldError, FieldLabel } from "./field";
 import { Textarea } from "./textarea";
 import styles from "./textarea.module.css";
 
 afterEach(cleanup);
 
-test("forwards textarea props, value changes, state styling, and the textarea ref", () => {
+test("associates its label and help text and submits an uncontrolled value", () => {
+  const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    return Object.fromEntries(new FormData(event.currentTarget));
+  });
+  render(
+    <form onSubmit={onSubmit}>
+      <Textarea
+        label="Recipe notes"
+        name="notes"
+        defaultValue="Add fresh basil"
+        helpText="Tips to remember later."
+      />
+      <button type="submit">Save</button>
+    </form>,
+  );
+
+  const textarea = screen.getByRole("textbox", {
+    name: "Recipe notes",
+    description: "Tips to remember later.",
+  }) as HTMLTextAreaElement;
+  expect(textarea.value).toBe("Add fresh basil");
+  expect(textarea.rows).toBe(3);
+  expect(window.getComputedStyle(textarea).resize).toBe("vertical");
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  expect(onSubmit).toHaveReturnedWith({ notes: "Add fresh basil" });
+});
+
+test("forwards native props, events, value callbacks, and the textarea ref", () => {
   const ref = React.createRef<HTMLTextAreaElement>();
   const onValueChange = vi.fn();
   const onChange = vi.fn();
-
+  const onBlur = vi.fn();
   render(
-    <Field>
-      <Textarea
-        ref={ref}
-        aria-label="Recipe notes"
-        name="notes"
-        placeholder="Add notes"
-        rows={5}
-        maxLength={100}
-        className={(state) => (state.disabled ? "locked" : "custom-textarea")}
-        style={(state) => ({ opacity: state.disabled ? 0.5 : 1 })}
-        onChange={onChange}
-        onValueChange={onValueChange}
-      />
-    </Field>,
+    <Textarea
+      ref={ref}
+      label="Recipe notes"
+      name="notes"
+      placeholder="Add notes"
+      rows={5}
+      maxLength={100}
+      autoComplete="off"
+      onChange={onChange}
+      onBlur={onBlur}
+      onValueChange={onValueChange}
+    />,
   );
 
   const textarea = screen.getByRole("textbox", { name: "Recipe notes" }) as HTMLTextAreaElement;
-  expect(textarea).toBeInstanceOf(HTMLTextAreaElement);
   expect(ref.current).toBe(textarea);
   expect(textarea.name).toBe("notes");
   expect(textarea.placeholder).toBe("Add notes");
   expect(textarea.rows).toBe(5);
   expect(textarea.maxLength).toBe(100);
+  expect(textarea.autocomplete).toBe("off");
   expect(textarea.classList.contains(styles.textarea)).toBe(true);
-  expect(textarea.classList.contains("custom-textarea")).toBe(true);
-  expect(textarea.style.opacity).toBe("1");
 
   fireEvent.change(textarea, { target: { value: "Fresh basil" } });
+  fireEvent.blur(textarea);
   expect(onChange).toHaveBeenCalledOnce();
+  expect(onBlur).toHaveBeenCalledOnce();
   expect(onValueChange).toHaveBeenCalledWith("Fresh basil", expect.any(Object));
 });
 
-test("defaults to three rows and allows a string class", () => {
-  render(
-    <Field>
-      <Textarea aria-label="Recipe notes" className="custom-textarea" />
-    </Field>,
+test("supports controlled values", () => {
+  const onValueChange = vi.fn();
+  const { rerender } = render(
+    <Textarea label="Recipe notes" value="First" onValueChange={onValueChange} />,
   );
-
   const textarea = screen.getByRole("textbox", { name: "Recipe notes" }) as HTMLTextAreaElement;
-  expect(textarea.rows).toBe(3);
-  expect(textarea.classList.contains(styles.textarea)).toBe(true);
-  expect(textarea.classList.contains("custom-textarea")).toBe(true);
-  expect(window.getComputedStyle(textarea).resize).toBe("vertical");
+  expect(textarea.value).toBe("First");
+  fireEvent.change(textarea, { target: { value: "Second" } });
+  expect(onValueChange).toHaveBeenCalledWith("Second", expect.any(Object));
+  rerender(<Textarea label="Recipe notes" value="Second" onValueChange={onValueChange} />);
+  expect(textarea.value).toBe("Second");
 });
 
-test("connects the Field label and description", () => {
-  render(
-    <Field name="notes">
-      <FieldLabel>Recipe notes</FieldLabel>
-      <Textarea />
-      <FieldDescription>Tips to remember later.</FieldDescription>
-    </Field>,
+test("shows and clears errors, including when invalid is false", () => {
+  const { rerender } = render(
+    <Textarea label="Notes" helpText="Keep this short" error="Add a note." invalid={false} />,
+  );
+  const textarea = screen.getByRole("textbox", { name: "Notes" });
+  const error = screen.getByText("Add a note.");
+  expect(textarea.getAttribute("aria-invalid")).toBe("true");
+  expect(textarea.getAttribute("aria-describedby")).toContain(error.id);
+  expect(textarea.getAttribute("aria-describedby")).toContain(
+    screen.getByText("Keep this short").id,
   );
 
-  expect(
-    screen.getByRole("textbox", {
-      name: "Recipe notes",
-      description: "Tips to remember later.",
-    }),
-  ).toBeInstanceOf(HTMLTextAreaElement);
+  rerender(<Textarea label="Notes" invalid />);
+  expect(screen.queryByText("Add a note.")).toBeNull();
+  expect(textarea.getAttribute("aria-invalid")).toBe("true");
+
+  rerender(<Textarea label="Notes" error="  " invalid={false} />);
+  expect(textarea.getAttribute("aria-invalid")).not.toBe("true");
 });
 
-test("inherits the disabled and invalid Field states", () => {
-  render(
-    <>
-      <Field disabled>
-        <FieldLabel>Locked notes</FieldLabel>
-        <Textarea className={(state) => (state.disabled ? "locked" : "unlocked")} />
-      </Field>
-      <Field invalid>
-        <FieldLabel>Invalid notes</FieldLabel>
-        <Textarea />
-        <FieldError match={true}>Add a note.</FieldError>
-      </Field>
-    </>,
-  );
-
-  const disabled = screen.getByRole("textbox", { name: "Locked notes" }) as HTMLTextAreaElement;
-  expect(disabled.disabled).toBe(true);
-  expect(disabled.hasAttribute("data-disabled")).toBe(true);
-  expect(disabled.classList.contains("locked")).toBe(true);
-
-  const invalid = screen.getByRole("textbox", { name: "Invalid notes" });
-  expect(invalid.hasAttribute("data-invalid")).toBe(true);
-  expect(invalid.getAttribute("aria-invalid")).toBe("true");
-  expect(screen.getByText("Add a note.")).toBeTruthy();
-});
-
-test("keeps native required validation and submits the textarea value", () => {
-  const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    return Object.fromEntries(new FormData(event.currentTarget));
-  });
-
-  render(
+test("keeps native required validation and read-only and disabled behavior", () => {
+  const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => event.preventDefault());
+  const { rerender } = render(
     <form onSubmit={onSubmit}>
-      <Field name="notes">
-        <FieldLabel>Recipe notes</FieldLabel>
-        <Textarea required />
-        <FieldError />
-      </Field>
+      <Textarea label="Notes" name="notes" required />
       <button type="submit">Save</button>
     </form>,
   );
-
-  const textarea = screen.getByRole("textbox", { name: "Recipe notes" }) as HTMLTextAreaElement;
-  const button = screen.getByRole("button", { name: "Save" });
-  fireEvent.click(button);
+  const textarea = screen.getByRole("textbox", { name: "Notes" }) as HTMLTextAreaElement;
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
   expect(textarea.validity.valueMissing).toBe(true);
   expect(onSubmit).not.toHaveBeenCalled();
 
-  fireEvent.change(textarea, { target: { value: "Add fresh basil" } });
-  fireEvent.click(button);
-  expect(onSubmit).toHaveReturnedWith({ notes: "Add fresh basil" });
+  rerender(<Textarea label="Notes" readOnly defaultValue="Soup" />);
+  expect((screen.getByRole("textbox", { name: "Notes" }) as HTMLTextAreaElement).readOnly).toBe(
+    true,
+  );
+  rerender(<Textarea label="Notes" disabled defaultValue="Soup" />);
+  expect((screen.getByRole("textbox", { name: "Notes" }) as HTMLTextAreaElement).disabled).toBe(
+    true,
+  );
+});
+
+test("keeps a visually hidden label accessible and separates wrapper and control styling", () => {
+  render(
+    <Textarea
+      label="Private notes"
+      visuallyHiddenLabel
+      className="field-custom"
+      style={{ marginTop: 8 }}
+      textareaClassName="textarea-custom"
+      textareaStyle={{ width: 120 }}
+    />,
+  );
+  const textarea = screen.getByRole("textbox", { name: "Private notes" }) as HTMLTextAreaElement;
+  const label = screen.getByText("Private notes");
+  expect(label.classList.contains(styles.visuallyHidden)).toBe(true);
+  expect(textarea.classList.contains("textarea-custom")).toBe(true);
+  expect(textarea.parentElement?.classList.contains("field-custom")).toBe(true);
+  expect(textarea.parentElement?.style.marginTop).toBe("8px");
+  expect(textarea.style.width).toBe("120px");
 });

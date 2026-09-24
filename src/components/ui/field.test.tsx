@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 
 import { Field, FieldDescription, FieldError, FieldLabel } from "./field";
-import { Textarea } from "./textarea";
+import { Field as BaseField } from "@base-ui/react/field";
 
 afterEach(cleanup);
 
@@ -10,7 +10,7 @@ test("connects the label and description to the textarea", () => {
   render(
     <Field name="title">
       <FieldLabel>Recipe title</FieldLabel>
-      <Textarea />
+      <BaseField.Control render={<textarea />} />
       <FieldDescription>A short name for your recipe.</FieldDescription>
       <FieldError />
     </Field>,
@@ -33,7 +33,7 @@ test("submits the textarea value through a native form", () => {
     <form onSubmit={onSubmit}>
       <Field name="title">
         <FieldLabel>Recipe title</FieldLabel>
-        <Textarea defaultValue="Tomato soup" />
+        <BaseField.Control render={<textarea />} defaultValue="Tomato soup" />
       </Field>
       <button type="submit">Save</button>
     </form>,
@@ -47,7 +47,7 @@ test("disables the textarea and styles the field parts", () => {
   render(
     <Field disabled>
       <FieldLabel>Recipe title</FieldLabel>
-      <Textarea />
+      <BaseField.Control render={<textarea />} />
       <FieldDescription>Locked for editing.</FieldDescription>
     </Field>,
   );
@@ -62,7 +62,7 @@ test("exposes an external invalid state and its error message", () => {
   render(
     <Field invalid>
       <FieldLabel>Recipe title</FieldLabel>
-      <Textarea />
+      <BaseField.Control render={<textarea />} />
       <FieldError match={true}>This title is already in use.</FieldError>
     </Field>,
   );
@@ -80,7 +80,7 @@ test("keeps native required validation for form submission", () => {
     <form onSubmit={onSubmit}>
       <Field name="title">
         <FieldLabel>Recipe title</FieldLabel>
-        <Textarea required />
+        <BaseField.Control render={<textarea />} required />
         <FieldError />
       </Field>
       <button type="submit">Save</button>
