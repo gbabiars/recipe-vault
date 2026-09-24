@@ -108,8 +108,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio";
 
 <CheckboxInput label="Email me updates" name="updates" value="yes" />
 
-<CheckboxGroup label="Ingredients" name="ingredients" allValues={["basil", "parsley"]}>
-  <CheckboxGroupItem parent label="All ingredients" />
+<CheckboxGroup label="Ingredients" name="ingredients">
   <CheckboxGroupItem value="basil" label="Basil" helpText="Fresh leaves." />
   <CheckboxGroupItem value="parsley" label="Parsley" />
 </CheckboxGroup>

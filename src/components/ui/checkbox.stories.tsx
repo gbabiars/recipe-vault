@@ -32,14 +32,8 @@ export const Standalone: Story = {
 export const Group: Story = {
   args: { label: "Email me updates" },
   render: () => (
-    <CheckboxGroup
-      label="Ingredients"
-      name="ingredients"
-      defaultValue={["basil"]}
-      allValues={["basil", "parsley"]}
-    >
-      <CheckboxGroupItem parent label="All ingredients" />
-      <CheckboxGroupItem value="basil" label="Basil" helpText="Fresh leaves." />
+    <CheckboxGroup label="Ingredients" name="ingredients">
+      <CheckboxGroupItem value="basil" label="Basil" helpText="Fresh leaves." defaultChecked />
       <CheckboxGroupItem value="parsley" label="Parsley" />
     </CheckboxGroup>
   ),

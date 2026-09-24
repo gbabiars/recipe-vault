@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Checkbox as BaseCheckbox } from "@base-ui/react/checkbox";
-import { CheckboxGroup as BaseCheckboxGroup } from "@base-ui/react/checkbox-group";
 import { cn } from "cn";
 
 import {
@@ -33,17 +32,19 @@ export type CheckboxGroupItemProps = Omit<
   "className" | "style" | "name" | "parent" | "value"
 > & {
   label: React.ReactNode;
+  value: string;
   helpText?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
   checkboxClassName?: string;
   checkboxStyle?: React.CSSProperties;
-} & ({ parent: true; value?: never } | { parent?: false; value: string });
+};
 export type CheckboxGroupProps = Omit<
-  React.ComponentPropsWithoutRef<typeof BaseCheckboxGroup>,
-  "className" | "style"
+  React.ComponentPropsWithoutRef<"div">,
+  "value" | "defaultValue" | "onValueChange"
 > & {
   name?: string;
+  disabled?: boolean;
   label: React.ReactNode;
   helpText?: React.ReactNode;
   error?: React.ReactNode;
@@ -185,9 +186,9 @@ export const CheckboxGroup = React.forwardRef<HTMLDivElement, CheckboxGroupProps
         >
           {label}
         </FieldsetLegend>
-        <BaseCheckboxGroup
+        <div
           {...groupProps}
-          disabled={disabled}
+          role="group"
           aria-labelledby={legendId}
           ref={ref}
           className={cn(styles.group, groupClassName)}
@@ -200,7 +201,7 @@ export const CheckboxGroup = React.forwardRef<HTMLDivElement, CheckboxGroupProps
               {hasError ? error : undefined}
             </FieldError>
           </Field>
-        </BaseCheckboxGroup>
+        </div>
       </Fieldset>
     );
   },

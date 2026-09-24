@@ -73,8 +73,7 @@ test("standalone checkbox supports controlled, read-only, disabled, invalid, and
   expect(screen.getByText("Mixed").className).toContain("visually-hidden");
 });
 
-test("checkbox group has a legend, repeated form values, and select-all mixed state", () => {
-  const onValueChange = vi.fn();
+test("checkbox group labels independently toggled items and submits repeated form values", () => {
   const groupRef = React.createRef<HTMLDivElement>();
   const itemRef = React.createRef<HTMLElement>();
   const { container } = render(
@@ -84,13 +83,15 @@ test("checkbox group has a legend, repeated form values, and select-all mixed st
         name="ingredients"
         helpText="Choose ingredients."
         error="Choose an ingredient."
-        defaultValue={["basil"]}
-        allValues={["basil", "parsley"]}
-        onValueChange={onValueChange}
         ref={groupRef}
       >
-        <CheckboxGroupItem parent label="All ingredients" />
-        <CheckboxGroupItem value="basil" label="Basil" helpText="Fresh leaves." ref={itemRef} />
+        <CheckboxGroupItem
+          value="basil"
+          label="Basil"
+          helpText="Fresh leaves."
+          defaultChecked
+          ref={itemRef}
+        />
         <CheckboxGroupItem value="parsley" label="Parsley" />
       </CheckboxGroup>
     </form>,
@@ -105,17 +106,43 @@ test("checkbox group has a legend, repeated form values, and select-all mixed st
       description: "Choose ingredients. Choose an ingredient. Fresh leaves.",
     }),
   ).toBeTruthy();
-  expect(
-    screen.getByRole("checkbox", { name: "All ingredients" }).getAttribute("aria-checked"),
-  ).toBe("mixed");
-  fireEvent.click(screen.getByRole("checkbox", { name: "All ingredients" }));
-  expect(onValueChange).toHaveBeenCalledWith(["basil", "parsley"], expect.anything());
+  expect(group.querySelector("[data-invalid]")).toBeTruthy();
+  expect(new FormData(container.querySelector("form")!).getAll("ingredients")).toEqual(["basil"]);
+  fireEvent.click(screen.getByRole("checkbox", { name: "Parsley" }));
   expect(new FormData(container.querySelector("form")!).getAll("ingredients")).toEqual([
     "basil",
     "parsley",
   ]);
-  fireEvent.click(screen.getByRole("checkbox", { name: "All ingredients" }));
-  expect(new FormData(container.querySelector("form")!).getAll("ingredients")).toEqual([]);
+  fireEvent.click(screen.getByRole("checkbox", { name: "Basil" }));
+  expect(new FormData(container.querySelector("form")!).getAll("ingredients")).toEqual(["parsley"]);
+});
+
+test("checkbox group items support consumer-controlled selection", () => {
+  const onCheckedChange = vi.fn();
+  function ControlledGroup() {
+    const [checked, setChecked] = React.useState(false);
+    return (
+      <CheckboxGroup label="Ingredients" name="ingredients">
+        <CheckboxGroupItem
+          value="basil"
+          label="Basil"
+          checked={checked}
+          onCheckedChange={(nextChecked, eventDetails) => {
+            onCheckedChange(nextChecked, eventDetails);
+            setChecked(nextChecked);
+          }}
+        />
+        <CheckboxGroupItem value="parsley" label="Parsley" defaultChecked />
+      </CheckboxGroup>
+    );
+  }
+  render(<ControlledGroup />);
+  fireEvent.click(screen.getByRole("checkbox", { name: "Basil" }));
+  expect(onCheckedChange).toHaveBeenCalledWith(true, expect.anything());
+  expect(screen.getByRole("checkbox", { name: "Basil" }).getAttribute("aria-checked")).toBe("true");
+  expect(screen.getByRole("checkbox", { name: "Parsley" }).getAttribute("aria-checked")).toBe(
+    "true",
+  );
 });
 
 test("disabled checkbox group and hidden legend", () => {
