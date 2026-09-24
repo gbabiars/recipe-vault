@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { RadioGroup, RadioGroupItem } from "./radio";
 
 const meta = {
-  title: "UI/Radio",
+  title: "UI/RadioGroup",
   component: RadioGroup,
   decorators: [
     (Story) => (
