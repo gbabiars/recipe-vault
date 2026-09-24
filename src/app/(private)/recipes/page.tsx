@@ -2,13 +2,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
-import { Chip } from "@/components/ui/chip";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Heading } from "@/components/ui/heading";
-import { Inline } from "@/components/ui/inline";
 import { Input } from "@/components/ui/input";
 import { Stack } from "@/components/ui/stack";
-import { Text } from "@/components/ui/text";
+import { RecipeListCard } from "@/features/recipes/recipe-list-card";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
@@ -78,41 +76,7 @@ export default async function RecipesPage({
       ) : (
         <Stack as="ul" gap="150" style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {recipes.map((recipe) => (
-            <Card
-              as="li"
-              key={recipe.id}
-              label={`View ${recipe.title}`}
-              render={<Link href={`/recipes/${recipe.id}`} />}
-            >
-              <Stack gap="150">
-                <Stack gap="050">
-                  <Heading as="h2" level={5}>
-                    {recipe.title}
-                  </Heading>
-                  {recipe.summary && (
-                    <Text as="p" size="large">
-                      {recipe.summary}
-                    </Text>
-                  )}
-                </Stack>
-                <Inline className="recipe-metadata" gap="100">
-                  {recipe.totalTimeMinutes !== undefined && (
-                    <Text size="large">{recipe.totalTimeMinutes} min</Text>
-                  )}
-                  <Text size="large">
-                    Updated{" "}
-                    {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
-                      new Date(recipe.updatedAt),
-                    )}
-                  </Text>
-                </Inline>
-                <Inline gap="100">
-                  {[...recipe.tags, ...recipe.dietaryFlags].map((label) => (
-                    <Chip key={label}>{label}</Chip>
-                  ))}
-                </Inline>
-              </Stack>
-            </Card>
+            <RecipeListCard key={recipe.id} recipe={recipe} />
           ))}
         </Stack>
       )}
