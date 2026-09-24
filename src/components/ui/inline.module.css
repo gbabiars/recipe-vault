@@ -1,0 +1,9 @@
+.inline {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.inline[data-wrap="false"] {
+  flex-wrap: nowrap;
+}
