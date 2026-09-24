@@ -164,7 +164,7 @@ test("keeps a visually hidden label accessible and separates wrapper and input s
   );
   const input = screen.getByRole("textbox", { name: "Search recipes" });
   const label = screen.getByText("Search recipes");
-  expect(label.classList.contains(styles.visuallyHidden)).toBe(true);
+  expect(label.classList.contains("visually-hidden")).toBe(true);
   expect(input.classList.contains("input-custom")).toBe(true);
   expect(input.parentElement?.classList.contains("field-custom")).toBe(true);
   expect(input.parentElement?.style.marginTop).toBe("8px");

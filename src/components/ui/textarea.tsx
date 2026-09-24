@@ -54,7 +54,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(fun
       className={className}
       style={style}
     >
-      <FieldLabel className={visuallyHiddenLabel ? styles.visuallyHidden : undefined}>
+      <FieldLabel className={visuallyHiddenLabel ? "visually-hidden" : undefined}>
         {label}
       </FieldLabel>
       <BaseField.Control

@@ -75,7 +75,7 @@ export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(func
       className={className}
       style={style}
     >
-      <FieldLabel className={visuallyHiddenLabel ? styles.visuallyHidden : undefined}>
+      <FieldLabel className={visuallyHiddenLabel ? "visually-hidden" : undefined}>
         {label}
       </FieldLabel>
       <BaseInput
