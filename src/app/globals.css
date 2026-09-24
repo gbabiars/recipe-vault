@@ -107,6 +107,7 @@
 
   --color-action-ghost-background: transparent;
   --color-action-ghost-background-hover: var(--color-neutral-100);
+  --color-action-ghost-background-active: var(--color-neutral-200);
   --color-action-ghost-text: var(--color-neutral-700);
 
   --color-selection-background: var(--color-blue-050);
@@ -150,6 +151,10 @@
   --space-surface-small: var(--space-100);
   --space-surface-medium: var(--space-200);
   --space-surface-large: var(--space-300);
+
+  --height-button-small: 2rem;
+  --height-button-medium: 2.25rem;
+  --height-button-large: 2.5rem;
 
   --radius-0: 0rem;
   --radius-025: 0.125rem;
@@ -210,6 +215,7 @@
 
   --color-action-ghost-background: transparent;
   --color-action-ghost-background-hover: var(--color-neutral-800);
+  --color-action-ghost-background-active: var(--color-neutral-700);
   --color-action-ghost-text: var(--color-neutral-300);
 
   --color-selection-background: var(--color-neutral-800);
@@ -281,6 +287,7 @@
 
     --color-action-ghost-background: transparent;
     --color-action-ghost-background-hover: var(--color-neutral-800);
+    --color-action-ghost-background-active: var(--color-neutral-700);
     --color-action-ghost-text: var(--color-neutral-300);
 
     --color-selection-background: var(--color-neutral-800);
@@ -393,7 +400,7 @@ button {
   cursor: pointer;
 }
 button:disabled {
-  cursor: wait;
+  cursor: not-allowed;
   opacity: 0.65;
 }
 .private-layout {

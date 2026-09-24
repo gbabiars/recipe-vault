@@ -1,27 +1,69 @@
 .button {
-  display: inline-block;
-  border: 1px solid var(--color-action-primary-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--height-button-medium);
+  border: 1px solid var(--color-action-secondary-border);
   border-radius: var(--radius-100);
-  padding: var(--space-100) var(--space-200);
+  padding: 0 var(--space-150);
   text-decoration: none;
   white-space: nowrap;
   font-weight: 700;
-  background: var(--color-action-primary-background);
-  color: var(--color-action-primary-text);
+  background: transparent;
+  color: var(--color-action-secondary-text);
   transition:
     background-color 150ms ease,
     border-color 150ms ease,
     color 150ms ease;
 }
 
+.button[data-size="small"] {
+  height: var(--height-button-small);
+  padding-inline: var(--space-100);
+}
+
+.button[data-size="large"] {
+  height: var(--height-button-large);
+  padding-inline: var(--space-200);
+}
+
 .button:hover:not(:disabled) {
+  background: var(--color-action-secondary-background-hover);
+  color: var(--color-action-secondary-text);
+}
+
+.button:active:not(:disabled) {
+  background: var(--color-action-secondary-background-active);
+}
+
+.button[data-variant="primary"] {
+  border-color: var(--color-action-primary-border);
+  background: var(--color-action-primary-background);
+  color: var(--color-action-primary-text);
+}
+
+.button[data-variant="primary"]:hover:not(:disabled) {
   background: var(--color-action-primary-background-hover);
   color: var(--color-action-primary-text);
 }
 
-.button:active:not(:disabled) {
+.button[data-variant="primary"]:active:not(:disabled) {
   background: var(--color-action-primary-background-active);
   color: var(--color-action-primary-text);
+}
+
+.button[data-variant="subtle"] {
+  border: 0;
+  color: var(--color-action-ghost-text);
+}
+
+.button[data-variant="subtle"]:hover:not(:disabled) {
+  background: var(--color-action-ghost-background-hover);
+  color: var(--color-action-ghost-text);
+}
+
+.button[data-variant="subtle"]:active:not(:disabled) {
+  background: var(--color-action-ghost-background-active);
 }
 
 .button[data-variant="danger"] {

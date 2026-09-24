@@ -4,13 +4,16 @@ import * as React from "react";
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 
-import type { ButtonVariant } from "./button";
+import type { ButtonSize, ButtonVariant } from "./button";
 import styles from "./button.module.css";
 
-export type ButtonLinkProps = useRender.ComponentProps<"a"> & { variant?: ButtonVariant };
+export type ButtonLinkProps = useRender.ComponentProps<"a"> & {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+};
 
 export const ButtonLink = React.forwardRef<HTMLAnchorElement, Omit<ButtonLinkProps, "ref">>(
-  function ButtonLink({ className, render, variant = "default", ...props }, ref) {
+  function ButtonLink({ className, render, variant = "default", size = "medium", ...props }, ref) {
     return useRender({
       defaultTagName: "a",
       render,
@@ -18,6 +21,7 @@ export const ButtonLink = React.forwardRef<HTMLAnchorElement, Omit<ButtonLinkPro
       props: {
         ...mergeProps<"a">({ className: styles.button }, { ...props, className }),
         "data-variant": variant,
+        "data-size": size,
       },
     });
   },

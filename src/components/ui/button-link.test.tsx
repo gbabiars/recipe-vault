@@ -34,6 +34,7 @@ test("renders a styled native anchor and handles clicks", () => {
   expect(link).toBeInstanceOf(HTMLAnchorElement);
   expect(link.getAttribute("href")).toBe("/recipes/new");
   expect(link.getAttribute("data-variant")).toBe("default");
+  expect(link.getAttribute("data-size")).toBe("medium");
   expect(link.classList.contains(styles.button)).toBe(true);
 
   fireEvent.click(link);
@@ -76,15 +77,31 @@ test("merges consumer class names with the shared button class", () => {
   expect(link.classList.contains("recipe-link")).toBe(true);
 });
 
-test("renders the danger variant through a data attribute", () => {
+test.each(["default", "primary", "subtle", "danger"] as const)(
+  "renders the %s variant with shared button styles",
+  (variant) => {
+    render(
+      <ButtonLink variant={variant} href="/recipes">
+        Action
+      </ButtonLink>,
+    );
+
+    const link = screen.getByRole("link", { name: "Action" });
+
+    expect(link.getAttribute("data-variant")).toBe(variant);
+    expect(link.className).toBe(styles.button);
+  },
+);
+
+test.each(["small", "medium", "large"] as const)("renders the %s size", (size) => {
   render(
-    <ButtonLink variant="danger" href="/recipes/delete">
-      Delete recipe
+    <ButtonLink size={size} href="/recipes">
+      Action
     </ButtonLink>,
   );
 
-  const link = screen.getByRole("link", { name: "Delete recipe" });
+  const link = screen.getByRole("link", { name: "Action" });
 
-  expect(link.getAttribute("data-variant")).toBe("danger");
-  expect(link.className).toBe(styles.button);
+  expect(link.getAttribute("data-size")).toBe(size);
+  expect(link.hasAttribute("size")).toBe(false);
 });

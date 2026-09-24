@@ -56,7 +56,7 @@ export function McpKeyManager() {
             {state.error}
           </p>
         )}
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" variant="primary" disabled={pending}>
           {pending ? "Creating…" : "Create MCP key"}
         </Button>
       </form>

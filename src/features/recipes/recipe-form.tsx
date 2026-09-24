@@ -219,7 +219,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
           </fieldset>
         ))}
       </Card>
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" variant="primary" disabled={pending}>
         {pending ? "Saving…" : recipe ? "Save changes" : "Create recipe"}
       </Button>
     </form>
