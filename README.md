@@ -129,7 +129,8 @@ them.
 ## Design token follow-up
 
 The private layout uses shared sidebar and content width tokens alongside the
-existing semantic color, spacing, and radius tokens. Typography sizes and
-motion durations are still hard-coded, including 150ms transitions. Some page
-rules also use literal spacing and radius values. A later design-system pass can
-consolidate those without changing this layout.
+existing semantic color, spacing, radius, and typography tokens. Text and
+heading variants use semantic font tokens backed by shared font-size,
+line-height, and weight primitives. Motion durations are still hard-coded,
+including 150ms transitions. Some page rules also use literal spacing and
+radius values.

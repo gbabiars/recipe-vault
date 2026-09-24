@@ -1,19 +1,19 @@
 .text[data-size="small"] {
-  font-size: 0.75rem;
-  line-height: 1rem;
-  font-weight: 400;
+  font-size: var(--font-size-text-small);
+  line-height: var(--line-height-text-small);
+  font-weight: var(--font-weight-text-small);
 }
 
 .text[data-size="medium"] {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  font-weight: 400;
+  font-size: var(--font-size-text-medium);
+  line-height: var(--line-height-text-medium);
+  font-weight: var(--font-weight-text-medium);
 }
 
 .text[data-size="large"] {
-  font-size: 1rem;
-  line-height: 1.5rem;
-  font-weight: 400;
+  font-size: var(--font-size-text-large);
+  line-height: var(--line-height-text-large);
+  font-weight: var(--font-weight-text-large);
 }
 
 .text[data-appearance="primary"] {
