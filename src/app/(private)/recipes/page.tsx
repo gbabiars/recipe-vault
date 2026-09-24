@@ -6,6 +6,7 @@ import { Chip } from "@/components/ui/chip";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Heading } from "@/components/ui/heading";
 import { Input } from "@/components/ui/input";
+import { Stack } from "@/components/ui/stack";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
@@ -37,21 +38,25 @@ export default async function RecipesPage({
           Create recipe
         </ButtonLink>
       </div>
-      <form className="filters" method="get">
-        <Field name="q">
-          <FieldLabel>Search title</FieldLabel>
-          <Input type="search" defaultValue={q} />
-        </Field>
-        <Field name="tag">
-          <FieldLabel>Tag</FieldLabel>
-          <Input defaultValue={tag} placeholder="weeknight" />
-        </Field>
-        <Field name="dietary">
-          <FieldLabel>Dietary flag</FieldLabel>
-          <Input defaultValue={dietary} placeholder="vegetarian" />
-        </Field>
-        <Button type="submit">Filter</Button>
-      </form>
+      <Card as="form" className="filters" method="get" variant="subtle">
+        <div className="filters-grid">
+          <Field name="q">
+            <FieldLabel>Search title</FieldLabel>
+            <Input type="search" defaultValue={q} />
+          </Field>
+          <Field name="tag">
+            <FieldLabel>Tag</FieldLabel>
+            <Input defaultValue={tag} placeholder="weeknight" />
+          </Field>
+          <Field name="dietary">
+            <FieldLabel>Dietary flag</FieldLabel>
+            <Input defaultValue={dietary} placeholder="vegetarian" />
+          </Field>
+          <Stack justify="end">
+            <Button type="submit">Filter</Button>
+          </Stack>
+        </div>
+      </Card>
       {error ? (
         <Card as="p" className="error-message" role="alert">
           {error}
