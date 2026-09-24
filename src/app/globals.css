@@ -454,9 +454,6 @@ button:disabled {
   grid-template-columns: 2fr 1fr 1fr auto;
   gap: var(--space-150);
 }
-.recipe-metadata {
-  color: var(--color-text-secondary);
-}
 .chips {
   display: flex;
   flex-wrap: wrap;
