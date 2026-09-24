@@ -20,7 +20,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Uncontrolled: Story = {
+export const Default: Story = {
   args: { defaultValue: "Add fresh basil before serving.", helpText: "Keep useful tips here." },
 };
 
