@@ -15,3 +15,27 @@
   line-height: 1.5rem;
   font-weight: 400;
 }
+
+.text[data-appearance="primary"] {
+  color: var(--color-text-primary);
+}
+
+.text[data-appearance="secondary"] {
+  color: var(--color-text-secondary);
+}
+
+.text[data-appearance="disabled"] {
+  color: var(--color-text-disabled);
+}
+
+.text[data-appearance="success"] {
+  color: var(--color-success-text);
+}
+
+.text[data-appearance="warning"] {
+  color: var(--color-warning-text);
+}
+
+.text[data-appearance="error"] {
+  color: var(--color-error-text);
+}

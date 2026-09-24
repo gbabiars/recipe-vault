@@ -4,20 +4,22 @@ import { cn } from "cn";
 import styles from "./text.module.css";
 
 export type TextSize = "small" | "medium" | "large";
+export type TextAppearance = "primary" | "secondary" | "disabled" | "success" | "warning" | "error";
 
 type TextElement = keyof React.JSX.IntrinsicElements;
 
 export type TextProps<T extends TextElement = "span"> = {
   as?: T;
   size?: TextSize;
-} & Omit<React.ComponentPropsWithoutRef<T>, "as" | "size">;
+  appearance?: TextAppearance;
+} & Omit<React.ComponentPropsWithoutRef<T>, "as" | "size" | "appearance">;
 
 type TextComponent = <T extends TextElement = "span">(
   props: TextProps<T> & { ref?: React.Ref<React.ComponentRef<T>> },
 ) => React.ReactElement | null;
 
 const TextImpl = <T extends TextElement = "span">(
-  { as, className, size = "medium", ...props }: TextProps<T>,
+  { as, appearance, className, size = "medium", ...props }: TextProps<T>,
   ref: React.ForwardedRef<React.ComponentRef<T>>,
 ) => {
   const Component = (as ?? "span") as React.ElementType;
@@ -27,6 +29,7 @@ const TextImpl = <T extends TextElement = "span">(
     ref,
     className: cn(styles.text, className),
     "data-size": size,
+    "data-appearance": appearance,
   });
 };
 
