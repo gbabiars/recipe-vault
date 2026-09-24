@@ -1,27 +1,13 @@
 import * as React from "react";
 import { cn } from "cn";
 
+import type { LayoutAlign, LayoutGap, LayoutJustify } from "./layout";
+import layoutStyles from "./layout.module.css";
 import styles from "./stack.module.css";
 
-export type StackGap =
-  | "0"
-  | "025"
-  | "050"
-  | "075"
-  | "100"
-  | "150"
-  | "200"
-  | "250"
-  | "300"
-  | "400"
-  | "500"
-  | "600"
-  | "800"
-  | "1000"
-  | "1200";
-
-export type StackAlign = "start" | "center" | "end" | "stretch";
-export type StackJustify = "start" | "center" | "end" | "between" | "around" | "evenly";
+export type StackGap = LayoutGap;
+export type StackAlign = LayoutAlign;
+export type StackJustify = LayoutJustify;
 
 type StackElement = keyof React.JSX.IntrinsicElements;
 
@@ -45,7 +31,7 @@ const StackImpl = <T extends StackElement = "div">(
   return React.createElement(Component, {
     ...props,
     ref,
-    className: cn(styles.stack, className),
+    className: cn(layoutStyles.layout, styles.stack, className),
     "data-gap": gap,
     "data-align": align,
     "data-justify": justify,
