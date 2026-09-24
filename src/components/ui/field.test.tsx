@@ -2,15 +2,15 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 
 import { Field, FieldDescription, FieldError, FieldLabel } from "./field";
-import { Input } from "./input";
+import { Textarea } from "./textarea";
 
 afterEach(cleanup);
 
-test("connects the label and description to the input", () => {
+test("connects the label and description to the textarea", () => {
   render(
     <Field name="title">
       <FieldLabel>Recipe title</FieldLabel>
-      <Input />
+      <Textarea />
       <FieldDescription>A short name for your recipe.</FieldDescription>
       <FieldError />
     </Field>,
@@ -20,10 +20,10 @@ test("connects the label and description to the input", () => {
     name: "Recipe title",
     description: "A short name for your recipe.",
   });
-  expect(input).toBeInstanceOf(HTMLInputElement);
+  expect(input).toBeInstanceOf(HTMLTextAreaElement);
 });
 
-test("submits the input value through a native form", () => {
+test("submits the textarea value through a native form", () => {
   const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     return Object.fromEntries(new FormData(event.currentTarget));
@@ -33,7 +33,7 @@ test("submits the input value through a native form", () => {
     <form onSubmit={onSubmit}>
       <Field name="title">
         <FieldLabel>Recipe title</FieldLabel>
-        <Input defaultValue="Tomato soup" />
+        <Textarea defaultValue="Tomato soup" />
       </Field>
       <button type="submit">Save</button>
     </form>,
@@ -43,16 +43,16 @@ test("submits the input value through a native form", () => {
   expect(onSubmit).toHaveReturnedWith({ title: "Tomato soup" });
 });
 
-test("disables the input and styles the field parts", () => {
+test("disables the textarea and styles the field parts", () => {
   render(
     <Field disabled>
       <FieldLabel>Recipe title</FieldLabel>
-      <Input />
+      <Textarea />
       <FieldDescription>Locked for editing.</FieldDescription>
     </Field>,
   );
 
-  const input = screen.getByRole("textbox", { name: "Recipe title" }) as HTMLInputElement;
+  const input = screen.getByRole("textbox", { name: "Recipe title" }) as HTMLTextAreaElement;
   expect(input.disabled).toBe(true);
   expect(input.hasAttribute("data-disabled")).toBe(true);
   expect(screen.getByText("Locked for editing.").hasAttribute("data-disabled")).toBe(true);
@@ -62,7 +62,7 @@ test("exposes an external invalid state and its error message", () => {
   render(
     <Field invalid>
       <FieldLabel>Recipe title</FieldLabel>
-      <Input />
+      <Textarea />
       <FieldError match={true}>This title is already in use.</FieldError>
     </Field>,
   );
@@ -80,14 +80,14 @@ test("keeps native required validation for form submission", () => {
     <form onSubmit={onSubmit}>
       <Field name="title">
         <FieldLabel>Recipe title</FieldLabel>
-        <Input required />
+        <Textarea required />
         <FieldError />
       </Field>
       <button type="submit">Save</button>
     </form>,
   );
 
-  const input = screen.getByRole("textbox", { name: "Recipe title" }) as HTMLInputElement;
+  const input = screen.getByRole("textbox", { name: "Recipe title" }) as HTMLTextAreaElement;
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
   expect(input.validity.valueMissing).toBe(true);
   expect(onSubmit).not.toHaveBeenCalled();
