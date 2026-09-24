@@ -100,6 +100,11 @@ under `src`; the starter stories in `src/stories` demonstrate the pattern.
 Use `pnpm build-storybook` to create a production Storybook build. Its output
 is written to `storybook-static/` and is not committed.
 
+`Grid` in `src/components/ui/grid` supports fixed equal columns or card columns
+that reflow from a minimum width. Use the optional `GridItem` for spans in fixed
+column layouts; responsive spans use the grid's width at 40rem (`sm`) and 60rem
+(`md`). Direct children and semantic elements such as `ul` and `li` are supported.
+
 ## Security configuration
 
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and
