@@ -48,3 +48,11 @@ test("shows a confirmation error on the checkbox", async () => {
   );
   expect(screen.getByRole("checkbox").hasAttribute("data-invalid")).toBe(true);
 });
+
+test("announces a form error", async () => {
+  deleteRecipeAction.mockResolvedValue({ errors: {}, message: "Unable to delete recipe." });
+  render(<DeleteRecipeForm recipeId="recipe-1" deleteAction={deleteRecipeAction} />);
+  fireEvent.click(screen.getByRole("button", { name: "Delete recipe" }));
+
+  expect((await screen.findByRole("alert")).textContent).toBe("Unable to delete recipe.");
+});

@@ -1,13 +1,12 @@
 "use client";
 
-import styles from "./delete-recipe-form.module.css";
-
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckboxInput } from "@/components/ui/checkbox";
 import { emptyRecipeFormState, type RecipeFormState } from "./recipe-form-state";
 import { Inline } from "@/components/ui/inline";
 import { Stack } from "@/components/ui/stack";
+import { Text } from "@/components/ui/text";
 
 export type DeleteRecipeAction = (
   state: RecipeFormState,
@@ -33,9 +32,9 @@ export function DeleteRecipeForm({
           error={state.errors.confirmDelete}
         />
         {state.message && (
-          <p className={styles.fieldError} role="alert">
+          <Text as="p" appearance="error" role="alert">
             {state.message}
-          </p>
+          </Text>
         )}
         <Inline>
           <Button type="submit" variant="danger" disabled={pending}>
