@@ -22,8 +22,8 @@ vi.mock("@/lib/auth/require-user", () => ({ requireUser: async () => ({ id: "use
 vi.mock("@/lib/recipes", () => ({
   getRecipeService: async () => ({ get: async () => recipe }),
 }));
-vi.mock("@/features/recipes/delete-recipe-form", () => ({
-  DeleteRecipeForm: () => <form aria-label="Delete recipe form" />,
+vi.mock("@/features/recipes/actions", () => ({
+  deleteRecipeAction: async () => ({ errors: {} }),
 }));
 
 beforeAll(async () => {

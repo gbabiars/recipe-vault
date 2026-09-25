@@ -1,28 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { Button } from "@/components/ui/button";
-import { CheckboxInput } from "@/components/ui/checkbox";
-import { Inline } from "@/components/ui/inline";
-
+import type { RecipeFormState } from "./recipe-form-state";
 import { RecipeDeleteCard } from "./recipe-detail-cards";
 
 const meta = {
   title: "Recipes/RecipeDeleteCard",
   component: RecipeDeleteCard,
   args: {
-    children: (
-      <form className="delete-form" onSubmit={(event) => event.preventDefault()}>
-        <CheckboxInput
-          name="confirmDelete"
-          value="delete"
-          label="I understand this permanently deletes the recipe."
-        />
-        <Inline>
-          <Button type="submit" variant="danger">
-            Delete recipe
-          </Button>
-        </Inline>
-      </form>
-    ),
+    recipeId: "story-recipe",
+    deleteAction: async (_state, formData): Promise<RecipeFormState> => {
+      if (formData.get("confirmDelete") === "delete") return { errors: {} };
+      return { errors: { confirmDelete: "Confirm deletion before continuing." } };
+    },
   },
   decorators: [
     (Story) => (

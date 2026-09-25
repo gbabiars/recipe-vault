@@ -83,18 +83,17 @@ test("ingredient and method cards keep semantic lists and optional annotations",
   expect(screen.getAllByRole("list").map((list) => list.tagName)).toEqual(["UL", "OL"]);
 });
 
-test("notes preserve line breaks and delete card wraps the supplied form", () => {
+test("notes preserve line breaks and delete card renders the shared form", () => {
   render(
     <>
       <RecipeNotesCard notes={recipe.notes!} />
-      <RecipeDeleteCard>
-        <form data-testid="delete-form">
-          <input name="recipeId" value={recipe.id} readOnly />
-        </form>
-      </RecipeDeleteCard>
+      <RecipeDeleteCard recipeId={recipe.id} deleteAction={async () => ({ errors: {} })} />
     </>,
   );
   expect(screen.getByText("First line Second line").textContent).toBe(recipe.notes);
   expect(screen.getByText("This cannot be undone.")).toBeTruthy();
-  expect(within(screen.getByTestId("delete-form")).getByDisplayValue("recipe-1")).toBeTruthy();
+  expect(
+    screen.getByRole("checkbox", { name: "I understand this permanently deletes the recipe." }),
+  ).toBeTruthy();
+  expect(document.querySelector('input[name="recipeId"]')?.getAttribute("value")).toBe(recipe.id);
 });
