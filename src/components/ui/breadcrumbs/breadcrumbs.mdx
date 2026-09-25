@@ -1,0 +1,39 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./breadcrumbs.stories";
+
+<Meta of={Stories} />
+
+# Breadcrumbs
+
+## Purpose and choice
+
+Show a page's place in a hierarchy and let people visit ancestor pages. Use in
+`PageHeader.overline` when the page has a meaningful trail.
+
+## Composition
+
+Place `BreadcrumbsItem` children in order. By default, end with one plain-text
+`current` item so the trail includes the current page. When a nearby heading
+already names the current page, set `trailingSeparator` and supply only ancestor
+items; the trail then ends with `/`. Put a native anchor or Next.js `Link` in each
+ancestor item. The trail wraps at narrow widths. Ancestor links use the link
+color; the current item and separators use the quieter secondary text color.
+
+## Accessibility
+
+`Breadcrumbs` renders a navigation landmark labeled "Breadcrumbs" with an
+ordered list. In a complete trail, the current item is non-interactive and marked
+`aria-current="page"`. In trailing-separator mode, the heading supplies the page
+name and the list contains only ancestor links. Separators are decorative CSS
+content with empty alternative text, so they are not announced. Supply clear
+link labels and meaningful destinations.
+
+## Stories
+
+<Canvas of={Stories.ShortTrail} />
+
+<Canvas of={Stories.TrailingSeparator} />
+
+<Canvas of={Stories.WrappingLongTitle} />
+
+See the PageLayout `WithSlots` story for composition in `PageHeader.overline`.

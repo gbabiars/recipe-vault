@@ -9,6 +9,7 @@ The exported TypeScript types remain the authority for exact prop signatures.
 | ------------------------------------------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | Trigger an action                          | `Button`                                                                                           | [Button](button/button.mdx), [stories](button/button.stories.tsx)                                                                             | Recipe form, filters, delete confirmation, MCP keys              |
 | Navigate with button styling               | `ButtonLink`                                                                                       | [ButtonLink](button/button-link.mdx), [stories](button/button-link.stories.tsx)                                                               | Create and edit recipe links                                     |
+| Show a page's place in a hierarchy         | `Breadcrumbs`, `BreadcrumbsItem`                                                                   | [Breadcrumbs](breadcrumbs/breadcrumbs.mdx), [stories](breadcrumbs/breadcrumbs.stories.tsx)                                                    | Stories only; ready for `PageHeader.overline`                    |
 | Group content or offer a whole-card action | `Card`                                                                                             | [Card](card/card.mdx), [stories](card/card.stories.tsx)                                                                                       | Recipe lists and details, settings, MCP keys                     |
 | Choose independent values                  | `CheckboxInput`, `CheckboxGroup`, `CheckboxGroupItem`                                              | [Checkbox](checkbox/checkbox.mdx), [input stories](checkbox/checkbox-input.stories.tsx), [group stories](checkbox/checkbox-group.stories.tsx) | Delete confirmation uses `CheckboxInput`; group has stories only |
 | Display a compact label                    | `Chip`                                                                                             | [Chip](chip/chip.mdx), [stories](chip/chip.stories.tsx)                                                                                       | Recipe tags and dietary flags                                    |
@@ -30,7 +31,9 @@ to CSS tokens.
 ## Existing compositions
 
 - **Page header:** `PageLayout` contains `PageHeader` and `PageContent`; the
-  header owns the page title and optional actions. See [page layout](page-layout/page-layout.mdx).
+  header owns the page title and optional actions. Put `Breadcrumbs` in its
+  overline for hierarchical navigation. See [page layout](page-layout/page-layout.mdx)
+  and [breadcrumbs](breadcrumbs/breadcrumbs.mdx).
 - **Form field:** Prefer `TextInput`, `Textarea`, or a labeled choice. Compose
   `Field` parts for an unusual control. See [field](field/field.mdx).
 - **Action:** Use `Button` for an action and `ButtonLink` for navigation. See

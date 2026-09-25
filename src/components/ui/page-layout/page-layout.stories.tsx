@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import Link from "next/link";
 
+import { Breadcrumbs, BreadcrumbsItem } from "../breadcrumbs";
 import { ButtonLink } from "../button";
 import { Card } from "../card";
 import { PageContent, PageHeader, PageLayout } from "./page-layout";
@@ -29,7 +31,13 @@ export const WithSlots: Story = {
     <PageLayout>
       <PageHeader
         title="Tomato soup"
-        overline={<a href="#recipes">← All recipes</a>}
+        overline={
+          <Breadcrumbs trailingSeparator>
+            <BreadcrumbsItem>
+              <Link href="/recipes">Recipes</Link>
+            </BreadcrumbsItem>
+          </Breadcrumbs>
+        }
         description="Fresh basil soup"
         actions={<ButtonLink render={<a href="#edit" />}>Edit recipe</ButtonLink>}
       />
