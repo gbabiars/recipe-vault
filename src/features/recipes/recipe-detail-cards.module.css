@@ -1,0 +1,28 @@
+.details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-100) var(--space-200);
+}
+
+.details dt {
+  font-weight: var(--font-weight-bold);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-100);
+  color: var(--color-text-secondary);
+}
+
+.list {
+  padding-inline-start: var(--space-300);
+}
+
+.duration {
+  display: block;
+}
+
+.notes {
+  white-space: pre-wrap;
+}

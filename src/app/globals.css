@@ -513,13 +513,6 @@ button:disabled {
   grid-template-columns: 2fr 1fr 1fr auto;
   gap: var(--space-150);
 }
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-100);
-  margin-top: var(--space-150);
-  color: var(--color-text-secondary);
-}
 .error-message,
 .field-error {
   color: var(--color-error-text);
@@ -560,32 +553,6 @@ button:disabled {
 .repeat-row legend {
   font-weight: 700;
   padding: 0 0.25rem;
-}
-.recipe-detail {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-.recipe-detail dl {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.4rem 1rem;
-}
-.recipe-detail dt {
-  font-weight: 700;
-}
-.recipe-detail dd {
-  margin: 0;
-}
-.recipe-detail li {
-  margin-bottom: 0.65rem;
-}
-.recipe-detail small {
-  display: block;
-  color: var(--color-text-secondary);
-}
-.preserve-lines {
-  white-space: pre-wrap;
 }
 .delete-form {
   display: grid;
@@ -658,8 +625,7 @@ button:disabled {
     flex-direction: column;
   }
   .filters-grid,
-  .form-grid,
-  .recipe-detail {
+  .form-grid {
     grid-template-columns: 1fr;
   }
   .mcp-key-list li {
