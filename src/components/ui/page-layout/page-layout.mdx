@@ -13,6 +13,10 @@ Composes a private page heading and content. Use Heading for sections within the
 
 There are no visual variants. PageHeader requires title and accepts overline, description, and actions. Put PageHeader then PageContent inside PageLayout. PageHeader renders an h1 styled at level 2. The layout uses a --space-300 header/content gap.
 
+Use `Breadcrumbs trailingSeparator` in the overline when the heading gives the
+current page name, as shown in `WithSlots`. Supply only ancestor links in that
+case.
+
 ## Content and accessibility
 
 Supply a clear page title. Give overline links and actions descriptive labels; keep content headings ordered.
