@@ -81,6 +81,9 @@
   --color-background-surface-disabled: var(--color-neutral-100);
   --color-background-overlay: var(--color-neutral-0);
 
+  --color-interaction-neutral-hover: rgb(0 0 0 / 6%);
+  --color-interaction-neutral-active: rgb(0 0 0 / 12%);
+
   --color-text-primary: var(--color-neutral-900);
   --color-text-secondary: var(--color-neutral-600);
   --color-text-tertiary: var(--color-neutral-500);
@@ -110,14 +113,14 @@
   --color-action-danger-border: var(--color-red-600);
 
   --color-action-secondary-background: var(--color-neutral-0);
-  --color-action-secondary-background-hover: var(--color-neutral-100);
-  --color-action-secondary-background-active: var(--color-neutral-200);
+  --color-action-secondary-background-hover: var(--color-interaction-neutral-hover);
+  --color-action-secondary-background-active: var(--color-interaction-neutral-active);
   --color-action-secondary-text: var(--color-neutral-800);
   --color-action-secondary-border: var(--color-neutral-300);
 
   --color-action-ghost-background: transparent;
-  --color-action-ghost-background-hover: var(--color-neutral-100);
-  --color-action-ghost-background-active: var(--color-neutral-200);
+  --color-action-ghost-background-hover: var(--color-interaction-neutral-hover);
+  --color-action-ghost-background-active: var(--color-interaction-neutral-active);
   --color-action-ghost-text: var(--color-neutral-700);
 
   --color-selection-background: var(--color-blue-050);
@@ -228,6 +231,9 @@
   --color-background-surface-disabled: var(--color-neutral-900);
   --color-background-overlay: var(--color-neutral-900);
 
+  --color-interaction-neutral-hover: rgb(255 255 255 / 6%);
+  --color-interaction-neutral-active: rgb(255 255 255 / 12%);
+
   --color-text-primary: var(--color-neutral-100);
   --color-text-secondary: var(--color-neutral-400);
   --color-text-tertiary: var(--color-neutral-500);
@@ -255,14 +261,14 @@
   --color-action-danger-border: var(--color-red-500);
 
   --color-action-secondary-background: var(--color-neutral-800);
-  --color-action-secondary-background-hover: var(--color-neutral-700);
-  --color-action-secondary-background-active: var(--color-neutral-600);
+  --color-action-secondary-background-hover: var(--color-interaction-neutral-hover);
+  --color-action-secondary-background-active: var(--color-interaction-neutral-active);
   --color-action-secondary-text: var(--color-neutral-100);
   --color-action-secondary-border: var(--color-neutral-700);
 
   --color-action-ghost-background: transparent;
-  --color-action-ghost-background-hover: var(--color-neutral-800);
-  --color-action-ghost-background-active: var(--color-neutral-700);
+  --color-action-ghost-background-hover: var(--color-interaction-neutral-hover);
+  --color-action-ghost-background-active: var(--color-interaction-neutral-active);
   --color-action-ghost-text: var(--color-neutral-300);
 
   --color-selection-background: var(--color-neutral-800);
@@ -300,6 +306,9 @@
     --color-background-surface-disabled: var(--color-neutral-900);
     --color-background-overlay: var(--color-neutral-900);
 
+    --color-interaction-neutral-hover: rgb(255 255 255 / 6%);
+    --color-interaction-neutral-active: rgb(255 255 255 / 12%);
+
     --color-text-primary: var(--color-neutral-100);
     --color-text-secondary: var(--color-neutral-400);
     --color-text-tertiary: var(--color-neutral-500);
@@ -327,14 +336,14 @@
     --color-action-danger-border: var(--color-red-500);
 
     --color-action-secondary-background: var(--color-neutral-800);
-    --color-action-secondary-background-hover: var(--color-neutral-700);
-    --color-action-secondary-background-active: var(--color-neutral-600);
+    --color-action-secondary-background-hover: var(--color-interaction-neutral-hover);
+    --color-action-secondary-background-active: var(--color-interaction-neutral-active);
     --color-action-secondary-text: var(--color-neutral-100);
     --color-action-secondary-border: var(--color-neutral-700);
 
     --color-action-ghost-background: transparent;
-    --color-action-ghost-background-hover: var(--color-neutral-800);
-    --color-action-ghost-background-active: var(--color-neutral-700);
+    --color-action-ghost-background-hover: var(--color-interaction-neutral-hover);
+    --color-action-ghost-background-active: var(--color-interaction-neutral-active);
     --color-action-ghost-text: var(--color-neutral-300);
 
     --color-selection-background: var(--color-neutral-800);

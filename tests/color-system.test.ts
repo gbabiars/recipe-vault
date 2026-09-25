@@ -81,6 +81,8 @@ const semanticTokens = [
   "background-surface-active",
   "background-surface-disabled",
   "background-overlay",
+  "interaction-neutral-hover",
+  "interaction-neutral-active",
   "text-primary",
   "text-secondary",
   "text-tertiary",
@@ -110,6 +112,7 @@ const semanticTokens = [
   "action-secondary-border",
   "action-ghost-background",
   "action-ghost-background-hover",
+  "action-ghost-background-active",
   "action-ghost-text",
   "selection-background",
   "selection-text",
@@ -173,6 +176,38 @@ test("defines the same semantic token API for light and dark themes", () => {
   assert.match(globalsCss, /:root\[data-theme="dark"\]/);
   assert.match(globalsCss, /@media \(prefers-color-scheme: dark\)/);
   assert.match(globalsCss, /:root:not\(\[data-theme="light"\]\)/);
+});
+
+test("neutral button state colors stay transparent in every theme", () => {
+  const lightTheme = globalsCss.slice(0, globalsCss.indexOf(':root[data-theme="dark"]'));
+  const explicitDarkTheme = globalsCss.slice(
+    globalsCss.indexOf(':root[data-theme="dark"]'),
+    globalsCss.indexOf("@media (prefers-color-scheme: dark)"),
+  );
+  const systemDarkTheme = globalsCss.slice(
+    globalsCss.indexOf("@media (prefers-color-scheme: dark)"),
+    globalsCss.indexOf("\n*,"),
+  );
+
+  for (const [theme, css, color] of [
+    ["light", lightTheme, "0 0 0"],
+    ["explicit dark", explicitDarkTheme, "255 255 255"],
+    ["system dark", systemDarkTheme, "255 255 255"],
+  ] as const) {
+    assert.ok(css.includes(`--color-interaction-neutral-hover: rgb(${color} / 6%);`), theme);
+    assert.ok(css.includes(`--color-interaction-neutral-active: rgb(${color} / 12%);`), theme);
+
+    for (const variant of ["secondary", "ghost"]) {
+      for (const state of ["hover", "active"]) {
+        assert.ok(
+          css.includes(
+            `--color-action-${variant}-background-${state}: var(--color-interaction-neutral-${state});`,
+          ),
+          `${theme} ${variant} ${state}`,
+        );
+      }
+    }
+  }
 });
 
 test("does not retain legacy color variable names", () => {
