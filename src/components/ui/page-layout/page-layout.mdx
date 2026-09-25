@@ -1,0 +1,22 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./page-layout.stories";
+
+<Meta of={Stories} />
+
+# PageLayout
+
+## Purpose and choice
+
+Composes a private page heading and content. Use Heading for sections within the page.
+
+## Variants and composition
+
+There are no visual variants. PageHeader requires title and accepts overline, description, and actions. Put PageHeader then PageContent inside PageLayout. PageHeader renders an h1 styled at level 2. The layout uses a --space-300 header/content gap.
+
+## Content and accessibility
+
+Supply a clear page title. Give overline links and actions descriptive labels; keep content headings ordered.
+
+## Story
+
+<Canvas of={Stories.WithSlots} />

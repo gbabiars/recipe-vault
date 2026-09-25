@@ -1,0 +1,22 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./button-link.stories";
+
+<Meta of={Stories} />
+
+# ButtonLink
+
+## Purpose and choice
+
+Navigates with button styling. Use Button for an in-place action.
+
+## Variants and composition
+
+Shares Button variants default, primary, subtle, danger and sizes small, medium, large. Provide an anchor href or a render element such as Next.js Link. Use a short destination label; PageHeader actions can hold the link.
+
+## Content and accessibility
+
+Keep link semantics and a meaningful destination.
+
+## Story
+
+<Canvas of={Stories.NextLink} />

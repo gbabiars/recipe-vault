@@ -1,0 +1,22 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./textarea.stories";
+
+<Meta of={Stories} />
+
+# Textarea
+
+## Purpose and choice
+
+Collects multi-line content such as recipe notes. Use TextInput for a short single-line value.
+
+## Variants and composition
+
+There is no visual variant. It accepts label, name, helpText, error, invalid, and visuallyHiddenLabel. Use a concrete label and optional help text. Controlled value and onValueChange are supported.
+
+## Content and accessibility
+
+Keep a real label even if hidden visually; explain errors and match required or disabled state to behavior.
+
+## Story
+
+<Canvas of={Stories.Default} />

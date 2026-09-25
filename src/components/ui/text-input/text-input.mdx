@@ -1,0 +1,22 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./text-input.stories";
+
+<Meta of={Stories} />
+
+# TextInput
+
+## Purpose and choice
+
+Collects one line of text, including search. Use Textarea for longer notes and RadioGroup for a fixed choice.
+
+## Variants and composition
+
+type follows TextInputType and defaults to text; there is no visual variant. Pass label and name. Optional helpText, error, invalid, and visuallyHiddenLabel provide field context.
+
+## Content and accessibility
+
+Keep a real label even if hidden visually; explain errors in words and match required, disabled, and value state to behavior.
+
+## Story
+
+<Canvas of={Stories.Default} />

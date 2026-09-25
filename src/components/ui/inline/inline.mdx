@@ -1,0 +1,22 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./inline.stories";
+
+<Meta of={Stories} />
+
+# Inline
+
+## Purpose and choice
+
+Arranges peers in a row with optional wrapping. Use Stack for vertical flow and Grid for track or span control.
+
+## Variants and composition
+
+gap, rowGap, and padding use spacing keys; align, justify, and wrap control placement. wrap defaults to true. Use for actions, metadata, or chips. as can provide a semantic container.
+
+## Content and accessibility
+
+Keep DOM order meaningful when rows wrap; choose appropriate semantics with as.
+
+## Story
+
+<Canvas of={Stories.WrappedRows} />

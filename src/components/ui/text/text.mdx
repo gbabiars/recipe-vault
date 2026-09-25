@@ -1,0 +1,22 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./text.stories";
+
+<Meta of={Stories} />
+
+# Text
+
+## Purpose and choice
+
+Renders supporting text with a consistent type scale and semantic color. Use Heading for titles and Chip for compact metadata.
+
+## Variants and composition
+
+Sizes are small, medium, large; appearances are primary, secondary, disabled, success, warning, error. Use as="p" for paragraphs; the default is span. Match appearance to the surrounding meaning.
+
+## Content and accessibility
+
+Appearance alone does not convey state; include words and native or ARIA state where applicable.
+
+## Story
+
+<Canvas of={Stories.Appearances} />
