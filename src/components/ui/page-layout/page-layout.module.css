@@ -4,38 +4,12 @@
   gap: var(--space-300);
 }
 
-.header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-050);
-}
-
-.headingRow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-200);
-}
-
-.intro {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-050);
-  min-width: 0;
-}
-
 .content {
   min-width: 0;
 }
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-100);
-}
-
 @media (max-width: 640px) {
-  .headingRow {
+  .headingRow[data-wrap="false"] {
     flex-direction: column;
   }
 }
