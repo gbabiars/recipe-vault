@@ -6,7 +6,7 @@ export const mcpScopes = {
 } as const;
 
 export type McpScope = (typeof mcpScopes)[keyof typeof mcpScopes];
-export type McpCredentialType = "oauth" | "api_key";
+export type McpCredentialType = "oauth";
 
 export type McpPrincipal = {
   userId: string;
@@ -18,12 +18,7 @@ export type McpPrincipal = {
 export function mcpPrincipal(authInfo: AuthInfo | undefined): McpPrincipal | null {
   const userId = authInfo?.extra?.userId;
   const credentialType = authInfo?.extra?.credentialType;
-  if (
-    typeof userId !== "string" ||
-    !userId.trim() ||
-    (credentialType !== "oauth" && credentialType !== "api_key")
-  )
-    return null;
+  if (typeof userId !== "string" || !userId.trim() || credentialType !== "oauth") return null;
   return {
     userId: userId.trim(),
     credentialType,

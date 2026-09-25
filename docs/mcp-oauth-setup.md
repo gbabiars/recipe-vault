@@ -68,13 +68,11 @@ identify themselves with their HTTPS metadata URL; DCR clients register
 themselves automatically. The user still signs in to an existing Recipe Vault
 account and grants consent.
 
-### 2.4 Configure user admission and optional fallback keys
+### 2.4 Configure user admission
 
 1. Configure Clerk sign-up and invitation policy to match who may have a Recipe
    Vault account. For a closed product, disable public sign-up and invite users.
-2. Enable Clerk **User API keys** only if you need to support MCP clients that
-   cannot complete OAuth.
-3. Do not treat DCR as user provisioning. It registers client software; Clerk's
+2. Do not treat DCR as user provisioning. It registers client software; Clerk's
    user policy controls who can sign in.
 
 ## 3. Configure Supabase in the web dashboard
@@ -116,18 +114,11 @@ single-owner allow-list and changes row-level security to per-user ownership.
    client supports DCR.
 5. Complete the Clerk sign-in and consent flow. Confirm search, get, and save
    operate only on that Clerk user's recipes.
-6. If compatibility keys are required, visit `http://localhost:3000/mcp-keys`,
-   create a scoped key with a 30-, 90-, or 365-day lifetime, and configure the
-   older client to call `http://localhost:3000/api/mcp` with
-   `Authorization: Bearer <key>`.
-7. Confirm a key with only `recipes:read` cannot call `save_recipe`.
-8. Revoke the fallback key and confirm it stops working.
-9. Run `pnpm format`, `pnpm check`, `pnpm peers check`, and `pnpm build`.
+6. Run `pnpm format`, `pnpm check`, `pnpm peers check`, and `pnpm build`.
 
 OAuth access tokens are short lived. Requesting `offline_access` allows a client
 to obtain a refresh token and renew access without requiring another sign-in on
-every access-token expiration. Long-lived API keys are therefore a compatibility
-feature, not a requirement for OAuth-capable MCP clients.
+every access-token expiration.
 
 ## 6. Deploy the Supabase migration
 
@@ -430,17 +421,12 @@ for a custom consent route.
    `https://<production-domain>/mcp`, complete consent, and exercise search,
    get, and save.
 9. Repeat the isolation test with two admitted production test users.
-10. Test `/api/mcp` only for a client that requires the API-key fallback, then
-    revoke its test key.
 
 ## 8. Credential model
 
 - **Preferred:** `/mcp` with Clerk OAuth, CIMD when available, DCR as the broad
   compatibility path, PKCE, consent, custom scopes, and `offline_access`. This
   works for every admitted user without per-user app registration.
-- **Fallback:** `/api/mcp` with a Clerk user API key. Create the narrowest scope
-  and shortest practical lifetime. The UI allows 30, 90, or 365 days and
-  defaults to 90 days.
 - **Never send to clients:** `CLERK_SECRET_KEY` or
   `SUPABASE_SERVICE_ROLE_KEY`. The service-role key remains only in the trusted
   MCP server adapter after Clerk authenticates the caller and binds their user
@@ -450,7 +436,6 @@ Official references:
 
 - [Clerk: Build an MCP server in Next.js](https://clerk.com/docs/nextjs/guides/ai/mcp/build-mcp-server)
 - [Clerk: How Clerk implements OAuth](https://clerk.com/docs/guides/configure/auth-strategies/oauth/how-clerk-implements-oauth)
-- [Clerk: User API keys](https://clerk.com/docs/guides/development/machine-auth/api-keys)
 - [Supabase: Clerk third-party authentication](https://supabase.com/docs/guides/auth/third-party/clerk)
 - [Supabase: Database migrations](https://supabase.com/docs/guides/deployment/database-migrations)
 - [Supabase: Database backups](https://supabase.com/docs/guides/platform/backups)

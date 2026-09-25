@@ -14,4 +14,3 @@ export const Recipes: Story = {};
 export const RecipeDetail: Story = { args: { pathname: "/recipes/example" } };
 export const Settings: Story = { args: { pathname: "/settings" } };
 export const Profile: Story = { args: { pathname: "/user-profile" } };
-export const McpKeys: Story = { args: { pathname: "/mcp-keys" } };

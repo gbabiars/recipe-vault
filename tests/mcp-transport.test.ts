@@ -3,7 +3,7 @@ import test from "node:test";
 import { authorizeMcpTool, mcpPrincipal, mcpScopes } from "../src/mcp/auth-policy";
 import { handleMcpRequest } from "../src/mcp/server";
 
-const resourceServer = "https://recipes.example.test/api/mcp";
+const resourceServer = "https://recipes.example.test/mcp";
 const recipeViewUri = "ui://recipe-vault/recipe-view.html";
 
 test("MCP principal derives its user and enforces exact tool scopes", () => {

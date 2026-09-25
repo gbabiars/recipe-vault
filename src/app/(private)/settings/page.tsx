@@ -19,14 +19,6 @@ export default function SettingsPage() {
               Manage your account details.
             </Text>
           </Card>
-          <Card as="section" label="MCP keys" render={<Link href="/mcp-keys" />}>
-            <Heading as="h2" level={5}>
-              MCP keys
-            </Heading>
-            <Text as="p" appearance="secondary">
-              Manage keys for MCP clients.
-            </Text>
-          </Card>
         </Stack>
       </PageContent>
     </PageLayout>

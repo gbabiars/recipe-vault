@@ -44,8 +44,6 @@ test.each([
   ["/settings", "Settings", "Settings"],
   ["/user-profile", "Settings", null],
   ["/user-profile/security", "Settings", null],
-  ["/mcp-keys", "Settings", null],
-  ["/mcp-keys/example", "Settings", null],
   ["/", null, null],
   ["/recipes-archive", null, null],
 ] as const)("sidebar states on %s", (pathname, activeName, currentName) => {

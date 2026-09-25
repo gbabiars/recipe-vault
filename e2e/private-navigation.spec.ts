@@ -34,11 +34,6 @@ test("private sidebar navigation and sign out", async ({ page }) => {
   await expect(page).toHaveURL(/\/user-profile$/);
   await expect(settings).toHaveClass(/active/);
 
-  await settings.click();
-  await page.getByRole("link", { name: "MCP keys" }).click();
-  await expect(page).toHaveURL(/\/mcp-keys$/);
-  await expect(settings).toHaveClass(/active/);
-
   await page.emulateMedia({ colorScheme: "dark" });
   await expect(navigation).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
