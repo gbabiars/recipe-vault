@@ -17,12 +17,18 @@
 }
 
 .card[data-interactive]:hover {
-  background: var(--color-background-surface-hover);
+  background-image: linear-gradient(
+    var(--color-interaction-neutral-hover),
+    var(--color-interaction-neutral-hover)
+  );
   border-color: var(--color-border-default);
 }
 
 .card[data-interactive]:active {
-  background: var(--color-background-surface-active);
+  background-image: linear-gradient(
+    var(--color-interaction-neutral-active),
+    var(--color-interaction-neutral-active)
+  );
 }
 
 .card[data-interactive]:has(.primaryControl:focus-visible) {

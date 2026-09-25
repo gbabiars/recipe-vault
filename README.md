@@ -105,9 +105,10 @@ utility. Use that global class to keep labels available to assistive technology
 when they should not appear visually.
 
 Use `--color-interaction-neutral-hover` and
-`--color-interaction-neutral-active` for neutral button state overlays. Their
-transparent colors blend with the surface beneath a button, including subtle
-cards. Use the solid `--color-background-*` tokens for surfaces themselves.
+`--color-interaction-neutral-active` for neutral button and interactive Card
+state overlays. Their transparent colors blend with the surface beneath the
+control, including default and subtle cards. Use the solid `--color-background-*`
+tokens for surfaces themselves.
 
 Use `pnpm build-storybook` to create a production Storybook build. Its output
 is written to `storybook-static/` and is not committed.

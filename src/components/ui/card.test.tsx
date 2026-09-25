@@ -1,10 +1,16 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { userEvent } from "vitest/browser";
 import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
+
+import "../../app/globals.css";
 
 import { Card } from "./card";
 import styles from "./card.module.css";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  document.documentElement.removeAttribute("data-theme");
+});
 
 let Link: typeof import("next/link").default;
 
@@ -124,6 +130,51 @@ test("supports the subtle variant on an interactive card", () => {
 
   expect(screen.getByTestId("card").getAttribute("data-variant")).toBe("subtle");
 });
+
+test.each([
+  ["light", "default", "rgb(255, 255, 255)", "0, 0, 0"],
+  ["light", "subtle", "rgb(245, 245, 245)", "0, 0, 0"],
+  ["dark", "default", "rgb(23, 23, 23)", "255, 255, 255"],
+  ["dark", "subtle", "rgb(38, 38, 38)", "255, 255, 255"],
+] as const)(
+  "layers neutral hover and active colors over the %s %s card surface",
+  async (theme, variant, surface, neutral) => {
+    document.documentElement.dataset.theme = theme;
+    let activeBackground: { color: string; image: string } | undefined;
+
+    render(
+      <Card
+        data-testid="card"
+        label="Open recipe"
+        onPointerDown={(event) => {
+          const style = getComputedStyle(event.currentTarget);
+          activeBackground = { color: style.backgroundColor, image: style.backgroundImage };
+        }}
+        render={<button type="button" />}
+        variant={variant}
+      >
+        Recipe
+      </Card>,
+    );
+
+    const card = screen.getByTestId("card");
+    const defaultStyle = getComputedStyle(card);
+
+    expect(defaultStyle.backgroundColor).toBe(surface);
+    expect(defaultStyle.backgroundImage).toBe("none");
+
+    await userEvent.hover(card);
+
+    const hoverStyle = getComputedStyle(card);
+    expect(hoverStyle.backgroundColor).toBe(surface);
+    expect(hoverStyle.backgroundImage).toContain(`rgba(${neutral}, 0.06)`);
+
+    await userEvent.click(card);
+
+    expect(activeBackground?.color).toBe(surface);
+    expect(activeBackground?.image).toContain(`rgba(${neutral}, 0.12)`);
+  },
+);
 
 test("composes the primary control with Next.js Link", () => {
   render(
