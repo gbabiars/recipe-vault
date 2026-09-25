@@ -1,0 +1,6 @@
+.authPage {
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: var(--space-300);
+  padding-top: 8vh;
+}

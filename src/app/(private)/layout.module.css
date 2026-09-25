@@ -1,0 +1,27 @@
+.privateLayout {
+  display: flex;
+  min-height: 100dvh;
+}
+
+.appShell {
+  flex: 1;
+  min-width: 0;
+  max-width: var(--width-content);
+  margin: 0 auto;
+  padding: var(--space-300);
+}
+
+@media (max-width: 700px) {
+  .privateLayout {
+    flex-direction: column;
+  }
+  .appShell {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .appShell {
+    padding: 1rem;
+  }
+}

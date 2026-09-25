@@ -1,3 +1,4 @@
+import headingStyles from "../../page-heading.module.css";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -22,7 +23,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
   if (!recipe) notFound();
   return (
     <>
-      <div className="page-heading">
+      <div className={headingStyles.pageHeading}>
         <div>
           <Link href="/recipes">← All recipes</Link>
           <Heading as="h1" level={2}>

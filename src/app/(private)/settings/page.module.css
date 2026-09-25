@@ -1,0 +1,9 @@
+.settingsLinks {
+  display: grid;
+  gap: var(--space-200);
+  max-width: 52rem;
+}
+
+.settingsLinks p {
+  color: var(--color-text-secondary);
+}

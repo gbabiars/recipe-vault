@@ -1,3 +1,6 @@
+import styles from "./page.module.css";
+import feedbackStyles from "../page-feedback.module.css";
+import headingStyles from "../page-heading.module.css";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -29,7 +32,7 @@ export default async function RecipesPage({
   }
   return (
     <>
-      <div className="page-heading">
+      <div className={headingStyles.pageHeading}>
         <div>
           <Heading>Your recipes</Heading>
         </div>
@@ -37,8 +40,8 @@ export default async function RecipesPage({
           Create recipe
         </ButtonLink>
       </div>
-      <Card as="form" className="filters" method="get" variant="subtle">
-        <div className="filters-grid">
+      <Card as="form" className={styles.filters} method="get" variant="subtle">
+        <div className={styles.filtersGrid}>
           <TextInput name="q" label="Search title" type="search" defaultValue={q} />
           <TextInput name="tag" label="Tag" defaultValue={tag} placeholder="weeknight" />
           <TextInput
@@ -53,7 +56,7 @@ export default async function RecipesPage({
         </div>
       </Card>
       {error ? (
-        <Card as="p" className="error-message" role="alert">
+        <Card as="p" className={feedbackStyles.errorMessage} role="alert">
           {error}
         </Card>
       ) : recipes.length === 0 ? (
