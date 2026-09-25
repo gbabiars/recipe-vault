@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs";
 import { ButtonLink } from "@/components/ui/button";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
 import { Stack } from "@/components/ui/stack";
@@ -23,7 +24,13 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
     <PageLayout>
       <PageHeader
         title={recipe.title}
-        overline={<Link href="/recipes">← All recipes</Link>}
+        overline={
+          <Breadcrumbs trailingSeparator>
+            <BreadcrumbsItem>
+              <Link href="/recipes">Recipes</Link>
+            </BreadcrumbsItem>
+          </Breadcrumbs>
+        }
         description={recipe.summary}
         actions={
           <ButtonLink render={<Link href={`/recipes/${recipe.id}/edit`} />}>Edit recipe</ButtonLink>
