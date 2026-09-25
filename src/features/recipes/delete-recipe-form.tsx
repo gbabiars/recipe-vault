@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
+import { CheckboxInput } from "@/components/ui/checkbox";
 import { deleteRecipeAction } from "./actions";
 import { emptyRecipeFormState } from "./recipe-form-state";
 
@@ -10,21 +11,18 @@ export function DeleteRecipeForm({ recipeId }: { recipeId: string }) {
   return (
     <form action={action} className="delete-form">
       <input type="hidden" name="recipeId" value={recipeId} />
-      <label>
-        <input type="checkbox" name="confirmDelete" value="delete" /> I understand this permanently
-        deletes the recipe.
-      </label>
-      {state.errors.confirmDelete && (
-        <p className="field-error" role="alert">
-          {state.errors.confirmDelete}
-        </p>
-      )}
+      <CheckboxInput
+        name="confirmDelete"
+        value="delete"
+        label="I understand this permanently deletes the recipe."
+        error={state.errors.confirmDelete}
+      />
       {state.message && (
         <p className="field-error" role="alert">
           {state.message}
         </p>
       )}
-      <Button variant="danger" disabled={pending}>
+      <Button type="submit" variant="danger" disabled={pending}>
         {pending ? "Deleting…" : "Delete recipe"}
       </Button>
     </form>

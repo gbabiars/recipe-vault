@@ -4,7 +4,9 @@ import { useActionState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio";
 import { TextInput } from "@/components/ui/text-input";
+import { Inline } from "@/components/ui/inline";
 import { createMcpKeyAction, type McpKeyFormState } from "./actions";
 
 const initialState: McpKeyFormState = {};
@@ -35,35 +37,25 @@ export function McpKeyManager() {
           required
           placeholder="My MCP client"
         />
-        <fieldset>
-          <legend>Permissions</legend>
-          <label>
-            <input type="radio" name="access" value="read" defaultChecked /> Read recipes
-          </label>
-          <label>
-            <input type="radio" name="access" value="write" /> Read and save recipes
-          </label>
-        </fieldset>
-        <fieldset>
-          <legend>Expiration</legend>
-          <label>
-            <input type="radio" name="expiration" value="30" /> 30 days
-          </label>
-          <label>
-            <input type="radio" name="expiration" value="90" defaultChecked /> 90 days
-          </label>
-          <label>
-            <input type="radio" name="expiration" value="365" /> 1 year
-          </label>
-        </fieldset>
+        <RadioGroup label="Permissions" name="access" defaultValue="read">
+          <RadioGroupItem value="read" label="Read recipes" />
+          <RadioGroupItem value="write" label="Read and save recipes" />
+        </RadioGroup>
+        <RadioGroup label="Expiration" name="expiration" defaultValue="90">
+          <RadioGroupItem value="30" label="30 days" />
+          <RadioGroupItem value="90" label="90 days" />
+          <RadioGroupItem value="365" label="1 year" />
+        </RadioGroup>
         {state.error && (
           <p className="field-error" role="alert">
             {state.error}
           </p>
         )}
-        <Button type="submit" variant="primary" disabled={pending}>
-          {pending ? "Creating…" : "Create MCP key"}
-        </Button>
+        <Inline>
+          <Button type="submit" variant="primary" disabled={pending}>
+            {pending ? "Creating…" : "Create MCP key"}
+          </Button>
+        </Inline>
       </form>
       {state.secret && (
         <div className="mcp-key-secret" role="status">
