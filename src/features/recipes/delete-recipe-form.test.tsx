@@ -3,9 +3,6 @@ import { afterEach, expect, test, vi } from "vitest";
 import { DeleteRecipeForm } from "./delete-recipe-form";
 
 const deleteRecipeAction = vi.fn();
-vi.mock("./actions", () => ({
-  deleteRecipeAction: (...args: unknown[]) => deleteRecipeAction(...args),
-}));
 
 afterEach(() => {
   cleanup();
@@ -14,7 +11,9 @@ afterEach(() => {
 
 test("submits the confirmation value only when checked", async () => {
   deleteRecipeAction.mockResolvedValue({ errors: {} });
-  const { container } = render(<DeleteRecipeForm recipeId="recipe-1" />);
+  const { container } = render(
+    <DeleteRecipeForm recipeId="recipe-1" deleteAction={deleteRecipeAction} />,
+  );
   const form = container.querySelector("form")!;
   const confirmation = screen.getByRole("checkbox", {
     name: "I understand this permanently deletes the recipe.",
@@ -36,7 +35,7 @@ test("shows a confirmation error on the checkbox", async () => {
   deleteRecipeAction.mockResolvedValue({
     errors: { confirmDelete: "Confirm deletion before continuing." },
   });
-  render(<DeleteRecipeForm recipeId="recipe-1" />);
+  render(<DeleteRecipeForm recipeId="recipe-1" deleteAction={deleteRecipeAction} />);
   fireEvent.click(screen.getByRole("button", { name: "Delete recipe" }));
 
   await waitFor(() =>

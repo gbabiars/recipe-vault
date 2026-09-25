@@ -1,10 +1,10 @@
-import type { ReactNode } from "react";
 import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { Heading } from "@/components/ui/heading";
 import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
 import type { Recipe } from "@/lib/db/recipe-repository";
+import { DeleteRecipeForm, type DeleteRecipeAction } from "./delete-recipe-form";
 import styles from "./recipe-detail-cards.module.css";
 
 export function RecipeDetailsCard({ recipe }: { recipe: Recipe }) {
@@ -116,7 +116,13 @@ export function RecipeNotesCard({ notes }: { notes: string }) {
   );
 }
 
-export function RecipeDeleteCard({ children }: { children: ReactNode }) {
+export function RecipeDeleteCard({
+  recipeId,
+  deleteAction,
+}: {
+  recipeId: string;
+  deleteAction: DeleteRecipeAction;
+}) {
   return (
     <Card as="section">
       <Stack gap="150">
@@ -124,7 +130,7 @@ export function RecipeDeleteCard({ children }: { children: ReactNode }) {
           Delete recipe
         </Heading>
         <Text as="p">This cannot be undone.</Text>
-        {children}
+        <DeleteRecipeForm recipeId={recipeId} deleteAction={deleteAction} />
       </Stack>
     </Card>
   );

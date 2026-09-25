@@ -11,7 +11,7 @@ import {
   RecipeMethodCard,
   RecipeNotesCard,
 } from "@/features/recipes/recipe-detail-cards";
-import { DeleteRecipeForm } from "@/features/recipes/delete-recipe-form";
+import { deleteRecipeAction } from "@/features/recipes/actions";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 
@@ -41,9 +41,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
         <RecipeIngredientsCard ingredients={recipe.ingredients} />
         <RecipeMethodCard steps={recipe.steps} />
         {recipe.notes && <RecipeNotesCard notes={recipe.notes} />}
-        <RecipeDeleteCard>
-          <DeleteRecipeForm recipeId={recipe.id} />
-        </RecipeDeleteCard>
+        <RecipeDeleteCard recipeId={recipe.id} deleteAction={deleteRecipeAction} />
       </Stack>
     </>
   );
