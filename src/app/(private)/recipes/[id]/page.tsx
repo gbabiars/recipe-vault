@@ -1,7 +1,7 @@
 import headingStyles from "../../page-heading.module.css";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ButtonLink } from "@/components/ui/button-link";
+import { ButtonLink } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";

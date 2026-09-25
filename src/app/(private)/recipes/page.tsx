@@ -3,7 +3,7 @@ import feedbackStyles from "../page-feedback.module.css";
 import headingStyles from "../page-heading.module.css";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ButtonLink } from "@/components/ui/button-link";
+import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
 import { Stack } from "@/components/ui/stack";
