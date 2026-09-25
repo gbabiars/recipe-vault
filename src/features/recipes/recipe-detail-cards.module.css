@@ -8,13 +8,6 @@
   font-weight: var(--font-weight-bold);
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-100);
-  color: var(--color-text-secondary);
-}
-
 .list {
   padding-inline-start: var(--space-300);
 }

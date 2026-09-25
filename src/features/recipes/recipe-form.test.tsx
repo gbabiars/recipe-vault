@@ -24,6 +24,18 @@ test("orders ingredient fields as name, quantity, unit, then notes", () => {
   ]);
 });
 
+test("removes added ingredient and step rows", () => {
+  render(<RecipeForm />);
+  fireEvent.click(screen.getByRole("button", { name: "Add ingredient" }));
+  fireEvent.click(screen.getByRole("button", { name: "Add step" }));
+
+  fireEvent.click(screen.getByRole("button", { name: "Remove ingredient 2" }));
+  fireEvent.click(screen.getByRole("button", { name: "Remove step 2" }));
+
+  expect(screen.getAllByRole("group", { name: /^Ingredient \d+$/ })).toHaveLength(1);
+  expect(screen.getAllByRole("group", { name: /^Step \d+$/ })).toHaveLength(1);
+});
+
 test("labels fields, connects hints, and submits the expected recipe values", async () => {
   saveRecipeAction.mockResolvedValue({ errors: {} });
   const { container } = render(<RecipeForm />);

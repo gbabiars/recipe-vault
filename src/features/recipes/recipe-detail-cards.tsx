@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { Heading } from "@/components/ui/heading";
+import { Inline } from "@/components/ui/inline";
 import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
 import type { Recipe } from "@/lib/db/recipe-repository";
@@ -47,11 +48,11 @@ export function RecipeDetailsCard({ recipe }: { recipe: Recipe }) {
             </a>
           </Text>
         )}
-        <div className={styles.chips}>
+        <Inline gap="100">
           {[...recipe.tags, ...recipe.dietaryFlags].map((label) => (
             <Chip key={label}>{label}</Chip>
           ))}
-        </div>
+        </Inline>
       </Stack>
     </Card>
   );

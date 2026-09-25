@@ -34,3 +34,14 @@ test("submits the key name and choices, then resets the name after creation", as
   await waitFor(() => expect(name.value).toBe(""));
   expect(screen.getByRole("textbox", { name: "New MCP API key" })).toBeTruthy();
 });
+
+test("announces a key creation error", async () => {
+  createMcpKeyAction.mockResolvedValue({ error: "Unable to create key." });
+  render(<McpKeyManager />);
+  fireEvent.change(screen.getByRole("textbox", { name: "Key name" }), {
+    target: { value: "Kitchen client" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Create MCP key" }));
+
+  expect((await screen.findByRole("alert")).textContent).toBe("Unable to create key.");
+});

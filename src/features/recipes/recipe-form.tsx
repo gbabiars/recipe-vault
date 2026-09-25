@@ -143,13 +143,13 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
               </div>
             </div>
             {ingredients.length > 1 && (
-              <button
+              <Button
                 type="button"
-                className={styles.textButton}
+                variant="subtle"
                 onClick={() => setIngredients(ingredients.filter((_, row) => row !== index))}
               >
                 Remove ingredient {index + 1}
-              </button>
+              </Button>
             )}
           </fieldset>
         ))}
@@ -182,13 +182,13 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
               `steps.${index}.durationMinutes`,
             )}
             {steps.length > 1 && (
-              <button
+              <Button
                 type="button"
-                className={styles.textButton}
+                variant="subtle"
                 onClick={() => setSteps(steps.filter((_, row) => row !== index))}
               >
                 Remove step {index + 1}
-              </button>
+              </Button>
             )}
           </fieldset>
         ))}

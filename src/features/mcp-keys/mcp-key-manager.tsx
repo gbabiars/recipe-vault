@@ -9,6 +9,7 @@ import { Heading } from "@/components/ui/heading";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio";
 import { TextInput } from "@/components/ui/text-input";
 import { Inline } from "@/components/ui/inline";
+import { Text } from "@/components/ui/text";
 import { createMcpKeyAction, type McpKeyFormState } from "./actions";
 
 const initialState: McpKeyFormState = {};
@@ -49,9 +50,9 @@ export function McpKeyManager() {
           <RadioGroupItem value="365" label="1 year" />
         </RadioGroup>
         {state.error && (
-          <p className={styles.fieldError} role="alert">
+          <Text as="p" appearance="error" role="alert">
             {state.error}
-          </p>
+          </Text>
         )}
         <Inline>
           <Button type="submit" variant="primary" disabled={pending}>
