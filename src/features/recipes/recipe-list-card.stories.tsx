@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
+import { Stack } from "@/components/ui/stack";
 
 import { RecipeListCard } from "./recipe-list-card";
 
@@ -21,9 +22,9 @@ const meta = {
   args: { recipe },
   decorators: [
     (Story) => (
-      <ul style={{ listStyle: "none", margin: 0, maxWidth: "40rem", padding: 0 }}>
+      <Stack as="ul" gap="200" style={{ listStyle: "none", margin: 0, padding: 0 }}>
         <Story />
-      </ul>
+      </Stack>
     ),
   ],
 } satisfies Meta<typeof RecipeListCard>;

@@ -1,7 +1,9 @@
+import { Text } from "@/components/ui/text";
+
 export default function RecipesLoading() {
   return (
-    <>
-      <p aria-live="polite">Loading your recipes…</p>
-    </>
+    <Text as="p" aria-live="polite">
+      Loading your recipes…
+    </Text>
   );
 }
