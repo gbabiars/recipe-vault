@@ -44,6 +44,17 @@ export const NextLink: Story = {
   },
 };
 
+export const Width: Story = {
+  render: () => (
+    <div style={{ display: "grid", gap: "1rem", width: "20rem" }}>
+      <ButtonLink href="/recipes/new">Fit content</ButtonLink>
+      <ButtonLink href="/recipes/new" fullWidth>
+        Fill parent
+      </ButtonLink>
+    </div>
+  ),
+};
+
 export const VariantsAndSizes: Story = {
   render: () => (
     <div style={{ display: "grid", gap: "1rem" }}>

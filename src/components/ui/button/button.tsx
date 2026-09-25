@@ -10,10 +10,14 @@ type BaseButtonProps = React.ComponentPropsWithoutRef<typeof BaseButton>;
 
 export type ButtonVariant = "default" | "primary" | "subtle" | "danger";
 export type ButtonSize = "small" | "medium" | "large";
-export type ButtonProps = BaseButtonProps & { variant?: ButtonVariant; size?: ButtonSize };
+export type ButtonProps = BaseButtonProps & {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  fullWidth?: boolean;
+};
 
 export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button(
-  { className, type = "button", variant = "default", size = "medium", ...props },
+  { className, type = "button", variant = "default", size = "medium", fullWidth = false, ...props },
   ref,
 ) {
   return (
@@ -23,6 +27,7 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
       type={type}
       data-variant={variant}
       data-size={size}
+      data-full-width={fullWidth ? "" : undefined}
       className={cn(styles.button, className)}
     />
   );

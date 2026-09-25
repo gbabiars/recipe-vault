@@ -40,6 +40,15 @@ export const Disabled: Story = {
   },
 };
 
+export const Width: Story = {
+  render: () => (
+    <div style={{ display: "grid", gap: "1rem", width: "20rem" }}>
+      <Button>Fit content</Button>
+      <Button fullWidth>Fill parent</Button>
+    </div>
+  ),
+};
+
 export const VariantsAndSizes: Story = {
   render: () => (
     <div style={{ display: "grid", gap: "1rem" }}>

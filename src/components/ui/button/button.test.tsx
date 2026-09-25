@@ -32,6 +32,24 @@ test("keeps button labels on one line", () => {
   expect(window.getComputedStyle(button).whiteSpace).toBe("nowrap");
 });
 
+test("fits its content by default and can fill its parent", () => {
+  render(
+    <div style={{ display: "grid", width: "320px" }}>
+      <Button>Fit content</Button>
+      <Button fullWidth>Fill parent</Button>
+    </div>,
+  );
+
+  const fitted = screen.getByRole("button", { name: "Fit content" });
+  const full = screen.getByRole("button", { name: "Fill parent" });
+
+  expect(fitted.getBoundingClientRect().width).toBeLessThan(320);
+  expect(fitted.hasAttribute("data-full-width")).toBe(false);
+  expect(full.getBoundingClientRect().width).toBe(320);
+  expect(full.hasAttribute("data-full-width")).toBe(true);
+  expect(full.hasAttribute("fullWidth")).toBe(false);
+});
+
 test("allows an explicit button type", () => {
   render(<Button type="submit">Save changes</Button>);
 

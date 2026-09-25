@@ -64,6 +64,26 @@ test("composes with Next.js Link through render", () => {
   expect(link.classList.contains(styles.button)).toBe(true);
 });
 
+test("fits its content by default and can fill its parent", () => {
+  render(
+    <div style={{ display: "grid", width: "320px" }}>
+      <ButtonLink href="/recipes/new">Fit content</ButtonLink>
+      <ButtonLink href="/recipes/new" fullWidth>
+        Fill parent
+      </ButtonLink>
+    </div>,
+  );
+
+  const fitted = screen.getByRole("link", { name: "Fit content" });
+  const full = screen.getByRole("link", { name: "Fill parent" });
+
+  expect(fitted.getBoundingClientRect().width).toBeLessThan(320);
+  expect(fitted.hasAttribute("data-full-width")).toBe(false);
+  expect(full.getBoundingClientRect().width).toBe(320);
+  expect(full.hasAttribute("data-full-width")).toBe(true);
+  expect(full.hasAttribute("fullWidth")).toBe(false);
+});
+
 test("merges consumer class names with the shared button class", () => {
   render(
     <ButtonLink className="recipe-link" href="/recipes">
