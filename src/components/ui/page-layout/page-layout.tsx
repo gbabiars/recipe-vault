@@ -2,6 +2,8 @@ import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "cn";
 
 import { Heading } from "../heading";
+import { Inline } from "../inline";
+import { Stack } from "../stack";
 import { Text } from "../text";
 import styles from "./page-layout.module.css";
 
@@ -29,10 +31,10 @@ export function PageHeader({
   ...props
 }: PageHeaderProps) {
   return (
-    <header className={cn(styles.header, className)} {...props}>
+    <Stack as="header" gap="050" className={className} {...props}>
       {overline && <div>{overline}</div>}
-      <div className={styles.headingRow}>
-        <div className={styles.intro}>
+      <Inline gap="200" align="start" justify="between" wrap={false} className={styles.headingRow}>
+        <Stack gap="050" style={{ minWidth: 0 }}>
           <Heading as="h1" level={2}>
             {title}
           </Heading>
@@ -41,10 +43,10 @@ export function PageHeader({
               {description}
             </Text>
           )}
-        </div>
-        {actions && <div className={styles.actions}>{actions}</div>}
-      </div>
-    </header>
+        </Stack>
+        {actions && <Inline gap="100">{actions}</Inline>}
+      </Inline>
+    </Stack>
   );
 }
 
