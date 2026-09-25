@@ -99,6 +99,11 @@ under `src`; the starter stories in `src/stories` demonstrate the pattern.
 Select a story in the sidebar, then open the Code panel below its canvas to
 view the rendered source snippet with that story's args.
 
+Keep component styling in CSS modules. `src/app/globals.css` contains shared
+tokens, sitewide element defaults, and the `.visually-hidden` accessibility
+utility. Use that global class to keep labels available to assistive technology
+when they should not appear visually.
+
 Use `pnpm build-storybook` to create a production Storybook build. Its output
 is written to `storybook-static/` and is not committed.
 

@@ -1,3 +1,4 @@
+import styles from "./page.module.css";
 import { SignIn } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/server";
@@ -14,7 +15,7 @@ export default async function SignInPage({ searchParams }: Props) {
   if (user) redirect(destination);
 
   return (
-    <main className="auth-page">
+    <main className={styles.authPage}>
       <SignIn fallbackRedirectUrl={destination} />
     </main>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import styles from "./delete-recipe-form.module.css";
+
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckboxInput } from "@/components/ui/checkbox";
@@ -31,7 +33,7 @@ export function DeleteRecipeForm({
           error={state.errors.confirmDelete}
         />
         {state.message && (
-          <p className="field-error" role="alert">
+          <p className={styles.fieldError} role="alert">
             {state.message}
           </p>
         )}

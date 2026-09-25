@@ -1,5 +1,7 @@
 "use client";
 
+import styles from "./mcp-keys.module.css";
+
 import { useActionState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,7 +22,7 @@ export function McpKeyManager() {
   }, [state.secret]);
 
   return (
-    <Card as="section" className="mcp-key-section" padding="large">
+    <Card as="section" className={styles.section} padding="large">
       <Heading as="h2" level={3}>
         Create an MCP key
       </Heading>
@@ -28,7 +30,7 @@ export function McpKeyManager() {
         Use this only when a client cannot connect through OAuth. Create a separate key for each
         client; the secret is shown only once.
       </p>
-      <form action={action} className="mcp-key-form">
+      <form action={action} className={styles.form}>
         <TextInput
           ref={nameRef}
           name="name"
@@ -47,7 +49,7 @@ export function McpKeyManager() {
           <RadioGroupItem value="365" label="1 year" />
         </RadioGroup>
         {state.error && (
-          <p className="field-error" role="alert">
+          <p className={styles.fieldError} role="alert">
             {state.error}
           </p>
         )}
@@ -58,7 +60,7 @@ export function McpKeyManager() {
         </Inline>
       </form>
       {state.secret && (
-        <div className="mcp-key-secret" role="status">
+        <div className={styles.secret} role="status">
           <Heading as="h3" level={5}>
             Save this key now
           </Heading>

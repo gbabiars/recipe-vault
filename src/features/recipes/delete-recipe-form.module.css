@@ -1,0 +1,6 @@
+.fieldError {
+  display: block;
+  color: var(--color-error-text);
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}

@@ -59,10 +59,10 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
     );
   };
   return (
-    <form ref={formRef} action={action} className="recipe-form" noValidate>
+    <form ref={formRef} action={action} className={styles.form} noValidate>
       {recipe && <input type="hidden" name="recipeId" value={recipe.id} />}
       {state.message && (
-        <p className="form-message" role="alert">
+        <p className={styles.formMessage} role="alert">
           {state.message}
         </p>
       )}
@@ -72,13 +72,13 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
         </Heading>
         {field("title", "Title", "text", recipe?.title)}
         {textarea("summary", "Summary", recipe?.summary)}
-        <div className="form-grid">
+        <div className={styles.formGrid}>
           {field("servings", "Servings", "number", recipe?.servings)}
           {field("prepTimeMinutes", "Prep time (minutes)", "number", recipe?.prepTimeMinutes)}
           {field("cookTimeMinutes", "Cook time (minutes)", "number", recipe?.cookTimeMinutes)}
           {field("totalTimeMinutes", "Total time (minutes)", "number", recipe?.totalTimeMinutes)}
         </div>
-        <div className="form-grid">
+        <div className={styles.formGrid}>
           {field("tags", "Tags", "text", recipe?.tags.join(", "), "Separate labels with commas")}
           {field(
             "dietaryFlags",
@@ -92,7 +92,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
         {textarea("notes", "Notes", recipe?.notes)}
       </Card>
       <Card as="section">
-        <div className="section-heading">
+        <div className={styles.sectionHeading}>
           <Heading as="h2" level={5}>
             Ingredients
           </Heading>
@@ -102,7 +102,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
         </div>
         <input type="hidden" name="ingredientCount" value={ingredients.length} />
         {ingredients.map((ingredient, index) => (
-          <fieldset className="repeat-row" key={index}>
+          <fieldset className={styles.repeatRow} key={index}>
             <legend>Ingredient {index + 1}</legend>
             <div className={styles.ingredientGrid}>
               <div className={styles.ingredientName}>
@@ -145,7 +145,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
             {ingredients.length > 1 && (
               <button
                 type="button"
-                className="text-button"
+                className={styles.textButton}
                 onClick={() => setIngredients(ingredients.filter((_, row) => row !== index))}
               >
                 Remove ingredient {index + 1}
@@ -155,7 +155,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
         ))}
       </Card>
       <Card as="section">
-        <div className="section-heading">
+        <div className={styles.sectionHeading}>
           <Heading as="h2" level={5}>
             Steps
           </Heading>
@@ -165,7 +165,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
         </div>
         <input type="hidden" name="stepCount" value={steps.length} />
         {steps.map((step, index) => (
-          <fieldset className="repeat-row" key={index}>
+          <fieldset className={styles.repeatRow} key={index}>
             <legend>Step {index + 1}</legend>
             {textarea(
               `step-${index}-instruction`,
@@ -184,7 +184,7 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
             {steps.length > 1 && (
               <button
                 type="button"
-                className="text-button"
+                className={styles.textButton}
                 onClick={() => setSteps(steps.filter((_, row) => row !== index))}
               >
                 Remove step {index + 1}

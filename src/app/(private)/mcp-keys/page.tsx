@@ -1,3 +1,6 @@
+import styles from "@/features/mcp-keys/mcp-keys.module.css";
+import feedbackStyles from "../page-feedback.module.css";
+import headingStyles from "../page-heading.module.css";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
@@ -22,14 +25,14 @@ export default async function McpKeysPage() {
 
   return (
     <>
-      <div className="page-heading">
+      <div className={headingStyles.pageHeading}>
         <div>
           <Heading>MCP keys</Heading>
         </div>
       </div>
-      <p className="lead">Create narrowly scoped keys for trusted MCP clients.</p>
+      <p className={styles.lead}>Create narrowly scoped keys for trusted MCP clients.</p>
       <McpKeyManager />
-      <Card as="section" className="mcp-key-section" padding="large">
+      <Card as="section" className={styles.section} padding="large">
         <p>
           OAuth at <code>/mcp</code> is the recommended connection method. These keys are for
           clients that cannot complete OAuth and connect to <code>/api/mcp</code> instead.
@@ -38,13 +41,13 @@ export default async function McpKeysPage() {
           Your MCP keys
         </Heading>
         {error ? (
-          <Card as="p" className="error-message" role="alert">
+          <Card as="p" className={feedbackStyles.errorMessage} role="alert">
             {error}
           </Card>
         ) : keys.length === 0 ? (
           <Card as="p">No MCP keys have been created.</Card>
         ) : (
-          <ul className="mcp-key-list">
+          <ul className={styles.list}>
             {keys.map((key) => (
               <Card as="li" key={key.id}>
                 <div>
