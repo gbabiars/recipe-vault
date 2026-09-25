@@ -15,15 +15,15 @@ type CardStoryArgs = {
 
 const meta = {
   title: "UI/Card",
-  component: Card as unknown as React.ComponentType<CardStoryArgs>,
+  component: Card,
   args: {
     children: "Recipe details",
   },
-} satisfies Meta<CardStoryArgs>;
+} satisfies Meta<typeof Card>;
 
 export default meta;
 
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<CardStoryArgs>;
 
 export const Default: Story = {};
 

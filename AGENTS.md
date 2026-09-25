@@ -55,6 +55,24 @@ foundation deployable without adding product behavior that has not been requeste
 - Update `README.md` or the applicable boundary README when a change alters a
   documented contract or ownership boundary.
 
+## Storybook component guidance
+
+When working on UI components, use the `recipe-vault-components` MCP server to
+consult Storybook's component guidance before answering or changing UI. Read
+`src/components/ui/README.md` and the linked family guide for local intent and
+token usage.
+
+- Call `docs-list` to find the relevant components, then `docs-show` for their
+  props, guidance, and examples. Check every prop before using it, even when its
+  name seems familiar.
+- Use only props supported by the documentation or example stories. If a needed
+  prop is absent, ask the user instead of inferring an API from another library
+  or component. Verify a prop in docs or stories even if a story title suggests
+  it exists.
+- Before creating or updating stories, call `get-storybook-story-instructions`.
+- After changing stories or components, use `test-run` to check the affected
+  stories.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

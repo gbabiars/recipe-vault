@@ -1,0 +1,22 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./grid.stories";
+
+<Meta of={Stories} />
+
+# Grid
+
+## Purpose and choice
+
+Arranges peers in columns, especially recipe cards. Use Stack for a vertical flow and Inline for a wrapping row.
+
+## Variants and composition
+
+`columns` is a fixed count or `{ minWidth, max?, repeat? }`; gap and padding use LayoutGap keys. GridItem spans fixed tracks, with base, sm, and md responsive spans at 40rem and 60rem. Use GridItem when a child needs a span. Choose semantic as elements such as ul and li for a list.
+
+## Content and accessibility
+
+Visual columns do not create list semantics; keep DOM reading order meaningful.
+
+## Story
+
+<Canvas of={Stories.CardGallery} />

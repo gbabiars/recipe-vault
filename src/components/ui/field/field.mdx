@@ -1,0 +1,22 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./field.stories";
+
+<Meta of={Stories} />
+
+# Field
+
+## Purpose and choice
+
+Composes a labeled field when the ready-made controls do not fit. Use TextInput, Textarea, CheckboxInput, or RadioGroup when they fit.
+
+## Variants and composition
+
+Field layout is default or choice; other exported parts have no visual variant. Combine Field, FieldLabel, a Base UI field control, optional FieldDescription, and FieldError. Fieldset and FieldsetLegend name related fields; FieldItem wraps a choice.
+
+## Content and accessibility
+
+Give every control a label and useful error text. Keep controls connected through the Field context; use a legend for a related set.
+
+## Story
+
+<Canvas of={Stories.RecipeTitle} />

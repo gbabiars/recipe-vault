@@ -1,0 +1,22 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./card.stories";
+
+<Meta of={Stories} />
+
+# Card
+
+## Purpose and choice
+
+Groups related content on a surface. Use Chip for one compact tag and a plain semantic container when no surface is needed.
+
+## Variants and composition
+
+variant is default or subtle; padding is small, medium, large, or none. Use as for section or li semantics. A whole-card primary link or button needs render and label. Stack, Inline, Heading, and Text can structure its contents.
+
+## Content and accessibility
+
+Keep a visible heading or equivalent context. The interactive label names its primary action; nested controls remain separately interactive.
+
+## Story
+
+<Canvas of={Stories.Default} />

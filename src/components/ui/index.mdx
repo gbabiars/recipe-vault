@@ -1,0 +1,75 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="UI/Intent" />
+
+# Choose by intent
+
+<table>
+  <thead>
+    <tr>
+      <th>Need</th>
+      <th>Components</th>
+      <th>Guide</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Trigger an action or navigate</td>
+      <td>Button, ButtonLink</td>
+      <td>
+        <code>button/button.mdx</code>, <code>button/button-link.mdx</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Group content</td>
+      <td>Card</td>
+      <td>
+        <code>card/card.mdx</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Choose independent or exclusive values</td>
+      <td>CheckboxInput, CheckboxGroup, CheckboxGroupItem; RadioGroup, RadioGroupItem</td>
+      <td>
+        <code>checkbox/checkbox.mdx</code>, <code>radio/radio.mdx</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Build a labeled field</td>
+      <td>
+        Field, FieldLabel, FieldDescription, FieldError, FieldItem, Fieldset, FieldsetLegend;
+        TextInput, Textarea
+      </td>
+      <td>
+        <code>field/field.mdx</code>, <code>text-input/text-input.mdx</code>,{" "}
+        <code>textarea/textarea.mdx</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Show a title, prose, or tag</td>
+      <td>Heading, Text, Chip</td>
+      <td>
+        <code>heading/heading.mdx</code>, <code>text/text.mdx</code>, <code>chip/chip.mdx</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Arrange a row, column, or grid</td>
+      <td>Inline, Stack, Grid, GridItem</td>
+      <td>
+        <code>inline/inline.mdx</code>, <code>stack/stack.mdx</code>, <code>grid/grid.mdx</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Compose a private page</td>
+      <td>PageLayout, PageHeader, PageContent</td>
+      <td>
+        <code>page-layout/page-layout.mdx</code>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+Each component has a sibling **Docs** entry in Storybook with usage decisions,
+accessibility duties, and a linked story. The
+[source index](./README.md) records current app usage, existing compositions,
+and open product questions. [Token usage](./tokens.mdx) maps the CSS token roles.

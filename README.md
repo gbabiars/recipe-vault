@@ -95,9 +95,13 @@ After edits, run `pnpm format`, then `pnpm check` and `pnpm build`.
 
 Run `pnpm storybook` and open `http://localhost:6006` to develop and review
 components in isolation. Storybook discovers `.stories.*` and `.mdx` files
-under `src`; the starter stories in `src/stories` demonstrate the pattern.
+under `src`. Start with the [UI intent index](src/components/ui/README.md) to
+choose a component and read its colocated MDX guidance and stories.
 Select a story in the sidebar, then open the Code panel below its canvas to
 view the rendered source snippet with that story's args.
+
+With Storybook running, its MCP server at `http://localhost:6006/mcp` exposes
+`docs-list` and `docs-show` for component discovery, guidance, stories, and API.
 
 Keep component styling in CSS modules. `src/app/globals.css` contains shared
 tokens, sitewide element defaults, and the `.visually-hidden` accessibility
@@ -113,34 +117,8 @@ tokens for surfaces themselves.
 Use `pnpm build-storybook` to create a production Storybook build. Its output
 is written to `storybook-static/` and is not committed.
 
-Use `PageLayout` with `PageHeader` and `PageContent` for private page composition.
-The layout keeps a `--space-300` gap between the header and content. `PageHeader`
-renders its `title` as an `h1` with level 2 styling and accepts optional
-`overline`, `description`, and `actions` nodes.
-
-Checkbox and radio choices own their labels and optional help text:
-
-```tsx
-import { CheckboxGroup, CheckboxGroupItem, CheckboxInput } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio";
-
-<CheckboxInput label="Email me updates" name="updates" value="yes" />
-
-<CheckboxGroup label="Ingredients" name="ingredients">
-  <CheckboxGroupItem value="basil" label="Basil" helpText="Fresh leaves." />
-  <CheckboxGroupItem value="parsley" label="Parsley" />
-</CheckboxGroup>
-
-<RadioGroup label="Visibility" name="visibility" required>
-  <RadioGroupItem value="private" label="Private" />
-  <RadioGroupItem value="shared" label="Shared" helpText="Visible to others." />
-</RadioGroup>
-```
-
-`Grid` in `src/components/ui/grid` supports fixed equal columns or card columns
-that reflow from a minimum width. Use the optional `GridItem` for spans in fixed
-column layouts; responsive spans use the grid's width at 40rem (`sm`) and 60rem
-(`md`). Direct children and semantic elements such as `ul` and `li` are supported.
+The [UI intent index](src/components/ui/README.md) owns component and
+composition guidance, including page headers, fields, actions, cards, and lists.
 
 ## Security configuration
 

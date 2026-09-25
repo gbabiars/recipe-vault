@@ -1,0 +1,22 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./radio.stories";
+
+<Meta of={Stories} />
+
+# RadioGroup
+
+## Purpose and choice
+
+Selects exactly one value from a named set. RadioGroupItem supplies each option. Use CheckboxGroup for independent selections.
+
+## Variants and composition
+
+There is no visual variant. The group accepts helpText, error, invalid, and visuallyHiddenLabel; items accept helpText. Put distinct string values inside a labeled group with a name for submission.
+
+## Content and accessibility
+
+Supply group and item labels with descriptive error text; required and disabled states must match behavior.
+
+## Story
+
+<Canvas of={Stories.Group} />

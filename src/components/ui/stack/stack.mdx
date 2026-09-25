@@ -1,0 +1,22 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./stack.stories";
+
+<Meta of={Stories} />
+
+# Stack
+
+## Purpose and choice
+
+Arranges content vertically. Use Inline for a row and Grid for columns.
+
+## Variants and composition
+
+gap and padding use spacing keys; align and justify control flex placement. Use inside cards or forms. as can provide semantics such as ul for list items.
+
+## Content and accessibility
+
+Keep DOM reading order and choose meaningful list or section semantics.
+
+## Story
+
+<Canvas of={Stories.WithGap} />

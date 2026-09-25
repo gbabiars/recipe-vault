@@ -1,0 +1,22 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./heading.stories";
+
+<Meta of={Stories} />
+
+# Heading
+
+## Purpose and choice
+
+Introduces a section or item. Use Text for prose; PageHeader supplies a page h1.
+
+## Variants and composition
+
+level 1 through 6 selects visual scale. as selects HTML semantics independently; without as, the element follows level. Use a short, specific title. A recipe card can use h2 semantics at visual level 5.
+
+## Content and accessibility
+
+Choose as for the heading hierarchy rather than for visual size.
+
+## Story
+
+<Canvas of={Stories.AsOverride} />

@@ -1,0 +1,22 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./chip.stories";
+
+<Meta of={Stories} />
+
+# Chip
+
+## Purpose and choice
+
+Displays a short tag or dietary flag. Use Text for prose and Button or a link for an action.
+
+## Variants and composition
+
+There is no variant prop; native span props are accepted. Put one short label in each Chip; Inline can arrange multiple chips in a wrapping row.
+
+## Content and accessibility
+
+Chip is display text, not an interactive control. Keep its meaning understandable without color.
+
+## Story
+
+<Canvas of={Stories.Default} />

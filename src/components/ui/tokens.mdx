@@ -1,0 +1,110 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="UI/Token usage" />
+
+# Token usage
+
+The token source is `src/app/globals.css`. Use semantic tokens for component
+meaning; the light, dark, and system-dark definitions keep that meaning across
+themes. This guide maps existing uses and does not add values.
+
+<table>
+  <thead>
+    <tr>
+      <th>Need</th>
+      <th>Existing token family</th>
+      <th>Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Surfaces</td>
+      <td>
+        <code>--color-background-&#42;</code>
+      </td>
+      <td>Canvas, cards, overlays, and disabled surfaces use solid backgrounds.</td>
+    </tr>
+    <tr>
+      <td>Text and borders</td>
+      <td>
+        <code>--color-text-&#42;</code>, <code>--color-border-&#42;</code>
+      </td>
+      <td>
+        Choose by hierarchy and state. Text appearances and form controls consume these tokens.
+      </td>
+    </tr>
+    <tr>
+      <td>Actions</td>
+      <td>
+        <code>--color-action-&#42;</code>
+      </td>
+      <td>Button and ButtonLink variants use primary, secondary, ghost, and danger roles.</td>
+    </tr>
+    <tr>
+      <td>Neutral interaction overlay</td>
+      <td>
+        <code>--color-interaction-neutral-hover</code>,{" "}
+        <code>--color-interaction-neutral-active</code>
+      </td>
+      <td>Transparent states blend with default and subtle cards.</td>
+    </tr>
+    <tr>
+      <td>Choice and status</td>
+      <td>
+        <code>--color-choice-&#42;</code>, <code>--color-success-&#42;</code>,{" "}
+        <code>--color-warning-&#42;</code>, <code>--color-error-&#42;</code>
+      </td>
+      <td>Choice marks and feedback colors. Include words for states and errors.</td>
+    </tr>
+    <tr>
+      <td>Focus</td>
+      <td>
+        <code>--color-focus-ring</code>, <code>--color-focus-ring-outer</code>
+      </td>
+      <td>Visible focus treatment for interactive controls.</td>
+    </tr>
+    <tr>
+      <td>Typography</td>
+      <td>
+        <code>--font-size-text-&#42;</code>, <code>--line-height-text-&#42;</code>,{" "}
+        <code>--font-weight-text-&#42;</code>; corresponding heading tokens
+      </td>
+      <td>
+        Text and Heading select a semantic scale. The HTML element still carries document semantics.
+      </td>
+    </tr>
+    <tr>
+      <td>Spacing</td>
+      <td>
+        <code>--space-0</code> through <code>--space-1200</code>; <code>--space-surface-&#42;</code>
+      </td>
+      <td>
+        Stack, Inline, and Grid gap and padding props accept spacing keys without the{" "}
+        <code>--space-</code> prefix. Cards use surface spacing.
+      </td>
+    </tr>
+    <tr>
+      <td>Shape and size</td>
+      <td>
+        <code>--radius-&#42;</code>, <code>--height-button-&#42;</code>,{" "}
+        <code>--size-choice-control</code>
+      </td>
+      <td>Component CSS determines card, button, and choice control geometry.</td>
+    </tr>
+    <tr>
+      <td>Layout width</td>
+      <td>
+        <code>--width-sidebar</code>, <code>--width-content</code>
+      </td>
+      <td>Shared private layout widths.</td>
+    </tr>
+  </tbody>
+</table>
+
+`LayoutGap`, `LayoutAlign`, and `LayoutJustify` in `layout.ts` type the layout
+props. A gap such as `gap="200"` resolves to `--space-200`. Use the component's
+spacing props when available, and use semantic tokens in CSS modules for new
+styles. See the [intent index](./README.md) for the component guidance.
+
+Some motion durations and page-specific spacing and radius values remain
+literal in the current CSS. Tokenization of those values is an open design task.
