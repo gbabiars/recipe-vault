@@ -113,6 +113,11 @@ tokens for surfaces themselves.
 Use `pnpm build-storybook` to create a production Storybook build. Its output
 is written to `storybook-static/` and is not committed.
 
+Use `PageLayout` with `PageHeader` and `PageContent` for private page composition.
+The layout keeps a `--space-300` gap between the header and content. `PageHeader`
+renders its `title` as an `h1` with level 2 styling and accepts optional
+`overline`, `description`, and `actions` nodes.
+
 Checkbox and radio choices own their labels and optional help text:
 
 ```tsx
