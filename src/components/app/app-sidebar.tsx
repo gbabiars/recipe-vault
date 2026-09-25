@@ -9,10 +9,7 @@ type AppSidebarProps = {
 
 export function AppSidebar({ pathname, onSignOut }: AppSidebarProps) {
   const recipesActive = pathname === "/recipes" || pathname.startsWith("/recipes/");
-  const settingsActive =
-    pathname === "/settings" ||
-    pathname.startsWith("/user-profile") ||
-    pathname.startsWith("/mcp-keys");
+  const settingsActive = pathname === "/settings" || pathname.startsWith("/user-profile");
 
   return (
     <aside className={styles.sidebar}>

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
 import { requireUser } from "@/lib/auth/require-user";
 
-/** Clerk owns account and API-key lifecycle; this route only applies app access policy. */
+/** Clerk owns account management; this route only applies app access policy. */
 export default async function UserProfilePage() {
   await requireUser();
 

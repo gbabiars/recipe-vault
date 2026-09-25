@@ -21,12 +21,8 @@ test("renders settings headings and destination links", () => {
     screen.getByRole("heading", { level: 1, name: "Settings" }).getAttribute("data-level"),
   ).toBe("2");
 
-  for (const [name, href] of [
-    ["Profile", "/user-profile"],
-    ["MCP keys", "/mcp-keys"],
-  ]) {
-    const heading = screen.getByRole("heading", { level: 2, name });
-    expect(heading.getAttribute("data-level")).toBe("5");
-    expect(screen.getByRole("link", { name }).getAttribute("href")).toBe(href);
-  }
+  const profileHeading = screen.getByRole("heading", { level: 2, name: "Profile" });
+  expect(profileHeading.getAttribute("data-level")).toBe("5");
+  expect(screen.getByRole("link", { name: "Profile" }).getAttribute("href")).toBe("/user-profile");
+  expect(screen.queryByRole("link", { name: /MCP keys/i })).toBeNull();
 });

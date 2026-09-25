@@ -5,8 +5,8 @@ Clerk, and Supabase. Every authenticated Clerk user receives an isolated vault;
 the application has no public recipes, sharing, or cross-user access.
 
 Private pages share a sidebar with Recipes and Settings. Settings at `/settings`
-links to Profile (`/user-profile`) and MCP keys (`/mcp-keys`); sign-in remains a
-standalone page. The root URL redirects to `/recipes`.
+links to Profile (`/user-profile`); sign-in remains a standalone page. The root
+URL redirects to `/recipes`.
 
 ## Authentication and data access
 
@@ -15,10 +15,10 @@ session tokens through Supabase's native third-party-auth `accessToken`
 integration. Supabase row-level security compares each row's text `owner_id`
 with `auth.jwt()->>'sub'`.
 
-MCP requests use Clerk authentication at the Next.js boundary. Clerk OAuth and
-API-key credentials are never sent to Supabase. After verification, the MCP
-adapter binds the Clerk user ID to a server-only recipe service; only that
-adapter can use the Supabase service-role credential.
+MCP requests use Clerk OAuth at the Next.js boundary. OAuth access tokens are
+never sent to Supabase. After verification, the MCP adapter binds the Clerk
+user ID to a server-only recipe service; only that adapter can use the Supabase
+service-role credential.
 
 Account admission remains a Clerk setting. Dynamic Client Registration lets MCP
 clients register automatically, but it does not create Recipe Vault users or
@@ -43,7 +43,7 @@ application logs.
 
 ## MCP
 
-The primary remote MCP endpoint is `/mcp`. It uses Clerk OAuth 2.1, PKCE,
+The remote MCP endpoint is `/mcp`. It uses Clerk OAuth 2.1, PKCE,
 consent, automatic client onboarding (CIMD where available, with DCR for broad
 client compatibility), and the standard OAuth metadata endpoints:
 
@@ -60,9 +60,8 @@ continues to return its existing JSON text response in hosts without MCP Apps
 support. The view has no new scopes, authentication policy, external network
 access, or write behavior; it receives only recipe fields needed for display.
 
-`/api/mcp` is a compatibility endpoint for clients that cannot complete OAuth.
-It accepts expiring, scoped Clerk user API keys created at `/mcp-keys`. OAuth is
-the default and should be preferred for every compatible client.
+MCP connections use the OAuth flow at `/mcp`; users sign in and grant consent
+from their MCP client.
 
 See [OAuth MCP setup](docs/mcp-oauth-setup.md) for exact local, Clerk, Supabase,
 hosting, rollout, and verification instructions.
@@ -135,7 +134,7 @@ them.
 | `src/app`              | Thin pages, API routes, OAuth metadata, and MCP route handlers.   |
 | `src/components/app`   | Shared private sidebar, navigation, and brand.                    |
 | `src/features/recipes` | Recipe UI and feature composition.                                |
-| `src/lib/auth`         | Clerk identity, API-key SDK adapter, and Supabase clients.        |
+| `src/lib/auth`         | Clerk identity, OAuth verification, and Supabase clients.         |
 | `src/lib/db`           | Recipe persistence and Supabase access.                           |
 | `src/lib/recipes`      | Ownership-aware domain services.                                  |
 | `src/lib/validation`   | Shared input schemas.                                             |
