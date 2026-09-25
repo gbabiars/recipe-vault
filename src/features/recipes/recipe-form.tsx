@@ -8,6 +8,7 @@ import { TextInput } from "@/components/ui/text-input";
 import { Textarea } from "@/components/ui/textarea";
 import type { Recipe } from "@/lib/db/recipe-repository";
 import { saveRecipeAction } from "./actions";
+import styles from "./recipe-form.module.css";
 import { emptyRecipeFormState } from "./recipe-form-state";
 
 type IngredientRow = { quantity?: number; unit?: string; ingredientName?: string; notes?: string };
@@ -103,38 +104,44 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
         {ingredients.map((ingredient, index) => (
           <fieldset className="repeat-row" key={index}>
             <legend>Ingredient {index + 1}</legend>
-            {field(
-              `ingredient-${index}-quantity`,
-              "Quantity",
-              "number",
-              ingredient.quantity,
-              undefined,
-              `ingredients.${index}.quantity`,
-            )}
-            {field(
-              `ingredient-${index}-unit`,
-              "Unit",
-              "text",
-              ingredient.unit,
-              undefined,
-              `ingredients.${index}.unit`,
-            )}
-            {field(
-              `ingredient-${index}-name`,
-              "Ingredient name",
-              "text",
-              ingredient.ingredientName,
-              undefined,
-              `ingredients.${index}.ingredientName`,
-            )}
-            {field(
-              `ingredient-${index}-notes`,
-              "Notes (optional)",
-              "text",
-              ingredient.notes,
-              undefined,
-              `ingredients.${index}.notes`,
-            )}
+            <div className={styles.ingredientGrid}>
+              <div className={styles.ingredientName}>
+                {field(
+                  `ingredient-${index}-name`,
+                  "Ingredient name",
+                  "text",
+                  ingredient.ingredientName,
+                  undefined,
+                  `ingredients.${index}.ingredientName`,
+                )}
+              </div>
+              {field(
+                `ingredient-${index}-quantity`,
+                "Quantity",
+                "number",
+                ingredient.quantity,
+                undefined,
+                `ingredients.${index}.quantity`,
+              )}
+              {field(
+                `ingredient-${index}-unit`,
+                "Unit",
+                "text",
+                ingredient.unit,
+                undefined,
+                `ingredients.${index}.unit`,
+              )}
+              <div className={styles.ingredientNotes}>
+                {field(
+                  `ingredient-${index}-notes`,
+                  "Notes (optional)",
+                  "text",
+                  ingredient.notes,
+                  undefined,
+                  `ingredients.${index}.notes`,
+                )}
+              </div>
+            </div>
             {ingredients.length > 1 && (
               <button
                 type="button"

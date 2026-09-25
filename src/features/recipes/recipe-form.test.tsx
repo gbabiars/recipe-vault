@@ -12,6 +12,18 @@ afterEach(() => {
   saveRecipeAction.mockReset();
 });
 
+test("orders ingredient fields as name, quantity, unit, then notes", () => {
+  render(<RecipeForm />);
+
+  const ingredient = screen.getByRole("group", { name: "Ingredient 1" });
+  expect(Array.from(ingredient.querySelectorAll("input"), (input) => input.name)).toEqual([
+    "ingredient-0-name",
+    "ingredient-0-quantity",
+    "ingredient-0-unit",
+    "ingredient-0-notes",
+  ]);
+});
+
 test("labels fields, connects hints, and submits the expected recipe values", async () => {
   saveRecipeAction.mockResolvedValue({ errors: {} });
   const { container } = render(<RecipeForm />);
