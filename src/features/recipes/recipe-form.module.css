@@ -22,17 +22,6 @@
   }
 }
 
-.form {
-  display: grid;
-  gap: 1.75rem;
-  max-width: 52rem;
-}
-
-.form section {
-  display: grid;
-  gap: 0.85rem;
-}
-
 .formMessage {
   background: var(--color-error-background);
   border: 1px solid var(--color-error-border);

@@ -1,11 +1,13 @@
 import styles from "@/features/mcp-keys/mcp-keys.module.css";
-import feedbackStyles from "../page-feedback.module.css";
 import Link from "next/link";
 import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
+import { Inline } from "@/components/ui/inline";
+import { Stack } from "@/components/ui/stack";
+import { Text } from "@/components/ui/text";
 import { McpKeyManager } from "@/features/mcp-keys/mcp-key-manager";
 import { revokeMcpKeyAction } from "@/features/mcp-keys/actions";
 import { listMcpApiKeys } from "@/lib/auth/clerk-api-keys";
@@ -39,50 +41,63 @@ export default async function McpKeysPage() {
         description="Create narrowly scoped keys for trusted MCP clients."
       />
       <PageContent>
-        <McpKeyManager />
-        <Card as="section" className={styles.section} padding="large">
-          <p>
-            OAuth at <code>/mcp</code> is the recommended connection method. These keys are for
-            clients that cannot complete OAuth and connect to <code>/api/mcp</code> instead.
-          </p>
-          <Heading as="h2" level={3}>
-            Your MCP keys
-          </Heading>
-          {error ? (
-            <Card as="p" className={feedbackStyles.errorMessage} role="alert">
-              {error}
-            </Card>
-          ) : keys.length === 0 ? (
-            <Card as="p">No MCP keys have been created.</Card>
-          ) : (
-            <ul className={styles.list}>
-              {keys.map((key) => (
-                <Card as="li" key={key.id}>
-                  <div>
-                    <Heading as="h3" level={5}>
-                      {key.name}
-                    </Heading>
-                    <p>{key.scopes.join(", ")}</p>
-                    <small>
-                      Created {formatDate(key.createdAt)} · Last used {formatDate(key.lastUsedAt)}
-                      {` · Expires ${key.expiration ? formatDate(key.expiration) : "Never"}`}
-                    </small>
-                  </div>
-                  {key.revoked || key.expired ? (
-                    <span>{key.revoked ? "Revoked" : "Expired"}</span>
-                  ) : (
-                    <form action={revokeMcpKeyAction}>
-                      <input type="hidden" name="apiKeyId" value={key.id} />
-                      <Button type="submit" variant="danger">
-                        Revoke
-                      </Button>
-                    </form>
-                  )}
+        <Stack gap="200">
+          <McpKeyManager />
+          <Card as="section" padding="large">
+            <Stack gap="150">
+              <Text as="p">
+                OAuth at <code>/mcp</code> is the recommended connection method. These keys are for
+                clients that cannot complete OAuth and connect to <code>/api/mcp</code> instead.
+              </Text>
+              <Heading as="h2" level={3}>
+                Your MCP keys
+              </Heading>
+              {error ? (
+                <Card as="div" role="alert">
+                  <Text as="p" appearance="error">
+                    {error}
+                  </Text>
                 </Card>
-              ))}
-            </ul>
-          )}
-        </Card>
+              ) : keys.length === 0 ? (
+                <Card as="div">
+                  <Text as="p">No MCP keys have been created.</Text>
+                </Card>
+              ) : (
+                <Stack as="ul" gap="200" className={styles.list}>
+                  {keys.map((key) => (
+                    <Card as="li" key={key.id}>
+                      <Inline gap="150" align="center" justify="between">
+                        <Stack gap="050" className={styles.keyDetails}>
+                          <Heading as="h3" level={5}>
+                            {key.name}
+                          </Heading>
+                          <Text as="p">{key.scopes.join(", ")}</Text>
+                          <Text as="small" size="small" appearance="secondary">
+                            Created {formatDate(key.createdAt)} · Last used{" "}
+                            {formatDate(key.lastUsedAt)}
+                            {` · Expires ${key.expiration ? formatDate(key.expiration) : "Never"}`}
+                          </Text>
+                        </Stack>
+                        {key.revoked || key.expired ? (
+                          <Text as="span" appearance="secondary">
+                            {key.revoked ? "Revoked" : "Expired"}
+                          </Text>
+                        ) : (
+                          <form action={revokeMcpKeyAction}>
+                            <input type="hidden" name="apiKeyId" value={key.id} />
+                            <Button type="submit" variant="danger">
+                              Revoke
+                            </Button>
+                          </form>
+                        )}
+                      </Inline>
+                    </Card>
+                  ))}
+                </Stack>
+              )}
+            </Stack>
+          </Card>
+        </Stack>
       </PageContent>
     </PageLayout>
   );

@@ -4,6 +4,8 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
+import { Stack } from "@/components/ui/stack";
+import { Text } from "@/components/ui/text";
 import { TextInput } from "@/components/ui/text-input";
 import { Textarea } from "@/components/ui/textarea";
 import type { Recipe } from "@/lib/db/recipe-repository";
@@ -59,143 +61,151 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
     );
   };
   return (
-    <form ref={formRef} action={action} className={styles.form} noValidate>
+    <Stack as="form" ref={formRef} action={action} gap="200" noValidate>
       {recipe && <input type="hidden" name="recipeId" value={recipe.id} />}
       {state.message && (
-        <p className={styles.formMessage} role="alert">
+        <Text as="p" appearance="error" className={styles.formMessage} role="alert">
           {state.message}
-        </p>
+        </Text>
       )}
       <Card as="section">
-        <Heading as="h2" level={5}>
-          Recipe details
-        </Heading>
-        {field("title", "Title", "text", recipe?.title)}
-        {textarea("summary", "Summary", recipe?.summary)}
-        <div className={styles.formGrid}>
-          {field("servings", "Servings", "number", recipe?.servings)}
-          {field("prepTimeMinutes", "Prep time (minutes)", "number", recipe?.prepTimeMinutes)}
-          {field("cookTimeMinutes", "Cook time (minutes)", "number", recipe?.cookTimeMinutes)}
-          {field("totalTimeMinutes", "Total time (minutes)", "number", recipe?.totalTimeMinutes)}
-        </div>
-        <div className={styles.formGrid}>
-          {field("tags", "Tags", "text", recipe?.tags.join(", "), "Separate labels with commas")}
-          {field(
-            "dietaryFlags",
-            "Dietary flags",
-            "text",
-            recipe?.dietaryFlags.join(", "),
-            "Separate labels with commas",
-          )}
-        </div>
-        {field("sourceUrl", "Source URL", "url", recipe?.sourceUrl)}
-        {textarea("notes", "Notes", recipe?.notes)}
-      </Card>
-      <Card as="section">
-        <div className={styles.sectionHeading}>
+        <Stack gap="100">
           <Heading as="h2" level={5}>
-            Ingredients
+            Recipe details
           </Heading>
-          <Button type="button" onClick={() => setIngredients([...ingredients, blankIngredient])}>
-            Add ingredient
-          </Button>
-        </div>
-        <input type="hidden" name="ingredientCount" value={ingredients.length} />
-        {ingredients.map((ingredient, index) => (
-          <fieldset className={styles.repeatRow} key={index}>
-            <legend>Ingredient {index + 1}</legend>
-            <div className={styles.ingredientGrid}>
-              <div className={styles.ingredientName}>
-                {field(
-                  `ingredient-${index}-name`,
-                  "Ingredient name",
-                  "text",
-                  ingredient.ingredientName,
-                  undefined,
-                  `ingredients.${index}.ingredientName`,
-                )}
-              </div>
-              {field(
-                `ingredient-${index}-quantity`,
-                "Quantity",
-                "number",
-                ingredient.quantity,
-                undefined,
-                `ingredients.${index}.quantity`,
-              )}
-              {field(
-                `ingredient-${index}-unit`,
-                "Unit",
-                "text",
-                ingredient.unit,
-                undefined,
-                `ingredients.${index}.unit`,
-              )}
-              <div className={styles.ingredientNotes}>
-                {field(
-                  `ingredient-${index}-notes`,
-                  "Notes (optional)",
-                  "text",
-                  ingredient.notes,
-                  undefined,
-                  `ingredients.${index}.notes`,
-                )}
-              </div>
-            </div>
-            {ingredients.length > 1 && (
-              <Button
-                type="button"
-                variant="subtle"
-                onClick={() => setIngredients(ingredients.filter((_, row) => row !== index))}
-              >
-                Remove ingredient {index + 1}
-              </Button>
-            )}
-          </fieldset>
-        ))}
-      </Card>
-      <Card as="section">
-        <div className={styles.sectionHeading}>
-          <Heading as="h2" level={5}>
-            Steps
-          </Heading>
-          <Button type="button" onClick={() => setSteps([...steps, blankStep])}>
-            Add step
-          </Button>
-        </div>
-        <input type="hidden" name="stepCount" value={steps.length} />
-        {steps.map((step, index) => (
-          <fieldset className={styles.repeatRow} key={index}>
-            <legend>Step {index + 1}</legend>
-            {textarea(
-              `step-${index}-instruction`,
-              "Instruction",
-              step.instruction,
-              `steps.${index}.instruction`,
-            )}
+          {field("title", "Title", "text", recipe?.title)}
+          {textarea("summary", "Summary", recipe?.summary)}
+          <div className={styles.formGrid}>
+            {field("servings", "Servings", "number", recipe?.servings)}
+            {field("prepTimeMinutes", "Prep time (minutes)", "number", recipe?.prepTimeMinutes)}
+            {field("cookTimeMinutes", "Cook time (minutes)", "number", recipe?.cookTimeMinutes)}
+            {field("totalTimeMinutes", "Total time (minutes)", "number", recipe?.totalTimeMinutes)}
+          </div>
+          <div className={styles.formGrid}>
+            {field("tags", "Tags", "text", recipe?.tags.join(", "), "Separate labels with commas")}
             {field(
-              `step-${index}-durationMinutes`,
-              "Duration (minutes, optional)",
-              "number",
-              step.durationMinutes,
-              undefined,
-              `steps.${index}.durationMinutes`,
+              "dietaryFlags",
+              "Dietary flags",
+              "text",
+              recipe?.dietaryFlags.join(", "),
+              "Separate labels with commas",
             )}
-            {steps.length > 1 && (
-              <Button
-                type="button"
-                variant="subtle"
-                onClick={() => setSteps(steps.filter((_, row) => row !== index))}
-              >
-                Remove step {index + 1}
-              </Button>
-            )}
-          </fieldset>
-        ))}
+          </div>
+          {field("sourceUrl", "Source URL", "url", recipe?.sourceUrl)}
+          {textarea("notes", "Notes", recipe?.notes)}
+        </Stack>
       </Card>
-      <Button type="submit" variant="primary" disabled={pending}>
-        {pending ? "Saving…" : recipe ? "Save changes" : "Create recipe"}
-      </Button>
-    </form>
+      <Card as="section">
+        <Stack gap="100">
+          <div className={styles.sectionHeading}>
+            <Heading as="h2" level={5}>
+              Ingredients
+            </Heading>
+            <Button type="button" onClick={() => setIngredients([...ingredients, blankIngredient])}>
+              Add ingredient
+            </Button>
+          </div>
+          <input type="hidden" name="ingredientCount" value={ingredients.length} />
+          {ingredients.map((ingredient, index) => (
+            <fieldset className={styles.repeatRow} key={index}>
+              <legend>Ingredient {index + 1}</legend>
+              <div className={styles.ingredientGrid}>
+                <div className={styles.ingredientName}>
+                  {field(
+                    `ingredient-${index}-name`,
+                    "Ingredient name",
+                    "text",
+                    ingredient.ingredientName,
+                    undefined,
+                    `ingredients.${index}.ingredientName`,
+                  )}
+                </div>
+                {field(
+                  `ingredient-${index}-quantity`,
+                  "Quantity",
+                  "number",
+                  ingredient.quantity,
+                  undefined,
+                  `ingredients.${index}.quantity`,
+                )}
+                {field(
+                  `ingredient-${index}-unit`,
+                  "Unit",
+                  "text",
+                  ingredient.unit,
+                  undefined,
+                  `ingredients.${index}.unit`,
+                )}
+                <div className={styles.ingredientNotes}>
+                  {field(
+                    `ingredient-${index}-notes`,
+                    "Notes (optional)",
+                    "text",
+                    ingredient.notes,
+                    undefined,
+                    `ingredients.${index}.notes`,
+                  )}
+                </div>
+              </div>
+              {ingredients.length > 1 && (
+                <Button
+                  type="button"
+                  variant="subtle"
+                  onClick={() => setIngredients(ingredients.filter((_, row) => row !== index))}
+                >
+                  Remove ingredient {index + 1}
+                </Button>
+              )}
+            </fieldset>
+          ))}
+        </Stack>
+      </Card>
+      <Card as="section">
+        <Stack gap="100">
+          <div className={styles.sectionHeading}>
+            <Heading as="h2" level={5}>
+              Steps
+            </Heading>
+            <Button type="button" onClick={() => setSteps([...steps, blankStep])}>
+              Add step
+            </Button>
+          </div>
+          <input type="hidden" name="stepCount" value={steps.length} />
+          {steps.map((step, index) => (
+            <fieldset className={styles.repeatRow} key={index}>
+              <legend>Step {index + 1}</legend>
+              {textarea(
+                `step-${index}-instruction`,
+                "Instruction",
+                step.instruction,
+                `steps.${index}.instruction`,
+              )}
+              {field(
+                `step-${index}-durationMinutes`,
+                "Duration (minutes, optional)",
+                "number",
+                step.durationMinutes,
+                undefined,
+                `steps.${index}.durationMinutes`,
+              )}
+              {steps.length > 1 && (
+                <Button
+                  type="button"
+                  variant="subtle"
+                  onClick={() => setSteps(steps.filter((_, row) => row !== index))}
+                >
+                  Remove step {index + 1}
+                </Button>
+              )}
+            </fieldset>
+          ))}
+        </Stack>
+      </Card>
+      <div>
+        <Button type="submit" variant="primary" disabled={pending}>
+          {pending ? "Saving…" : recipe ? "Save changes" : "Create recipe"}
+        </Button>
+      </div>
+    </Stack>
   );
 }
