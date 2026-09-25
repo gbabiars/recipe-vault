@@ -30,18 +30,20 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <header className={cn(styles.header, className)} {...props}>
-      <div className={styles.intro}>
-        {overline && <div>{overline}</div>}
-        <Heading as="h1" level={2}>
-          {title}
-        </Heading>
-        {description && (
-          <Text as="p" size="medium">
-            {description}
-          </Text>
-        )}
+      {overline && <div>{overline}</div>}
+      <div className={styles.headingRow}>
+        <div className={styles.intro}>
+          <Heading as="h1" level={2}>
+            {title}
+          </Heading>
+          {description && (
+            <Text as="p" size="medium">
+              {description}
+            </Text>
+          )}
+        </div>
+        {actions && <div className={styles.actions}>{actions}</div>}
       </div>
-      {actions && <div className={styles.actions}>{actions}</div>}
     </header>
   );
 }

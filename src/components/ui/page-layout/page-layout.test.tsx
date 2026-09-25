@@ -47,6 +47,17 @@ test("renders the optional overline, description, and actions", () => {
   expect(screen.getByText("Fresh basil soup").getAttribute("data-size")).toBe("medium");
   expect(screen.getByRole("link", { name: "Edit recipe" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
+
+  const header = heading.closest("header");
+  const headingRow = heading.parentElement?.parentElement;
+  expect(
+    header?.firstElementChild?.contains(screen.getByRole("link", { name: "All recipes" })),
+  ).toBe(true);
+  expect(header?.lastElementChild).toBe(headingRow);
+  expect(
+    headingRow?.lastElementChild?.contains(screen.getByRole("button", { name: "Share" })),
+  ).toBe(true);
+  expect(getComputedStyle(headingRow!).alignItems).toBe("flex-start");
 });
 
 test("omits empty optional slots", () => {
