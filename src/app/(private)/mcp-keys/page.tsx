@@ -1,5 +1,7 @@
 import styles from "@/features/mcp-keys/mcp-keys.module.css";
 import feedbackStyles from "../page-feedback.module.css";
+import Link from "next/link";
+import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
@@ -27,6 +29,13 @@ export default async function McpKeysPage() {
     <PageLayout>
       <PageHeader
         title="MCP keys"
+        overline={
+          <Breadcrumbs trailingSeparator>
+            <BreadcrumbsItem>
+              <Link href="/settings">Settings</Link>
+            </BreadcrumbsItem>
+          </Breadcrumbs>
+        }
         description="Create narrowly scoped keys for trusted MCP clients."
       />
       <PageContent>

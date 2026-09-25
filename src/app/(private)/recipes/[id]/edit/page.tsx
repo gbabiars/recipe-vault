@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import { RecipeForm } from "@/features/recipes/recipe-form";
@@ -10,7 +12,19 @@ export default async function EditRecipePage({ params }: { params: Promise<{ id:
   if (!recipe) notFound();
   return (
     <PageLayout>
-      <PageHeader title="Edit recipe" />
+      <PageHeader
+        title="Edit recipe"
+        overline={
+          <Breadcrumbs trailingSeparator>
+            <BreadcrumbsItem>
+              <Link href="/recipes">Recipes</Link>
+            </BreadcrumbsItem>
+            <BreadcrumbsItem>
+              <Link href={`/recipes/${recipe.id}`}>{recipe.title}</Link>
+            </BreadcrumbsItem>
+          </Breadcrumbs>
+        }
+      />
       <PageContent>
         <RecipeForm recipe={recipe} />
       </PageContent>
