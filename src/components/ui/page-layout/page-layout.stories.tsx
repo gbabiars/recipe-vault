@@ -31,12 +31,7 @@ export const WithSlots: Story = {
         title="Tomato soup"
         overline={<a href="#recipes">← All recipes</a>}
         description="Fresh basil soup"
-        actions={
-          <>
-            <ButtonLink render={<a href="#edit" />}>Edit recipe</ButtonLink>
-            <a href="#share">Share</a>
-          </>
-        }
+        actions={<ButtonLink render={<a href="#edit" />}>Edit recipe</ButtonLink>}
       />
       <PageContent>
         <Card padding="large">Recipe details</Card>
