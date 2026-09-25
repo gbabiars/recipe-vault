@@ -19,7 +19,7 @@ test("renders settings headings and destination links", () => {
 
   expect(
     screen.getByRole("heading", { level: 1, name: "Settings" }).getAttribute("data-level"),
-  ).toBe("1");
+  ).toBe("2");
 
   for (const [name, href] of [
     ["Profile", "/user-profile"],

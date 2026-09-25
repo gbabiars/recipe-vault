@@ -1,10 +1,8 @@
-import headingStyles from "../../page-heading.module.css";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/ui/button";
-import { Heading } from "@/components/ui/heading";
+import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
 import { Stack } from "@/components/ui/stack";
-import { Text } from "@/components/ui/text";
 import {
   RecipeDeleteCard,
   RecipeDetailsCard,
@@ -22,28 +20,24 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
   const recipe = await (await getRecipeService()).get(user.id, id);
   if (!recipe) notFound();
   return (
-    <>
-      <div className={headingStyles.pageHeading}>
-        <div>
-          <Link href="/recipes">← All recipes</Link>
-          <Heading as="h1" level={2}>
-            {recipe.title}
-          </Heading>
-          {recipe.summary && (
-            <Text as="p" size="medium">
-              {recipe.summary}
-            </Text>
-          )}
-        </div>
-        <ButtonLink render={<Link href={`/recipes/${recipe.id}/edit`} />}>Edit recipe</ButtonLink>
-      </div>
-      <Stack gap="200">
-        <RecipeDetailsCard recipe={recipe} />
-        <RecipeIngredientsCard ingredients={recipe.ingredients} />
-        <RecipeMethodCard steps={recipe.steps} />
-        {recipe.notes && <RecipeNotesCard notes={recipe.notes} />}
-        <RecipeDeleteCard recipeId={recipe.id} deleteAction={deleteRecipeAction} />
-      </Stack>
-    </>
+    <PageLayout>
+      <PageHeader
+        title={recipe.title}
+        overline={<Link href="/recipes">← All recipes</Link>}
+        description={recipe.summary}
+        actions={
+          <ButtonLink render={<Link href={`/recipes/${recipe.id}/edit`} />}>Edit recipe</ButtonLink>
+        }
+      />
+      <PageContent>
+        <Stack gap="200">
+          <RecipeDetailsCard recipe={recipe} />
+          <RecipeIngredientsCard ingredients={recipe.ingredients} />
+          <RecipeMethodCard steps={recipe.steps} />
+          {recipe.notes && <RecipeNotesCard notes={recipe.notes} />}
+          <RecipeDeleteCard recipeId={recipe.id} deleteAction={deleteRecipeAction} />
+        </Stack>
+      </PageContent>
+    </PageLayout>
   );
 }
