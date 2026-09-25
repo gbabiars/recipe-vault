@@ -2,6 +2,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: fit-content;
   height: var(--height-button-medium);
   border: 1px solid var(--color-action-secondary-border);
   border-radius: var(--radius-100);
@@ -15,6 +16,10 @@
     background-color 150ms ease,
     border-color 150ms ease,
     color 150ms ease;
+}
+
+.button[data-full-width] {
+  width: 100%;
 }
 
 .button[data-size="small"] {
