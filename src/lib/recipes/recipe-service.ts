@@ -17,7 +17,6 @@ export class RecipeService {
     options: {
       search?: string;
       tags: string[];
-      tagIds?: string[];
       dietaryFlags: string[];
       page: number;
       pageSize: number;
@@ -30,7 +29,6 @@ export class RecipeService {
       options.dietaryFlags,
       (options.page - 1) * options.pageSize,
       options.pageSize,
-      options.tagIds,
     );
   }
   get(ownerId: string, recipeId: string) {
