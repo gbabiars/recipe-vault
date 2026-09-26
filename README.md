@@ -38,6 +38,17 @@ never from a request owner field.
 | `PATCH`  | `/api/v1/recipes/:id` | Validates and applies a partial update.            |
 | `DELETE` | `/api/v1/recipes/:id` | Deletes an owned recipe.                           |
 
+Recipe `tags: string[]` remains the API format. Tag IDs and associations live
+in owner-scoped database tables; the array is a synchronized compatibility
+projection until recipe readers and writers move to the new model. The tag
+migration backfills existing arrays using lowercase names, trimmed surrounding
+whitespace, and one space for repeated internal spaces. Similar names are kept
+separate. Recipe writes are atomic database transactions, including tag creation
+and ingredient and step changes. Tag management UI and MCP tag tools will follow.
+Apply the tag migration before deploying the application code that calls the new
+recipe write function. The migration retains the array and installs its sync
+triggers, so older application instances can continue writing during rollout.
+
 Successful writes record safe audit events. Recipe bodies, cookies,
 credentials, and request headers are never placed in audit metadata or
 application logs.

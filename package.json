@@ -23,7 +23,7 @@
     "supabase:status": "supabase status",
     "db:reset": "supabase db reset",
     "db:push": "supabase db push",
-    "test:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_rls_verification.sql",
+    "test:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_rls_verification.sql && psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/tags_verification.sql && bash supabase/tests/tags_concurrency.sh",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"

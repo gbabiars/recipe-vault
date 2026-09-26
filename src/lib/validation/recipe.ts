@@ -11,7 +11,7 @@ const labelsSchema = z
   .array(labelSchema)
   .max(32)
   .transform((labels) => {
-    return [...new Set(labels.map((label) => label.toLowerCase()))];
+    return [...new Set(labels.map((label) => label.replace(/ +/g, " ").toLowerCase()))];
   });
 
 const optionalText = (maxLength: number) => z.string().trim().min(1).max(maxLength).optional();

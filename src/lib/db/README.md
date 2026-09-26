@@ -11,3 +11,13 @@ function. It accepts Clerk string IDs, requires an owned target recipe, and reco
 request ID and method—never headers, credentials, or recipe content. The verified
 MCP adapter is the only server-side service-role caller; it binds the verified Clerk
 user and checks the tool scope before creating this repository.
+
+Tags live in owner-scoped `tags` and `recipe_tags` tables. The stable tag ID and
+association rows are authoritative; `recipes.tags` remains a database-maintained
+compatibility projection for existing recipe API readers and filters. A recipe
+insert or update that supplies the legacy array normalizes names, resolves or
+creates tags with a unique owner/name constraint, and replaces associations in
+one transaction. Tag rename and delete refresh affected recipe arrays; deletion
+cascades associations, never recipes. Application recipe create/update uses
+`recipe_vault_write_recipe` so recipe fields, details, and tags commit or roll
+back together. Association rows have no direct authenticated write grant.
