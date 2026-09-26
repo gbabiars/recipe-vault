@@ -1,18 +1,17 @@
 import { z } from "zod";
 
-const labelSchema = z
+export const tagNameSchema = z
   .string()
   .trim()
   .min(1)
   .max(64)
-  .regex(/^[a-z0-9][a-z0-9 _-]*$/i, "Use letters, numbers, spaces, underscores, or hyphens.");
+  .regex(/^[a-z0-9][a-z0-9 _-]*$/i, "Use letters, numbers, spaces, underscores, or hyphens.")
+  .transform((label) => label.replace(/ +/g, " ").toLowerCase());
 
 const labelsSchema = z
-  .array(labelSchema)
+  .array(tagNameSchema)
   .max(32)
-  .transform((labels) => {
-    return [...new Set(labels.map((label) => label.replace(/ +/g, " ").toLowerCase()))];
-  });
+  .transform((labels) => [...new Set(labels)]);
 
 const optionalText = (maxLength: number) => z.string().trim().min(1).max(maxLength).optional();
 

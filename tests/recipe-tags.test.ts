@@ -61,3 +61,26 @@ test("multiple recipe tag filters use any-match semantics", async () => {
   await repository.list("owner-a", undefined, ["dinner", "weeknight"]);
   assert.deepEqual(overlapCalls, [["dinner", "weeknight"]]);
 });
+
+test("multiple stable tag IDs use one any-match association filter", async () => {
+  const calls: unknown[][] = [];
+  const query = {
+    select: (fields: string) => {
+      calls.push(["select", fields]);
+      return query;
+    },
+    eq: () => query,
+    order: () => query,
+    range: () => query,
+    in: (field: string, ids: string[]) => {
+      calls.push(["in", field, ids]);
+      return query;
+    },
+    then: (resolve: (value: { data: unknown[]; count: number; error: null }) => void) =>
+      resolve({ data: [], count: 0, error: null }),
+  };
+  const repository = new RecipeRepository({ from: () => query } as never);
+  await repository.listPage("owner-a", undefined, [], [], 0, 25, ["tag-a", "tag-b"]);
+  assert.ok(String(calls[0][1]).includes("recipe_tags!inner(tag_id)"));
+  assert.deepEqual(calls[1], ["in", "recipe_tags.tag_id", ["tag-a", "tag-b"]]);
+});
