@@ -90,7 +90,7 @@ export function createRecipeApi(deps: ApiDependencies) {
       try {
         const page = await current.service.listPage(current.user.id, {
           ...query.data,
-          tags: query.data.tag ? [query.data.tag.toLowerCase()] : [],
+          tags: query.data.tag ? [query.data.tag.replace(/ +/g, " ").toLowerCase()] : [],
           dietaryFlags: query.data.dietaryFlag ? [query.data.dietaryFlag.toLowerCase()] : [],
         });
         return Response.json({

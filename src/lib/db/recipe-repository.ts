@@ -125,7 +125,7 @@ export class RecipeRepository {
       .order("updated_at", { ascending: false });
     if (search)
       query = query.ilike("title", `%${search.replaceAll("%", "\\%").replaceAll("_", "\\_")}%`);
-    for (const label of tags) query = query.contains("tags", [label]);
+    if (tags.length) query = query.overlaps("tags", tags);
     for (const dietaryFlag of dietaryFlags) query = query.contains("dietary_flags", [dietaryFlag]);
     const { data, error } = await query;
     if (error) throw new Error("Could not load recipes.");
@@ -166,7 +166,7 @@ export class RecipeRepository {
       .range(offset, offset + limit - 1);
     if (search)
       query = query.ilike("title", `%${search.replaceAll("%", "\\%").replaceAll("_", "\\_")}%`);
-    for (const label of tags) query = query.contains("tags", [label]);
+    if (tags.length) query = query.overlaps("tags", tags);
     for (const flag of dietaryFlags) query = query.contains("dietary_flags", [flag]);
     const { data, error, count } = await query;
     if (error) throw new Error("Could not load recipes.");
@@ -207,79 +207,41 @@ export class RecipeRepository {
     return data ? mapRecipe(data as DatabaseRecipe) : null;
   }
 
-  async create(ownerId: string, input: RecipeCreateInput): Promise<Recipe> {
-    const { data: recipe, error } = await this.client
-      .from("recipes")
-      .insert({ owner_id: ownerId, ...nullableFields(input) })
-      .select(selectFields)
-      .single();
-    if (error || !recipe) throw new Error("Could not create the recipe.");
-    const recipeId = (recipe as DatabaseRecipe).id;
-    const childRows = [
-      ...input.ingredients.map((item) => ({
-        recipe_id: recipeId,
+  private async write(
+    ownerId: string,
+    id: string | null,
+    input: RecipeCreateInput,
+  ): Promise<Recipe | null> {
+    const { data, error } = await this.client.rpc("recipe_vault_write_recipe", {
+      target_owner_id: ownerId,
+      target_recipe_id: id,
+      recipe_data: nullableFields(input),
+      ingredient_data: input.ingredients.map((item) => ({
         display_order: item.displayOrder,
         quantity: item.quantity,
         unit: item.unit,
         ingredient_name: item.ingredientName,
         notes: item.notes ?? null,
       })),
-      ...input.steps.map((item) => ({
-        recipe_id: recipeId,
+      step_data: input.steps.map((item) => ({
         step_order: item.stepOrder,
         instruction: item.instruction,
         duration_minutes: item.durationMinutes ?? null,
       })),
-    ];
-    const { error: ingredientError } = await this.client
-      .from("recipe_ingredients")
-      .insert(childRows.slice(0, input.ingredients.length));
-    const { error: stepError } = await this.client
-      .from("recipe_steps")
-      .insert(childRows.slice(input.ingredients.length));
-    if (ingredientError || stepError) {
-      await this.client.from("recipes").delete().eq("id", recipeId).eq("owner_id", ownerId);
-      throw new Error("Could not save the recipe details.");
-    }
-    return (await this.get(ownerId, recipeId))!;
+    });
+    if (error)
+      throw new Error(id ? "Could not update the recipe." : "Could not create the recipe.");
+    return data ? this.get(ownerId, data as string) : null;
   }
 
-  async update(ownerId: string, id: string, input: RecipeCreateInput): Promise<Recipe | null> {
-    const { error } = await this.client
-      .from("recipes")
-      .update(nullableFields(input))
-      .eq("id", id)
-      .eq("owner_id", ownerId);
-    if (error) throw new Error("Could not update the recipe.");
-    const { error: deleteIngredients } = await this.client
-      .from("recipe_ingredients")
-      .delete()
-      .eq("recipe_id", id);
-    const { error: deleteSteps } = await this.client
-      .from("recipe_steps")
-      .delete()
-      .eq("recipe_id", id);
-    if (deleteIngredients || deleteSteps) throw new Error("Could not update the recipe details.");
-    const { error: ingredientError } = await this.client.from("recipe_ingredients").insert(
-      input.ingredients.map((item) => ({
-        recipe_id: id,
-        display_order: item.displayOrder,
-        quantity: item.quantity,
-        unit: item.unit,
-        ingredient_name: item.ingredientName,
-        notes: item.notes ?? null,
-      })),
-    );
-    const { error: stepError } = await this.client.from("recipe_steps").insert(
-      input.steps.map((item) => ({
-        recipe_id: id,
-        step_order: item.stepOrder,
-        instruction: item.instruction,
-        duration_minutes: item.durationMinutes ?? null,
-      })),
-    );
-    if (ingredientError || stepError) throw new Error("Could not update the recipe details.");
-    return this.get(ownerId, id);
+  async create(ownerId: string, input: RecipeCreateInput): Promise<Recipe> {
+    const recipe = await this.write(ownerId, null, input);
+    if (!recipe) throw new Error("Could not create the recipe.");
+    return recipe;
+  }
+
+  update(ownerId: string, id: string, input: RecipeCreateInput): Promise<Recipe | null> {
+    return this.write(ownerId, id, input);
   }
 
   async remove(ownerId: string, id: string): Promise<void> {
