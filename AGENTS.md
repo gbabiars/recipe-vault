@@ -36,6 +36,16 @@ foundation deployable without adding product behavior that has not been requeste
   the web/API authorization and recipe-domain policies.
 - Read the `README.md` in the boundary you are changing before adding code there.
 
+## API design
+
+- Show the consuming code whenever proposing or discussing an API. Include at
+  least one realistic call-site example alongside the recommendation so its
+  ergonomics can be reviewed before implementation. For UI components, show
+  JSX that exercises the intended composition and important props or states.
+- When comparing materially different API shapes, include a consuming-code
+  example for each. Use the examples to check names, defaults, and composition,
+  and revise the API when a call site feels awkward or unclear.
+
 ## Security and configuration
 
 - Never commit `.env.local`, secrets, or real credentials; use `.env.example`
