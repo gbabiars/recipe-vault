@@ -12,7 +12,7 @@
   grid-column: 1 / -1;
 }
 
-@media (max-width: 640px) {
+@media (--viewport-below-sm) {
   .ingredientGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -56,7 +56,7 @@
   padding: 0 0.25rem;
 }
 
-@media (max-width: 640px) {
+@media (--viewport-below-sm) {
   .formGrid {
     grid-template-columns: 1fr;
   }

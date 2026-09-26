@@ -63,7 +63,7 @@
   cursor: pointer;
 }
 
-@media (max-width: 700px) {
+@media (--viewport-below-md) {
   .sidebar {
     position: static;
     flex-basis: auto;

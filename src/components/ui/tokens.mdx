@@ -8,6 +8,14 @@ The token source is `src/app/globals.css`. Use semantic tokens for component
 meaning; the light, dark, and system-dark definitions keep that meaning across
 themes. This guide maps existing uses and does not add values.
 
+Viewport breakpoints are defined in `src/components/ui/viewport.css` and are
+available in every CSS Module through PostCSS. Use `@media (--viewport-sm)` at
+640px and wider, `--viewport-md` at 768px and wider, `--viewport-lg` at 1024px
+and wider, or `--viewport-xl` at 1440px and wider. Use `--viewport-below-sm` for
+widths strictly below 640px and `--viewport-below-md` for widths strictly below
+768px. `GridItem`'s `sm` and `md` props use container widths, not these viewport
+breakpoints.
+
 <table>
   <thead>
     <tr>
