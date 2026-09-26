@@ -49,7 +49,7 @@ test.each([
 ] as const)("sidebar states on %s", (pathname, activeName, currentName) => {
   render(<AppSidebar pathname={pathname} onSignOut={() => {}} />);
 
-  const navigation = screen.getByRole("navigation", { name: "Primary" });
+  const navigation = screen.getByRole("navigation", { name: "Primary", hidden: true });
   const links = Array.from(navigation.querySelectorAll("a"));
   expect(
     links.filter((link) => link.classList.contains(styles.active)).map((link) => link.textContent),
@@ -64,22 +64,30 @@ test.each([
 test("sidebar exposes the expected navigation and sign-out controls", () => {
   render(<AppSidebar pathname="/recipes" onSignOut={() => {}} />);
 
-  const navigation = screen.getByRole("navigation", { name: "Primary" });
-  expect(screen.getByRole("link", { name: "Recipe Vault" }).getAttribute("href")).toBe("/recipes");
-  expect(screen.getByRole("link", { name: "Recipes" }).getAttribute("href")).toBe("/recipes");
-  expect(screen.getByRole("link", { name: "Settings" }).getAttribute("href")).toBe("/settings");
+  const navigation = screen.getByRole("navigation", { name: "Primary", hidden: true });
+  expect(
+    screen.getByRole("link", { name: "Recipe Vault", hidden: true }).getAttribute("href"),
+  ).toBe("/recipes");
+  expect(screen.getByRole("link", { name: "Recipes", hidden: true }).getAttribute("href")).toBe(
+    "/recipes",
+  );
+  expect(screen.getByRole("link", { name: "Settings", hidden: true }).getAttribute("href")).toBe(
+    "/settings",
+  );
   expect(Array.from(navigation.querySelectorAll("a"), (link) => link.textContent)).toEqual([
     "Recipes",
     "Settings",
   ]);
-  expect(screen.getByRole("button", { name: "Sign out" }).getAttribute("type")).toBe("button");
+  expect(screen.getByRole("button", { name: "Sign out", hidden: true }).getAttribute("type")).toBe(
+    "button",
+  );
 });
 
 test("sidebar invokes the supplied sign-out callback", () => {
   const onSignOut = vi.fn();
   render(<AppSidebar pathname="/recipes" onSignOut={onSignOut} />);
 
-  fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+  fireEvent.click(screen.getByRole("button", { name: "Sign out", hidden: true }));
 
   expect(onSignOut).toHaveBeenCalledOnce();
 });

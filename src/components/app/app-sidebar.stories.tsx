@@ -5,6 +5,9 @@ const meta = {
   title: "app/Navigation/Sidebar",
   component: AppSidebar,
   args: { pathname: "/recipes", onSignOut: () => {} },
+  parameters: {
+    layout: "fullscreen",
+  },
 } satisfies Meta<typeof AppSidebar>;
 
 export default meta;
