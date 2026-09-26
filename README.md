@@ -4,9 +4,10 @@ Recipe Vault is a private, multi-user recipe application built with Next.js,
 Clerk, and Supabase. Every authenticated Clerk user receives an isolated vault;
 the application has no public recipes, sharing, or cross-user access.
 
-Private pages share a sidebar with Recipes and Settings. Settings at `/settings`
-links to Profile (`/user-profile`); sign-in remains a standalone page. The root
-URL redirects to `/recipes`.
+Private pages show a sidebar at 768px and wider. Below 768px, a Recipe Vault
+title bar opens a left navigation drawer. Both contain Recipes, Settings, and
+Sign out. Settings at `/settings` links to Profile (`/user-profile`); sign-in
+remains a standalone page. The root URL redirects to `/recipes`.
 
 ## Authentication and data access
 

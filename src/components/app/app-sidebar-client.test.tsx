@@ -23,8 +23,10 @@ afterEach(() => {
 test("client sidebar signs out through Clerk and redirects to sign-in", () => {
   render(<AppSidebarClient />);
 
-  expect(screen.getByRole("link", { name: "Settings" }).getAttribute("aria-current")).toBe("page");
-  fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+  expect(
+    screen.getByRole("link", { name: "Settings", hidden: true }).getAttribute("aria-current"),
+  ).toBe("page");
+  fireEvent.click(screen.getByRole("button", { name: "Sign out", hidden: true }));
 
   expect(signOut).toHaveBeenCalledWith({ redirectUrl: "/sign-in" });
 });

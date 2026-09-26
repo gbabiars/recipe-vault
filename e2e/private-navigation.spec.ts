@@ -34,6 +34,18 @@ test("private sidebar navigation and sign out", async ({ page }) => {
   await expect(page).toHaveURL(/\/user-profile$/);
   await expect(settings).toHaveClass(/active/);
 
+  await page.setViewportSize({ width: 767, height: 800 });
+  await expect(navigation).toBeHidden();
+  await expect(page.getByRole("button", { name: "Open menu" })).toBeVisible();
+  await page.getByRole("button", { name: "Open menu" }).click();
+  const drawer = page.getByRole("dialog", { name: "Menu" });
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByRole("link", { name: "Settings" })).toHaveClass(/active/);
+  await page.setViewportSize({ width: 768, height: 800 });
+  await expect(drawer).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Open menu" })).toBeHidden();
+  await expect(navigation).toBeVisible();
+
   await page.emulateMedia({ colorScheme: "dark" });
   await expect(navigation).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
