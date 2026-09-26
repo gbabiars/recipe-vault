@@ -8,7 +8,7 @@
   min-width: 0;
 }
 
-@media (max-width: 640px) {
+@media (--viewport-below-sm) {
   .headingRow[data-wrap="false"] {
     flex-direction: column;
   }

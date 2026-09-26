@@ -11,7 +11,7 @@
   padding: var(--space-300);
 }
 
-@media (max-width: 700px) {
+@media (--viewport-below-md) {
   .privateLayout {
     flex-direction: column;
   }
@@ -20,7 +20,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (--viewport-below-sm) {
   .appShell {
     padding: 1rem;
   }
