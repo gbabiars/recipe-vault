@@ -157,11 +157,10 @@ export class RecipeRepository {
     dietaryFlags: string[],
     offset: number,
     limit: number,
-    tagIds: string[] = [],
   ): Promise<RecipePage> {
     let query = this.client
       .from("recipes")
-      .select(`${selectFields}${tagIds.length ? ", recipe_tags!inner(tag_id)" : ""}`, {
+      .select(selectFields, {
         count: "exact",
       })
       .eq("owner_id", ownerId)
@@ -171,7 +170,6 @@ export class RecipeRepository {
     if (search)
       query = query.ilike("title", `%${search.replaceAll("%", "\\%").replaceAll("_", "\\_")}%`);
     if (tags.length) query = query.overlaps("tags", tags);
-    if (tagIds.length) query = query.in("recipe_tags.tag_id", tagIds);
     for (const flag of dietaryFlags) query = query.contains("dietary_flags", [flag]);
     const { data, error, count } = await query;
     if (error) throw new Error("Could not load recipes.");
