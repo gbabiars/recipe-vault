@@ -7,16 +7,37 @@ import * as Stories from "./chip.stories";
 
 ## Purpose and choice
 
-Displays a short tag or dietary flag. Use Text for prose and Button or a link for an action.
+Displays a short tag or dietary flag. A Chip can be display-only or include a
+remove action when the surrounding collection is editable. Use Button or a link
+for other actions.
 
 ## Variants and composition
 
-There is no variant prop; native span props are accepted. Put one short label in each Chip; Inline can arrange multiple chips in a wrapping row.
+There is no variant prop. Native span props are accepted. Put one short label in
+each Chip; Inline can arrange multiple chips in a wrapping row.
+
+```tsx
+<Chip>vegetarian</Chip>
+
+<Chip onRemove={() => removeDietaryFlag("vegetarian")} removeLabel="Remove vegetarian">
+  vegetarian
+</Chip>
+```
+
+The caller owns the collection and removes the Chip by updating its data when
+`onRemove` runs. The Chip does not remove itself.
 
 ## Content and accessibility
 
-Chip is display text, not an interactive control. Keep its meaning understandable without color.
+Display-only Chips remain spans. A removable Chip adds a trailing native button;
+`removeLabel` is required and should include the visible Chip label, such as
+`"Remove vegetarian"`. The close icon is decorative. The button supports native
+keyboard activation and has a 24 by 24 pixel target and the shared visible focus
+style. Keep a Chip's meaning understandable without color. After removal, the
+caller owns focus placement in the surrounding collection.
 
 ## Story
 
 <Canvas of={Stories.Default} />
+
+<Canvas of={Stories.Removable} />
