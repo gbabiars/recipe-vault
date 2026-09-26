@@ -89,6 +89,7 @@ hosting, rollout, and verification instructions.
    `http://localhost:3000`.
 
 After edits, run `pnpm format`, then `pnpm check` and `pnpm build`.
+For commits, follow the [message convention](AGENTS.md#commit-messages).
 
 ## Component development
 

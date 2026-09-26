@@ -55,6 +55,26 @@ foundation deployable without adding product behavior that has not been requeste
 - Update `README.md` or the applicable boundary README when a change alters a
   documented contract or ownership boundary.
 
+## Commit messages
+
+- Write every commit, including merges and reverts, as
+  `<type>[(scope)][!]: <description>`. Use `feat`, `fix`, `docs`, `refactor`,
+  `test`, `perf`, `style`, `chore`, `build`, `ci`, or `revert`. Use `style` for
+  presentation or formatting changes without functional behavior.
+- Keep the subject at 72 characters or fewer, without a trailing period.
+  Describe the result that landed and its purpose, not work planned for later.
+  Use a lowercase, hyphenated scope when one helps identify the area.
+- After a blank line, write a nonempty prose body that explains why the change
+  was needed and what the commit actually changed. Keep it factual and concise;
+  use more detail when the reason or implementation is not obvious.
+
+```text
+fix(auth): keep expired sessions out of recipe requests
+
+Expired sessions could reach the recipe API before authentication failed.
+The request boundary now rejects them before invoking recipe services.
+```
+
 ## Storybook component guidance
 
 When working on UI components, use the `recipe-vault-components` MCP server to
