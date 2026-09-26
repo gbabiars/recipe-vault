@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, expect, test, vi } from "vitest";
 
 import { Chip } from "./chip";
 import styles from "./chip.module.css";
@@ -13,6 +13,39 @@ test("renders a span with its content", () => {
 
   expect(chip).toBeInstanceOf(HTMLSpanElement);
   expect(chip.textContent).toBe("weeknight");
+  expect(screen.queryByRole("button")).toBeNull();
+});
+
+test("calls onRemove from a labeled trailing button without removing the Chip", () => {
+  const onRemove = vi.fn();
+  render(
+    <Chip onRemove={onRemove} removeLabel="Remove vegetarian">
+      vegetarian
+    </Chip>,
+  );
+
+  const removeButton = screen.getByRole("button", { name: "Remove vegetarian" });
+
+  expect(removeButton.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
+  fireEvent.click(removeButton);
+
+  expect(onRemove).toHaveBeenCalledOnce();
+  expect(screen.getByText("vegetarian").textContent).toBe("vegetarian");
+});
+
+test("keeps remove-button clicks from reaching the Chip span", () => {
+  const onClick = vi.fn();
+  const onRemove = vi.fn();
+  render(
+    <Chip onClick={onClick} onRemove={onRemove} removeLabel="Remove vegetarian">
+      vegetarian
+    </Chip>,
+  );
+
+  fireEvent.click(screen.getByRole("button", { name: "Remove vegetarian" }));
+
+  expect(onRemove).toHaveBeenCalledOnce();
+  expect(onClick).not.toHaveBeenCalled();
 });
 
 test("applies the chip CSS module class", () => {

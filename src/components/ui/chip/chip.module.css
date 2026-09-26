@@ -4,4 +4,25 @@
   border-radius: var(--radius-full);
   padding: var(--space-050) var(--space-100);
   display: inline-flex;
+  align-items: center;
+}
+
+.removeButton {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-full);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  margin-inline-start: var(--space-050);
+  padding: 0;
+}
+
+.removeButton:hover {
+  background: var(--color-interaction-neutral-hover);
 }
