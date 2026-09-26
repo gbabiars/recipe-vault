@@ -62,6 +62,14 @@ consult Storybook's component guidance before answering or changing UI. Read
 `src/components/ui/README.md` and the linked family guide for local intent and
 token usage.
 
+When designing or revising a reusable UI component, review relevant patterns in
+all four design systems: [shadcn/ui](https://ui.shadcn.com/),
+[Astryx](https://astryx.atmeta.com/),
+[Atlassian Design System](https://atlassian.design/get-started), and
+[Primer](https://primer.style/product/getting-started/). Consider their guidance
+on behavior, accessibility, composition, and states alongside the local
+Storybook guidance. Keep the local component API and tokens authoritative.
+
 - Call `docs-list` to find the relevant components, then `docs-show` for their
   props, guidance, and examples. Check every prop before using it, even when its
   name seems familiar.
