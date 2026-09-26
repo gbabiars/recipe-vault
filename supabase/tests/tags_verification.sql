@@ -5,7 +5,7 @@ insert into public.recipes (owner_id, title, tags)
 values ('user_tags_owner', 'Backfill fixture', array['  Dinner  ', 'dinner', 'Week  Night', 'week night', 'week-night']);
 
 do $verify$
-declare rid uuid; tid uuid; before_count integer;
+declare rid uuid; tid uuid; unused_id uuid; before_count integer;
 begin
   select id into rid from public.recipes where title = 'Backfill fixture';
   if (select tags from public.recipes where id = rid) <> array['dinner', 'week night', 'week-night'] then
@@ -47,11 +47,29 @@ begin
     or array_position((select tags from public.recipes where id = rid), 'supper') is null then
     raise exception 'rename changed tag ID or lost association/projection';
   end if;
+  begin
+    update public.tags set name = 'week night' where id = tid;
+    raise exception 'rename into an existing canonical name succeeded';
+  exception when unique_violation then null;
+  end;
+  if (select name from public.tags where id = tid) <> 'supper'
+    or not exists (select 1 from public.recipe_tags where recipe_id = rid and tag_id = tid) then
+    raise exception 'conflicting rename changed tag or association';
+  end if;
   delete from public.tags where id = tid;
   if not exists (select 1 from public.recipes where id = rid)
     or exists (select 1 from public.recipe_tags where recipe_id = rid and tag_id = tid)
     or array_position((select tags from public.recipes where id = rid), 'supper') is not null then
     raise exception 'tag deletion left association or deleted recipe';
+  end if;
+  insert into public.tags(owner_id, name) values ('user_tags_owner', 'unused')
+  returning id into unused_id;
+  if exists (select 1 from public.recipe_tags where tag_id = unused_id) then
+    raise exception 'manual tag unexpectedly has recipe associations';
+  end if;
+  delete from public.tags where id = unused_id;
+  if exists (select 1 from public.tags where id = unused_id) then
+    raise exception 'unused tag deletion failed';
   end if;
 
   select count(*) into before_count from public.recipes;

@@ -21,3 +21,10 @@ one transaction. Tag rename and delete refresh affected recipe arrays; deletion
 cascades associations, never recipes. Application recipe create/update uses
 `recipe_vault_write_recipe` so recipe fields, details, and tags commit or roll
 back together. Association rows have no direct authenticated write grant.
+
+`tag-repository.ts` scopes every catalog read and mutation by owner, including
+when a service-role client bypasses RLS. Catalog queries order by canonical name
+then ID and include association counts. Tag creation uses owner/name insert-or-ignore
+to reuse the existing stable ID under concurrent requests. Rename and delete use
+single database statements, so Step 1 triggers update the recipe projection and
+associations in the same transaction.
