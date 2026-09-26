@@ -48,8 +48,11 @@ foundation deployable without adding product behavior that has not been requeste
 
 ## Change discipline
 
-- Prefer small, scoped changes that preserve existing public behavior unless the
-  request explicitly changes it.
+- Break plans, implementation prompts, and changes into small iterative steps,
+  each with one focused outcome and a way to verify it. Prefer narrow vertical
+  slices; split coupled work horizontally when needed. Keep large cross-cutting
+  changes out of a single step.
+- Preserve existing public behavior unless the request explicitly changes it.
 - Do not add production dependencies, change deployment configuration, or alter
   authentication policy without a clear task requirement.
 - Update `README.md` or the applicable boundary README when a change alters a
