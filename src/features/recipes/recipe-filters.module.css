@@ -1,0 +1,24 @@
+.card {
+  container-type: inline-size;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 18rem)) auto;
+  align-items: start;
+  gap: var(--space-150);
+}
+
+.action {
+  padding-block-start: calc(var(--line-height-text-medium) + var(--space-050));
+}
+
+@container (max-width: 44rem) {
+  .fields {
+    grid-template-columns: 1fr;
+  }
+
+  .action {
+    padding-block-start: 0;
+  }
+}
