@@ -4,6 +4,14 @@ import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
 let RecipesPage: typeof import("./page").default;
 
 vi.mock("@/lib/auth/require-user", () => ({ requireUser: async () => ({ id: "user-1" }) }));
+vi.mock("next/form", () => ({
+  __esModule: true,
+  default: ({
+    action,
+    scroll: _scroll,
+    ...props
+  }: React.ComponentProps<"form"> & { scroll?: boolean }) => <form action={action} {...props} />,
+}));
 vi.mock("@/lib/recipes", () => ({
   getRecipeService: async () => ({ list: async () => [] }),
 }));
@@ -30,9 +38,15 @@ test("labels search filters and preserves their query values", async () => {
   expect(screen.getByRole("searchbox", { name: "Search title" })).toBeTruthy();
   expect(screen.getByRole("combobox", { name: "Tag" })).toBeTruthy();
   expect(screen.getByRole("textbox", { name: "Dietary flag" })).toBeTruthy();
+  expect(container.querySelector("form")!.getAttribute("action")).toBe("/recipes");
   expect(Object.fromEntries(new FormData(container.querySelector("form")!))).toEqual({
     q: "soup",
     tag: "quick",
     dietary: "vegetarian",
   });
+  const loading = screen.getByText("Loading your recipes…");
+  expect(
+    container.querySelector("form")!.compareDocumentPosition(loading) &
+      Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
 });
