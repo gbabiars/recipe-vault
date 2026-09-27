@@ -11,7 +11,6 @@ const recipe: RecipeSummary = {
   summary: "A simple soup with fresh basil.",
   totalTimeMinutes: 35,
   tags: ["weeknight", "soup"],
-  dietaryFlags: ["vegetarian"],
   createdAt: "2026-09-01T12:00:00.000Z",
   updatedAt: "2026-09-15T12:00:00.000Z",
 };
@@ -44,7 +43,6 @@ export const Minimal: Story = {
       summary: undefined,
       totalTimeMinutes: undefined,
       tags: [],
-      dietaryFlags: [],
     },
   },
 };

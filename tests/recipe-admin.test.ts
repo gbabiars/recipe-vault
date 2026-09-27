@@ -70,7 +70,6 @@ test("recipe service scopes create, edit, and delete commands to the current own
       ownerId: "owner-a",
       title: "Toast",
       tags: [],
-      dietaryFlags: [],
       ingredients: inputIngredients(),
       steps: inputSteps(),
       createdAt: "now",

@@ -7,7 +7,6 @@ import type { RateLimiter } from "../src/lib/api/rate-limit";
 const input = {
   title: "Pasta",
   tags: ["Dinner"],
-  dietaryFlags: [] as string[],
   ingredients: [{ displayOrder: 1, quantity: 1, unit: "box", ingredientName: "pasta" }],
   steps: [{ stepOrder: 1, instruction: "Cook." }],
 };
@@ -21,7 +20,6 @@ function setup(user: string | null = "owner-a", limiter?: RateLimiter) {
       ownerId: string,
       search: string | undefined,
       tags: string[],
-      flags: string[],
       offset: number,
       limit: number,
     ) {
@@ -29,8 +27,7 @@ function setup(user: string | null = "owner-a", limiter?: RateLimiter) {
         (r) =>
           r.ownerId === ownerId &&
           (!search || r.title.toLowerCase().includes(search.toLowerCase())) &&
-          tags.every((tag) => r.tags.includes(tag)) &&
-          flags.every((flag) => r.dietaryFlags.includes(flag)),
+          tags.every((tag) => r.tags.includes(tag)),
       );
       return {
         items: rows.slice(offset, offset + limit).map((recipe) => ({
@@ -38,7 +35,6 @@ function setup(user: string | null = "owner-a", limiter?: RateLimiter) {
           ownerId: recipe.ownerId,
           title: recipe.title,
           tags: recipe.tags,
-          dietaryFlags: recipe.dietaryFlags,
           createdAt: recipe.createdAt,
           updatedAt: recipe.updatedAt,
         })),
@@ -116,6 +112,20 @@ test("API lists only the authenticated owner's recipes and supports filters", as
   assert.deepEqual(
     body.data.map((item: { id: string }) => item.id),
     ["mine"],
+  );
+  assert.equal("dietaryFlags" in body.data[0], false);
+});
+test("API rejects retired dietary filters and recipe fields", async () => {
+  const { api } = setup();
+  assert.equal((await api.list(req("http://test/api/v1/recipes?dietaryFlag=vegan")))!.status, 422);
+  assert.equal(
+    (await api.create(
+      req("http://test/api/v1/recipes", {
+        method: "POST",
+        body: JSON.stringify({ ...input, dietaryFlags: ["vegan"] }),
+      }),
+    ))!.status,
+    422,
   );
 });
 test("API does not enumerate another owner's get, update, or delete", async () => {

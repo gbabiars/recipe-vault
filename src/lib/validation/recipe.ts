@@ -42,7 +42,6 @@ const recipeFieldsSchema = z
     totalTimeMinutes: z.number().int().nonnegative().optional(),
     servings: z.number().int().positive().optional(),
     tags: labelsSchema.default([]),
-    dietaryFlags: labelsSchema.default([]),
     sourceUrl: z
       .string()
       .url()
@@ -87,7 +86,7 @@ export const recipeCreateInputSchema = recipeFieldsSchema
   });
 
 // Defaults are intentionally omitted in patches: `{}` must not turn into a request to
-// replace tags and dietary flags with empty arrays.
+// replace tags with an empty array.
 const recipeUpdateFieldsSchema = z
   .object({
     title: z.string().trim().min(1).max(200).optional(),
@@ -97,7 +96,6 @@ const recipeUpdateFieldsSchema = z
     totalTimeMinutes: z.number().int().nonnegative().optional(),
     servings: z.number().int().positive().optional(),
     tags: labelsSchema.optional(),
-    dietaryFlags: labelsSchema.optional(),
     sourceUrl: z
       .string()
       .url()

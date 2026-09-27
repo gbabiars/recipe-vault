@@ -20,7 +20,6 @@ const searchInputSchema = z
   .object({
     query: z.string().trim().min(1).max(200).optional(),
     tags: z.array(z.string().trim().min(1).max(64)).max(32).default([]),
-    dietaryFlags: z.array(z.string().trim().min(1).max(64)).max(32).default([]),
     limit: z.number().int().min(1).max(50).default(20),
   })
   .strict();
@@ -36,7 +35,6 @@ const recipeDisplaySchema = z
     totalTimeMinutes: z.number().int().nonnegative().optional(),
     servings: z.number().int().positive().optional(),
     tags: z.array(z.string()),
-    dietaryFlags: z.array(z.string()),
     ingredients: z.array(
       z
         .object({
@@ -74,7 +72,6 @@ function displayRecipe(recipe: Recipe) {
         : {}),
       ...(recipe.servings !== undefined ? { servings: recipe.servings } : {}),
       tags: recipe.tags,
-      dietaryFlags: recipe.dietaryFlags,
       ingredients: recipe.ingredients.map(({ quantity, unit, ingredientName, notes }) => ({
         quantity,
         unit,
@@ -117,7 +114,6 @@ export function createRecipeMcpTools(context: McpToolContext) {
         const results = await context.service.listPage({
           search: parsed.data.query,
           tags: parsed.data.tags.map((tag) => tag.toLowerCase()),
-          dietaryFlags: parsed.data.dietaryFlags.map((flag) => flag.toLowerCase()),
           page: 1,
           pageSize: parsed.data.limit,
         });

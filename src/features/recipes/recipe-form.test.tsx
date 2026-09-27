@@ -46,7 +46,6 @@ test("uses multiple tag choices and keeps the comma-delimited recipe format", as
         ownerId: "owner-1",
         title: "Tomato soup",
         tags: ["quick", "soup"],
-        dietaryFlags: [],
         ingredients: [{ displayOrder: 1, quantity: 1, unit: "can", ingredientName: "Tomato" }],
         steps: [{ stepOrder: 1, instruction: "Simmer" }],
         createdAt: "2026-01-01T00:00:00.000Z",
@@ -57,6 +56,7 @@ test("uses multiple tag choices and keeps the comma-delimited recipe format", as
 
   const tags = screen.getByRole("combobox", { name: "Tags" });
   expect(tags).toBeInstanceOf(HTMLInputElement);
+  expect(screen.queryByRole("combobox", { name: "Dietary flags" })).toBeNull();
   expect(screen.getByRole("button", { name: "Remove quick" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Remove soup" })).toBeTruthy();
 

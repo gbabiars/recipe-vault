@@ -13,15 +13,14 @@ export class RecipeService {
     return this.recipes.listTags(ownerId, search);
   }
 
-  list(ownerId: string, search?: string, tags?: string[], dietaryFlags?: string[]) {
-    return this.recipes.list(ownerId, search, tags, dietaryFlags);
+  list(ownerId: string, search?: string, tags?: string[]) {
+    return this.recipes.list(ownerId, search, tags);
   }
   listPage(
     ownerId: string,
     options: {
       search?: string;
       tags: string[];
-      dietaryFlags: string[];
       page: number;
       pageSize: number;
     },
@@ -30,7 +29,6 @@ export class RecipeService {
       ownerId,
       options.search,
       options.tags,
-      options.dietaryFlags,
       (options.page - 1) * options.pageSize,
       options.pageSize,
     );
@@ -59,7 +57,6 @@ export class RecipeService {
       totalTimeMinutes: current.totalTimeMinutes,
       servings: current.servings,
       tags: current.tags,
-      dietaryFlags: current.dietaryFlags,
       sourceUrl: current.sourceUrl,
       notes: current.notes,
       ...patch,

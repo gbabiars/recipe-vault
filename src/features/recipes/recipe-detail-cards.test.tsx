@@ -20,7 +20,6 @@ const recipe: Recipe = {
   totalTimeMinutes: 30,
   sourceUrl: "https://example.com/soup",
   tags: ["soup"],
-  dietaryFlags: ["vegetarian"],
   notes: "First line\nSecond line",
   ingredients: [
     { displayOrder: 1, quantity: 2, unit: "cups", ingredientName: "tomatoes", notes: "chopped" },
@@ -44,7 +43,7 @@ test("details render metadata, source, and labels, including zero servings", () 
     within(details).getByRole("link", { name: "View original source" }).getAttribute("href"),
   ).toBe(recipe.sourceUrl);
   expect(within(details).getByText("soup")).toBeTruthy();
-  expect(within(details).getByText("vegetarian")).toBeTruthy();
+  expect(within(details).queryByText("vegetarian")).toBeNull();
 });
 
 test("details omit optional metadata and source", () => {
@@ -58,7 +57,6 @@ test("details omit optional metadata and source", () => {
         totalTimeMinutes: undefined,
         sourceUrl: undefined,
         tags: [],
-        dietaryFlags: [],
       }}
     />,
   );

@@ -9,7 +9,6 @@ const recipe: RecipeSummary = {
   summary: "A simple soup with fresh basil.",
   totalTimeMinutes: 0,
   tags: ["weeknight", "soup"],
-  dietaryFlags: ["vegetarian"],
   createdAt: "2026-09-01T12:00:00.000Z",
   updatedAt: "2026-09-15T12:00:00.000Z",
 };
@@ -44,7 +43,7 @@ test("shows recipe details in a linked list item", () => {
   expect(within(item).getByText("Updated Sep 15, 2026")).toBeTruthy();
   expect(within(item).getByText("weeknight")).toBeTruthy();
   expect(within(item).getByText("soup")).toBeTruthy();
-  expect(within(item).getByText("vegetarian")).toBeTruthy();
+  expect(within(item).queryByText("vegetarian")).toBeNull();
 });
 
 test("omits optional summary, timing, and labels when absent", () => {
@@ -58,7 +57,6 @@ test("omits optional summary, timing, and labels when absent", () => {
           summary: undefined,
           totalTimeMinutes: undefined,
           tags: [],
-          dietaryFlags: [],
         }}
       />
     </ul>,

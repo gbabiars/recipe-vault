@@ -7,7 +7,7 @@ reuse this service rather than reaching into Supabase from routes. Updates are p
 Recipe tag names are canonical lowercase ASCII with surrounding whitespace
 removed and repeated internal ASCII spaces collapsed to one. The recipe input
 schema removes duplicates after normalization. Tags with distinct canonical
-names remain distinct; dietary flags stay separate. The database applies the
+names remain distinct. The database applies the
 same tag rule to legacy array writes and existing data during backfill.
 
 Recipe listing filters by canonical tag name. `listTags(ownerId, search)` exposes

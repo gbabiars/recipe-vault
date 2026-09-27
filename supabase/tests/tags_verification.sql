@@ -7,6 +7,9 @@ values ('user_tags_owner', 'Backfill fixture', array['  Dinner  ', 'dinner', 'We
 do $verify$
 declare rid uuid; tid uuid; unused_id uuid; before_count integer;
 begin
+  if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'recipes' and column_name = 'dietary_flags') then
+    raise exception 'retired dietary_flags column still exists';
+  end if;
   select id into rid from public.recipes where title = 'Backfill fixture';
   if (select tags from public.recipes where id = rid) <> array['dinner', 'week night', 'week-night'] then
     raise exception 'canonical projection failed';
@@ -77,7 +80,7 @@ begin
   begin
     perform public.recipe_vault_write_recipe(
       'user_tags_owner', null,
-      '{"title":"Failure fixture","tags":["new tag"],"dietary_flags":[]}'::jsonb,
+      '{"title":"Failure fixture","tags":["new tag"]}'::jsonb,
       '[{"display_order":1,"quantity":1,"unit":"g","ingredient_name":"flour"}]'::jsonb,
       '[{"step_order":1,"instruction":"ok"},{"step_order":1,"instruction":"duplicate"}]'::jsonb
     );
@@ -108,7 +111,7 @@ begin
   begin
     perform public.recipe_vault_write_recipe(
       'user_tags_owner', null,
-      '{"title":"Intrusion","tags":[],"dietary_flags":[]}'::jsonb,
+      '{"title":"Intrusion","tags":[]}'::jsonb,
       '[{"display_order":1,"quantity":1,"unit":"g","ingredient_name":"flour"}]'::jsonb,
       '[{"step_order":1,"instruction":"ok"}]'::jsonb
     );

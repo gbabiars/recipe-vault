@@ -60,7 +60,6 @@ test("renders a recipe result safely in a generic MCP Apps host", async ({ page 
               totalTimeMinutes: 13,
               servings: 2,
               tags: ["weeknight"],
-              dietaryFlags: ["high-protein"],
               ingredients: [
                 {
                   quantity: 450,
@@ -102,7 +101,6 @@ test("renders a recipe result safely in a generic MCP Apps host", async ({ page 
             recipe: {
               title: "Plain eggs",
               tags: [],
-              dietaryFlags: [],
               ingredients: [{ quantity: 2, unit: "", ingredientName: "eggs" }],
               steps: [{ instruction: "Cook." }],
             },

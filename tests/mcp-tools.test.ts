@@ -6,7 +6,6 @@ import type { RateLimiter } from "../src/lib/api/rate-limit";
 const recipe = {
   title: "Owner Pasta",
   tags: ["dinner"],
-  dietaryFlags: [] as string[],
   ingredients: [{ displayOrder: 1, quantity: 1, unit: "box", ingredientName: "pasta" }],
   steps: [{ stepOrder: 1, instruction: "Cook." }],
 };
@@ -71,6 +70,12 @@ test("MCP search returns concise cards for the authenticated owner only", async 
   assert.deepEqual(body.recipes, [{ id: "mine", title: "Owner Pasta", tags: ["dinner"] }]);
 });
 
+test("MCP rejects retired dietary search and save inputs", async () => {
+  const { tools } = setup();
+  assert.equal((await tools.search_recipes({ dietaryFlags: ["vegan"] })).isError, true);
+  assert.equal((await tools.save_recipe({ ...recipe, dietaryFlags: ["vegan"] })).isError, true);
+});
+
 test("MCP get does not enumerate another owner's recipe", async () => {
   const { tools, rows } = setup();
   rows.set("00000000-0000-4000-8000-000000000002", {
@@ -97,7 +102,6 @@ test("MCP get keeps its JSON fallback and returns a display-only recipe projecti
     cookTimeMinutes: 10,
     totalTimeMinutes: 15,
     servings: 2,
-    dietaryFlags: ["high-protein"],
     notes: "Use a hot pan.\nRest before serving.",
     sourceUrl: "https://example.test/burger",
     createdAt: "2026-09-01T12:00:00.000Z",
@@ -119,7 +123,6 @@ test("MCP get keeps its JSON fallback and returns a display-only recipe projecti
       totalTimeMinutes: 15,
       servings: 2,
       tags: ["dinner"],
-      dietaryFlags: ["high-protein"],
       ingredients: [{ quantity: 1, unit: "box", ingredientName: "pasta" }],
       steps: [{ instruction: "Cook." }],
       notes: "Use a hot pan.\nRest before serving.",

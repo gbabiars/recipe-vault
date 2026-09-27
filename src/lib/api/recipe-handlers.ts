@@ -16,7 +16,6 @@ const listQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(25),
   search: z.string().trim().min(1).max(200).optional(),
   tag: z.string().trim().min(1).max(64).optional(),
-  dietaryFlag: z.string().trim().min(1).max(64).optional(),
 });
 const tagQuerySchema = z.object({ search: z.string().trim().max(200).default("") });
 
@@ -99,9 +98,10 @@ export function createRecipeApi(deps: ApiDependencies) {
     async list(request: Request) {
       const current = await context(request, false);
       if ("error" in current) return current.error;
-      const query = listQuerySchema.safeParse(
-        Object.fromEntries(new URL(request.url).searchParams),
-      );
+      const params = new URL(request.url).searchParams;
+      if (params.has("dietaryFlag"))
+        return responseError(422, "invalid_request", "Invalid query parameters.", current.id);
+      const query = listQuerySchema.safeParse(Object.fromEntries(params));
       if (!query.success)
         return responseError(
           422,
@@ -114,7 +114,6 @@ export function createRecipeApi(deps: ApiDependencies) {
         const page = await current.service.listPage(current.user.id, {
           ...query.data,
           tags: query.data.tag ? [query.data.tag.replace(/ +/g, " ").toLowerCase()] : [],
-          dietaryFlags: query.data.dietaryFlag ? [query.data.dietaryFlag.toLowerCase()] : [],
         });
         return Response.json({
           data: page.items,

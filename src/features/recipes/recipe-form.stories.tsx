@@ -10,7 +10,6 @@ const recipe: Recipe = {
   summary: "A simple tomato soup.",
   servings: 4,
   tags: ["soup", "weeknight"],
-  dietaryFlags: ["vegetarian"],
   ingredients: [{ displayOrder: 1, quantity: 1, unit: "can", ingredientName: "Tomatoes" }],
   steps: [{ stepOrder: 1, instruction: "Simmer the tomatoes." }],
   createdAt: "2026-01-01T00:00:00.000Z",

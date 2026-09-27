@@ -10,7 +10,6 @@ const recipe: Recipe = {
   title: "Tomato soup",
   summary: "Fresh basil soup",
   tags: [],
-  dietaryFlags: [],
   notes: "A note",
   ingredients: [{ displayOrder: 1, quantity: 2, unit: "cups", ingredientName: "tomatoes" }],
   steps: [{ stepOrder: 1, instruction: "Simmer." }],

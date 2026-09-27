@@ -20,9 +20,9 @@ import type { RecipeSummary } from "@/lib/db/recipe-repository";
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; tag?: string; dietary?: string }>;
+  searchParams: Promise<{ q?: string; tag?: string }>;
 }) {
-  const { q, tag, dietary } = await searchParams;
+  const { q, tag } = await searchParams;
   return (
     <PageLayout>
       <PageHeader
@@ -40,12 +40,6 @@ export default async function RecipesPage({
               <Grid gap="150" columns={{ minWidth: 180, max: 4 }}>
                 <TextInput name="q" label="Search title" type="search" defaultValue={q} />
                 <TagFilter tag={tag} />
-                <TextInput
-                  name="dietary"
-                  label="Dietary flag"
-                  defaultValue={dietary}
-                  placeholder="vegetarian"
-                />
                 <Stack justify="end">
                   <Button type="submit">Filter</Button>
                 </Stack>
@@ -53,14 +47,14 @@ export default async function RecipesPage({
             </Card>
           </Form>
           <Suspense
-            key={JSON.stringify([q, tag, dietary])}
+            key={JSON.stringify([q, tag])}
             fallback={
               <Text as="p" aria-live="polite">
                 Loading your recipes…
               </Text>
             }
           >
-            <RecipeResults q={q} tag={tag} dietary={dietary} />
+            <RecipeResults q={q} tag={tag} />
           </Suspense>
         </Stack>
       </PageContent>
@@ -68,14 +62,12 @@ export default async function RecipesPage({
   );
 }
 
-async function RecipeResults({ q, tag, dietary }: { q?: string; tag?: string; dietary?: string }) {
+async function RecipeResults({ q, tag }: { q?: string; tag?: string }) {
   const user = await requireUser();
   let recipes: RecipeSummary[];
   let error: string | undefined;
   try {
-    recipes = await (
-      await getRecipeService()
-    ).list(user.id, q?.trim(), tag ? [tag] : [], dietary ? [dietary] : []);
+    recipes = await (await getRecipeService()).list(user.id, q?.trim(), tag ? [tag] : []);
   } catch {
     recipes = [];
     error = "Recipes could not be loaded. Refresh the page to try again.";
@@ -95,7 +87,7 @@ async function RecipeResults({ q, tag, dietary }: { q?: string; tag?: string; di
               No recipes found
             </Heading>
             <Text as="p">
-              {q || tag || dietary
+              {q || tag
                 ? "Try a different search or filter."
                 : "Start your private collection with your first recipe."}
             </Text>

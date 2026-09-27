@@ -9,7 +9,6 @@ const validRecipe = {
   totalTimeMinutes: 25,
   servings: 2,
   tags: ["Weeknight", "weeknight"],
-  dietaryFlags: ["Vegetarian"],
   ingredients: [{ displayOrder: 1, quantity: 200, unit: "g", ingredientName: "spaghetti" }],
   steps: [{ stepOrder: 1, instruction: "Cook the pasta.", durationMinutes: 10 }],
 };
@@ -18,7 +17,6 @@ test("accepts a structured recipe and canonicalizes labels", () => {
   const result = recipeCreateInputSchema.parse(validRecipe);
 
   assert.deepEqual(result.tags, ["weeknight"]);
-  assert.deepEqual(result.dietaryFlags, ["vegetarian"]);
 });
 
 test("rejects invalid quantities, durations, servings, and ordering", () => {
@@ -49,4 +47,12 @@ test("rejects inconsistent total time and duplicate child ordering", () => {
 test("requires a non-empty update patch", () => {
   assert.equal(recipeUpdateInputSchema.safeParse({}).success, false);
   assert.equal(recipeUpdateInputSchema.safeParse({ title: "Updated" }).success, true);
+});
+
+test("rejects retired dietary fields in create and update commands", () => {
+  assert.equal(
+    recipeCreateInputSchema.safeParse({ ...validRecipe, dietaryFlags: ["vegan"] }).success,
+    false,
+  );
+  assert.equal(recipeUpdateInputSchema.safeParse({ dietaryFlags: ["vegan"] }).success, false);
 });
