@@ -268,14 +268,13 @@ export function ComboboxField(props: ComboboxFieldProps) {
               <Combobox.List className={styles.list}>
                 {(item: ComboboxOption) => (
                   <Combobox.Item key={item.value} value={item} className={styles.item}>
-                    {item.value.startsWith(CREATE_VALUE) ? (
-                      <Plus aria-hidden="true" size={16} />
-                    ) : (
-                      <Combobox.ItemIndicator>
+                    {item.value.startsWith(CREATE_VALUE) && <Plus aria-hidden="true" size={16} />}
+                    {item.label}
+                    {!item.value.startsWith(CREATE_VALUE) && (
+                      <Combobox.ItemIndicator className={styles.itemIndicator}>
                         <Check aria-hidden="true" size={16} />
                       </Combobox.ItemIndicator>
                     )}
-                    {item.label}
                   </Combobox.Item>
                 )}
               </Combobox.List>

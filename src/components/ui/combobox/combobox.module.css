@@ -103,6 +103,10 @@
 .item[data-selected] {
   font-weight: var(--font-weight-semibold);
 }
+.itemIndicator {
+  display: inline-flex;
+  margin-inline-start: auto;
+}
 .status {
   padding: var(--space-100);
   color: var(--color-text-secondary);
