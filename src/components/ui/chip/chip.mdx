@@ -7,7 +7,7 @@ import * as Stories from "./chip.stories";
 
 ## Purpose and choice
 
-Displays a short tag or dietary flag. A Chip can be display-only or include a
+Displays a short tag. A Chip can be display-only or include a
 remove action when the surrounding collection is editable. Use Button or a link
 for other actions.
 
@@ -19,7 +19,7 @@ each Chip; Inline can arrange multiple chips in a wrapping row.
 ```tsx
 <Chip>vegetarian</Chip>
 
-<Chip onRemove={() => removeDietaryFlag("vegetarian")} removeLabel="Remove vegetarian">
+<Chip onRemove={() => removeTag("vegetarian")} removeLabel="Remove vegetarian">
   vegetarian
 </Chip>
 ```

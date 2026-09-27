@@ -35,7 +35,7 @@ export function RecipeListCard({ recipe }: { recipe: RecipeSummary }) {
           </Text>
         </Inline>
         <Inline gap="100">
-          {[...recipe.tags, ...recipe.dietaryFlags].map((label) => (
+          {recipe.tags.map((label) => (
             <Chip key={label}>{label}</Chip>
           ))}
         </Inline>

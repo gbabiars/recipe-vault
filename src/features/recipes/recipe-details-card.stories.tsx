@@ -14,7 +14,6 @@ const recipe: Recipe = {
   totalTimeMinutes: 35,
   sourceUrl: "https://example.com/recipes/tomato-soup",
   tags: ["weeknight", "soup"],
-  dietaryFlags: ["vegetarian"],
   ingredients: [],
   steps: [],
   createdAt: "2026-09-01T12:00:00.000Z",
@@ -50,7 +49,6 @@ export const Minimal: Story = {
       totalTimeMinutes: undefined,
       sourceUrl: undefined,
       tags: [],
-      dietaryFlags: [],
     },
   },
 };

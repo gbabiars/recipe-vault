@@ -13,10 +13,10 @@ begin
 
   insert into public.recipes (
     owner_id, title, summary, prep_time_minutes, cook_time_minutes,
-    total_time_minutes, servings, tags, dietary_flags, notes
+    total_time_minutes, servings, tags, notes
   ) values (
     seed_owner_id, 'Lemon Herb Pasta', 'A small, non-sensitive local development sample.',
-    10, 15, 25, 2, array['weeknight', 'pasta'], array['vegetarian'],
+    10, 15, 25, 2, array['weeknight', 'pasta'],
     'Seed data only; safe to remove locally.'
   ) returning id into sample_recipe_id;
 

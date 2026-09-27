@@ -11,7 +11,6 @@ export type Recipe = {
   totalTimeMinutes?: number;
   servings?: number;
   tags: string[];
-  dietaryFlags: string[];
   sourceUrl?: string;
   notes?: string;
   createdAt: string;
@@ -36,7 +35,6 @@ type DatabaseRecipe = {
   total_time_minutes: number | null;
   servings: number | null;
   tags: string[];
-  dietary_flags: string[];
   source_url: string | null;
   notes: string | null;
   created_at: string;
@@ -56,7 +54,7 @@ type DatabaseRecipe = {
 };
 
 const selectFields =
-  "id, owner_id, title, summary, prep_time_minutes, cook_time_minutes, total_time_minutes, servings, tags, dietary_flags, source_url, notes, created_at, updated_at";
+  "id, owner_id, title, summary, prep_time_minutes, cook_time_minutes, total_time_minutes, servings, tags, source_url, notes, created_at, updated_at";
 
 function nullableFields(input: Omit<RecipeCreateInput, "ingredients" | "steps">) {
   return {
@@ -67,7 +65,6 @@ function nullableFields(input: Omit<RecipeCreateInput, "ingredients" | "steps">)
     total_time_minutes: input.totalTimeMinutes ?? null,
     servings: input.servings ?? null,
     tags: input.tags,
-    dietary_flags: input.dietaryFlags,
     source_url: input.sourceUrl ?? null,
     notes: input.notes ?? null,
   };
@@ -84,7 +81,6 @@ function mapRecipe(row: DatabaseRecipe): Recipe {
     totalTimeMinutes: row.total_time_minutes ?? undefined,
     servings: row.servings ?? undefined,
     tags: row.tags,
-    dietaryFlags: row.dietary_flags,
     sourceUrl: row.source_url ?? undefined,
     notes: row.notes ?? undefined,
     createdAt: row.created_at,
@@ -128,12 +124,7 @@ export class RecipeRepository {
     return data as Array<{ name: string }>;
   }
 
-  async list(
-    ownerId: string,
-    search?: string,
-    tags: string[] = [],
-    dietaryFlags: string[] = [],
-  ): Promise<RecipeSummary[]> {
+  async list(ownerId: string, search?: string, tags: string[] = []): Promise<RecipeSummary[]> {
     let query = this.client
       .from("recipes")
       .select(selectFields)
@@ -142,7 +133,6 @@ export class RecipeRepository {
     if (search)
       query = query.ilike("title", `%${search.replaceAll("%", "\\%").replaceAll("_", "\\_")}%`);
     if (tags.length) query = query.overlaps("tags", tags);
-    for (const dietaryFlag of dietaryFlags) query = query.contains("dietary_flags", [dietaryFlag]);
     const { data, error } = await query;
     if (error) throw new Error("Could not load recipes.");
     return (data as DatabaseRecipe[]).map((row) => {
@@ -157,7 +147,6 @@ export class RecipeRepository {
         totalTimeMinutes: recipe.totalTimeMinutes,
         servings: recipe.servings,
         tags: recipe.tags,
-        dietaryFlags: recipe.dietaryFlags,
         sourceUrl: recipe.sourceUrl,
         notes: recipe.notes,
         createdAt: recipe.createdAt,
@@ -170,7 +159,6 @@ export class RecipeRepository {
     ownerId: string,
     search: string | undefined,
     tags: string[],
-    dietaryFlags: string[],
     offset: number,
     limit: number,
   ): Promise<RecipePage> {
@@ -186,7 +174,6 @@ export class RecipeRepository {
     if (search)
       query = query.ilike("title", `%${search.replaceAll("%", "\\%").replaceAll("_", "\\_")}%`);
     if (tags.length) query = query.overlaps("tags", tags);
-    for (const flag of dietaryFlags) query = query.contains("dietary_flags", [flag]);
     const { data, error, count } = await query;
     if (error) throw new Error("Could not load recipes.");
     return {
@@ -202,7 +189,6 @@ export class RecipeRepository {
           totalTimeMinutes: recipe.totalTimeMinutes,
           servings: recipe.servings,
           tags: recipe.tags,
-          dietaryFlags: recipe.dietaryFlags,
           sourceUrl: recipe.sourceUrl,
           notes: recipe.notes,
           createdAt: recipe.createdAt,

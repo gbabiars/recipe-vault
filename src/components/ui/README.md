@@ -12,7 +12,7 @@ The exported TypeScript types remain the authority for exact prop signatures.
 | Show a page's place in a hierarchy         | `Breadcrumbs`, `BreadcrumbsItem`                                                                   | [Breadcrumbs](breadcrumbs/breadcrumbs.mdx), [stories](breadcrumbs/breadcrumbs.stories.tsx)                                                    | Stories only; ready for `PageHeader.overline`                    |
 | Group content or offer a whole-card action | `Card`                                                                                             | [Card](card/card.mdx), [stories](card/card.stories.tsx)                                                                                       | Recipe lists and details, settings                               |
 | Choose independent values                  | `CheckboxInput`, `CheckboxGroup`, `CheckboxGroupItem`                                              | [Checkbox](checkbox/checkbox.mdx), [input stories](checkbox/checkbox-input.stories.tsx), [group stories](checkbox/checkbox-group.stories.tsx) | Delete confirmation uses `CheckboxInput`; group has stories only |
-| Display a compact label                    | `Chip`                                                                                             | [Chip](chip/chip.mdx), [stories](chip/chip.stories.tsx)                                                                                       | Recipe tags and dietary flags                                    |
+| Display a compact label                    | `Chip`                                                                                             | [Chip](chip/chip.mdx), [stories](chip/chip.stories.tsx)                                                                                       | Recipe tags                                                      |
 | Search and choose labeled values           | `ComboboxField`                                                                                    | [Combobox](combobox/combobox.mdx), [stories](combobox/combobox.stories.tsx)                                                                   | Reusable form field; no recipe form use yet                      |
 | Compose a custom form field                | `Field`, `FieldLabel`, `FieldDescription`, `FieldError`, `FieldItem`, `Fieldset`, `FieldsetLegend` | [Field](field/field.mdx), [stories](field/field.stories.tsx)                                                                                  | Used by choice and text controls internally                      |
 | Lay out columns                            | `Grid`, `GridItem`                                                                                 | [Grid](grid/grid.mdx), [stories](grid/grid.stories.tsx)                                                                                       | Stories only; recipe list currently uses feature styling         |
@@ -50,8 +50,6 @@ to CSS tokens.
   or which action should be emphasized when several are present.
 - The current UI does not settle when a recipe list should switch from its
   feature-specific layout to `Grid`, or what its minimum card width should be.
-- Tags and dietary flags share `Chip` styling; no distinct meaning or treatment
-  for these categories has been decided.
 - The visual priority between `default`, `primary`, and `subtle` actions across
   every workflow has not been specified beyond their current component styling
   and uses.

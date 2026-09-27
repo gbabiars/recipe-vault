@@ -13,7 +13,6 @@ type RecipeView = {
   totalTimeMinutes?: number;
   servings?: number;
   tags: string[];
-  dietaryFlags: string[];
   ingredients: Array<{
     quantity: number;
     unit: string;
@@ -69,8 +68,6 @@ function isRecipeView(value: unknown): value is RecipeView {
     hasOptionalString(recipe.sourceUrl) &&
     Array.isArray(recipe.tags) &&
     recipe.tags.every((tag) => typeof tag === "string") &&
-    Array.isArray(recipe.dietaryFlags) &&
-    recipe.dietaryFlags.every((flag) => typeof flag === "string") &&
     Array.isArray(recipe.ingredients) &&
     recipe.ingredients.every(
       (ingredient) =>
@@ -94,10 +91,7 @@ function isRecipeView(value: unknown): value is RecipeView {
 }
 
 function renderLabels(recipe: RecipeView) {
-  const labels = [
-    ...recipe.tags.map((tag) => `Tag: ${tag}`),
-    ...recipe.dietaryFlags.map((flag) => `Dietary: ${flag}`),
-  ];
+  const labels = [...recipe.tags.map((tag) => `Tag: ${tag}`)];
   if (labels.length === 0) return null;
   const list = element("ul");
   list.className = "labels";

@@ -27,7 +27,7 @@ afterAll(() => {
   vi.unstubAllGlobals();
 });
 
-test("labels search filters and preserves their query values", async () => {
+test("ignores a saved dietary filter and preserves search and tag values", async () => {
   const page = await RecipesPage({
     searchParams: Promise.resolve({ q: "soup", tag: "quick", dietary: "vegetarian" }),
   });
@@ -37,12 +37,11 @@ test("labels search filters and preserves their query values", async () => {
   ).toBe("2");
   expect(screen.getByRole("searchbox", { name: "Search title" })).toBeTruthy();
   expect(screen.getByRole("combobox", { name: "Tag" })).toBeTruthy();
-  expect(screen.getByRole("textbox", { name: "Dietary flag" })).toBeTruthy();
+  expect(screen.queryByRole("textbox", { name: "Dietary flag" })).toBeNull();
   expect(container.querySelector("form")!.getAttribute("action")).toBe("/recipes");
   expect(Object.fromEntries(new FormData(container.querySelector("form")!))).toEqual({
     q: "soup",
     tag: "quick",
-    dietary: "vegetarian",
   });
   const loading = screen.getByText("Loading your recipes…");
   expect(
