@@ -9,6 +9,10 @@ import type { AuditMetadata, RecipePage } from "@/lib/db/recipe-repository";
 export class RecipeService {
   constructor(private readonly recipes: RecipeRepository) {}
 
+  listTags(ownerId: string, search?: string) {
+    return this.recipes.listTags(ownerId, search);
+  }
+
   list(ownerId: string, search?: string, tags?: string[], dietaryFlags?: string[]) {
     return this.recipes.list(ownerId, search, tags, dietaryFlags);
   }

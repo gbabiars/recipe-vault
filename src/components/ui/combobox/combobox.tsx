@@ -23,10 +23,11 @@ type CommonProps = {
 };
 
 type Source =
-  | { options: ComboboxOption[]; loadOptions?: never }
+  | { options: ComboboxOption[]; loadOptions?: never; loadOnEmpty?: never }
   | {
       options?: never;
       loadOptions: (query: string, signal: AbortSignal) => Promise<ComboboxOption[]>;
+      loadOnEmpty?: boolean;
     };
 type Single = {
   multiple?: false;
@@ -59,6 +60,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
     createOption,
     options,
     loadOptions,
+    loadOnEmpty,
     multiple,
   } = props;
   const inputId = React.useId();
@@ -75,7 +77,9 @@ export function ComboboxField(props: ComboboxFieldProps) {
   const [results, setResults] = React.useState<ComboboxOption[]>([]);
   const [created, setCreated] = React.useState<ComboboxOption[]>([]);
   const [known, setKnown] = React.useState<ComboboxOption[]>([]);
-  const [searchState, setSearchState] = React.useState<"idle" | "loading" | "error">("idle");
+  const [searchState, setSearchState] = React.useState<"idle" | "loading" | "error">(
+    loadOnEmpty ? "loading" : "idle",
+  );
   const [creationError, setCreationError] = React.useState(false);
   const requestId = React.useRef(0);
 
@@ -84,7 +88,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
     const trimmed = query.trim();
     const id = ++requestId.current;
     const controller = new AbortController();
-    if (!trimmed) {
+    if (!trimmed && !loadOnEmpty) {
       return () => controller.abort();
     }
     const timer = window.setTimeout(() => {
@@ -106,7 +110,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [query, loadOptions]);
+  }, [query, loadOptions, loadOnEmpty]);
 
   const allOptions = mergeOptions(options ?? [], known, results, created);
   const selectedOptions = selectedValues.map(
@@ -188,7 +192,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
       ? "Searching…"
       : searchState === "error"
         ? "Search failed. Try again."
-        : loadOptions && !trimmed
+        : loadOptions && !trimmed && !loadOnEmpty
           ? "Type to search."
           : visible.length === 0
             ? "No matches."
@@ -215,7 +219,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
           if (details.reason === "input-change") setCreationError(false);
           if (loadOptions) {
             setResults([]);
-            setSearchState(next.trim() ? "loading" : "idle");
+            setSearchState(next.trim() || loadOnEmpty ? "loading" : "idle");
           }
         }}
         disabled={disabled}

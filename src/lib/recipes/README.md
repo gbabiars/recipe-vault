@@ -10,5 +10,5 @@ schema removes duplicates after normalization. Tags with distinct canonical
 names remain distinct; dietary flags stay separate. The database applies the
 same tag rule to legacy array writes and existing data during backfill.
 
-Recipe listing filters by canonical tag name. The tag catalog has no application
-service until a recipe workflow needs catalog operations.
+Recipe listing filters by canonical tag name. `listTags(ownerId, search)` exposes
+the bounded owned tag catalog to the authenticated API.
