@@ -1,5 +1,7 @@
 import styles from "./page.module.css";
+import Form from "next/form";
 import Link from "next/link";
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,18 +22,7 @@ export default async function RecipesPage({
 }: {
   searchParams: Promise<{ q?: string; tag?: string; dietary?: string }>;
 }) {
-  const user = await requireUser();
   const { q, tag, dietary } = await searchParams;
-  let recipes: RecipeSummary[];
-  let error: string | undefined;
-  try {
-    recipes = await (
-      await getRecipeService()
-    ).list(user.id, q?.trim(), tag ? [tag] : [], dietary ? [dietary] : []);
-  } catch {
-    recipes = [];
-    error = "Recipes could not be loaded. Refresh the page to try again.";
-  }
   return (
     <PageLayout>
       <PageHeader
@@ -44,52 +35,82 @@ export default async function RecipesPage({
       />
       <PageContent>
         <Stack gap="200">
-          <Card as="form" method="get" variant="subtle">
-            <Grid gap="150" columns={{ minWidth: 180, max: 4 }}>
-              <TextInput name="q" label="Search title" type="search" defaultValue={q} />
-              <TagFilter tag={tag} />
-              <TextInput
-                name="dietary"
-                label="Dietary flag"
-                defaultValue={dietary}
-                placeholder="vegetarian"
-              />
-              <Stack justify="end">
-                <Button type="submit">Filter</Button>
-              </Stack>
-            </Grid>
-          </Card>
-          {error ? (
-            <Card as="div" role="alert">
-              <Text as="p" appearance="error">
-                {error}
+          <Form action="/recipes" scroll={false}>
+            <Card variant="subtle">
+              <Grid gap="150" columns={{ minWidth: 180, max: 4 }}>
+                <TextInput name="q" label="Search title" type="search" defaultValue={q} />
+                <TagFilter tag={tag} />
+                <TextInput
+                  name="dietary"
+                  label="Dietary flag"
+                  defaultValue={dietary}
+                  placeholder="vegetarian"
+                />
+                <Stack justify="end">
+                  <Button type="submit">Filter</Button>
+                </Stack>
+              </Grid>
+            </Card>
+          </Form>
+          <Suspense
+            key={JSON.stringify([q, tag, dietary])}
+            fallback={
+              <Text as="p" aria-live="polite">
+                Loading your recipes…
               </Text>
-            </Card>
-          ) : recipes.length === 0 ? (
-            <Card as="section" padding="large">
-              <Stack gap="150">
-                <Heading as="h2" level={3}>
-                  No recipes found
-                </Heading>
-                <Text as="p">
-                  {q || tag || dietary
-                    ? "Try a different search or filter."
-                    : "Start your private collection with your first recipe."}
-                </Text>
-                <div>
-                  <ButtonLink render={<Link href="/recipes/new" />}>Create a recipe</ButtonLink>
-                </div>
-              </Stack>
-            </Card>
-          ) : (
-            <Stack as="ul" gap="200" className={styles.recipeList}>
-              {recipes.map((recipe) => (
-                <RecipeListCard key={recipe.id} recipe={recipe} />
-              ))}
-            </Stack>
-          )}
+            }
+          >
+            <RecipeResults q={q} tag={tag} dietary={dietary} />
+          </Suspense>
         </Stack>
       </PageContent>
     </PageLayout>
+  );
+}
+
+async function RecipeResults({ q, tag, dietary }: { q?: string; tag?: string; dietary?: string }) {
+  const user = await requireUser();
+  let recipes: RecipeSummary[];
+  let error: string | undefined;
+  try {
+    recipes = await (
+      await getRecipeService()
+    ).list(user.id, q?.trim(), tag ? [tag] : [], dietary ? [dietary] : []);
+  } catch {
+    recipes = [];
+    error = "Recipes could not be loaded. Refresh the page to try again.";
+  }
+  return (
+    <>
+      {error ? (
+        <Card as="div" role="alert">
+          <Text as="p" appearance="error">
+            {error}
+          </Text>
+        </Card>
+      ) : recipes.length === 0 ? (
+        <Card as="section" padding="large">
+          <Stack gap="150">
+            <Heading as="h2" level={3}>
+              No recipes found
+            </Heading>
+            <Text as="p">
+              {q || tag || dietary
+                ? "Try a different search or filter."
+                : "Start your private collection with your first recipe."}
+            </Text>
+            <div>
+              <ButtonLink render={<Link href="/recipes/new" />}>Create a recipe</ButtonLink>
+            </div>
+          </Stack>
+        </Card>
+      ) : (
+        <Stack as="ul" gap="200" className={styles.recipeList}>
+          {recipes.map((recipe) => (
+            <RecipeListCard key={recipe.id} recipe={recipe} />
+          ))}
+        </Stack>
+      )}
+    </>
   );
 }
