@@ -21,6 +21,7 @@ type StepRow = { instruction?: string; durationMinutes?: number };
 const blankIngredient: IngredientRow = { quantity: 1, unit: "", ingredientName: "", notes: "" };
 const blankStep: StepRow = { instruction: "", durationMinutes: undefined };
 const commonRecipeTags = ["dinner", "soup", "weeknight"];
+const commonDietaryFlags = ["dairy-free", "gluten-free", "vegan", "vegetarian"];
 const errorFor = (errors: Record<string, string>, key: string) =>
   errors[key] || errors[key.split(".")[0]];
 
@@ -38,6 +39,13 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
       label: value,
     }),
   );
+  const dietaryFlags = recipe?.dietaryFlags ?? [];
+  const dietaryFlagOptions: ComboboxOption[] = [
+    ...new Set([...commonDietaryFlags, ...dietaryFlags]),
+  ].map((value) => ({
+    value,
+    label: value,
+  }));
   useEffect(() => {
     formRef.current?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus();
   }, [state.errors]);
@@ -106,13 +114,20 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
               return result.success ? { value: result.data, label: result.data } : null;
             }}
           />
-          {field(
-            "dietaryFlags",
-            "Dietary flags",
-            "text",
-            recipe?.dietaryFlags.join(", "),
-            "Separate labels with commas",
-          )}
+          <ComboboxField
+            name="dietaryFlags"
+            label="Dietary flags"
+            placeholder="Search or add dietary flags"
+            helpText="Choose a suggestion or add a flag."
+            error={errorFor(state.errors, "dietaryFlags")}
+            multiple
+            defaultValue={dietaryFlags}
+            options={dietaryFlagOptions}
+            createOption={(query) => {
+              const result = tagNameSchema.safeParse(query);
+              return result.success ? { value: result.data, label: result.data } : null;
+            }}
+          />
           {field("sourceUrl", "Source URL", "url", recipe?.sourceUrl)}
           {textarea("notes", "Notes", recipe?.notes)}
         </Stack>
