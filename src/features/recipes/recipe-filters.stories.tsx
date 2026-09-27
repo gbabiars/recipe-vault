@@ -39,6 +39,12 @@ export const Inline: Story = {
     await expect(
       Math.abs(search.getBoundingClientRect().top - button.getBoundingClientRect().top),
     ).toBeLessThan(2);
+    await expect(
+      Math.abs(search.getBoundingClientRect().width - tag.getBoundingClientRect().width),
+    ).toBeLessThan(2);
+    await expect(search.getBoundingClientRect().width).toBeGreaterThan(
+      button.getBoundingClientRect().width,
+    );
   },
 };
 
