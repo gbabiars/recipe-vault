@@ -8,11 +8,21 @@ const number = (value: FormDataEntryValue | null) => {
   const text = optional(value);
   return text === undefined ? undefined : Number(text);
 };
-const labels = (value: FormDataEntryValue | null) =>
-  optional(value)
+
+export const deserializeCommaDelimitedLabels = (value?: string) =>
+  value
     ?.split(",")
     .map((label) => label.trim())
     .filter(Boolean) ?? [];
+
+export const serializeCommaDelimitedLabels = (labels: readonly string[]) =>
+  labels
+    .map((label) => label.trim())
+    .filter(Boolean)
+    .join(", ");
+
+const labels = (value: FormDataEntryValue | null) =>
+  deserializeCommaDelimitedLabels(optional(value));
 
 /** Converts browser FormData into the shared Iteration 1 create wire format. */
 export function parseRecipeFormData(formData: FormData): RecipeCreateInput {
@@ -25,7 +35,11 @@ export function parseRecipeFormData(formData: FormData): RecipeCreateInput {
     cookTimeMinutes: number(formData.get("cookTimeMinutes")),
     totalTimeMinutes: number(formData.get("totalTimeMinutes")),
     servings: number(formData.get("servings")),
-    tags: labels(formData.get("tags")),
+    tags: deserializeCommaDelimitedLabels(
+      serializeCommaDelimitedLabels(
+        formData.getAll("tags").filter((value): value is string => typeof value === "string"),
+      ),
+    ),
     dietaryFlags: labels(formData.get("dietaryFlags")),
     sourceUrl: optional(formData.get("sourceUrl")),
     notes: optional(formData.get("notes")),

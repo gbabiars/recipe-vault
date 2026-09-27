@@ -3,13 +3,16 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ComboboxField, type ComboboxOption } from "@/components/ui/combobox";
 import { Heading } from "@/components/ui/heading";
 import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
 import { TextInput } from "@/components/ui/text-input";
 import { Textarea } from "@/components/ui/textarea";
 import type { Recipe } from "@/lib/db/recipe-repository";
+import { tagNameSchema } from "@/lib/validation/recipe";
 import { saveRecipeAction } from "./actions";
+import { deserializeCommaDelimitedLabels } from "./recipe-form-data";
 import styles from "./recipe-form.module.css";
 import { emptyRecipeFormState } from "./recipe-form-state";
 
@@ -17,6 +20,7 @@ type IngredientRow = { quantity?: number; unit?: string; ingredientName?: string
 type StepRow = { instruction?: string; durationMinutes?: number };
 const blankIngredient: IngredientRow = { quantity: 1, unit: "", ingredientName: "", notes: "" };
 const blankStep: StepRow = { instruction: "", durationMinutes: undefined };
+const commonRecipeTags = ["dinner", "soup", "weeknight"];
 const errorFor = (errors: Record<string, string>, key: string) =>
   errors[key] || errors[key.split(".")[0]];
 
@@ -27,6 +31,13 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
     recipe?.ingredients.length ? recipe.ingredients : [blankIngredient],
   );
   const [steps, setSteps] = useState<StepRow[]>(recipe?.steps.length ? recipe.steps : [blankStep]);
+  const tags = deserializeCommaDelimitedLabels(recipe?.tags.join(", "));
+  const tagOptions: ComboboxOption[] = [...new Set([...commonRecipeTags, ...tags])].map(
+    (value) => ({
+      value,
+      label: value,
+    }),
+  );
   useEffect(() => {
     formRef.current?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus();
   }, [state.errors]);
@@ -81,16 +92,27 @@ export function RecipeForm({ recipe }: { recipe?: Recipe }) {
             {field("cookTimeMinutes", "Cook time (minutes)", "number", recipe?.cookTimeMinutes)}
             {field("totalTimeMinutes", "Total time (minutes)", "number", recipe?.totalTimeMinutes)}
           </div>
-          <div className={styles.formGrid}>
-            {field("tags", "Tags", "text", recipe?.tags.join(", "), "Separate labels with commas")}
-            {field(
-              "dietaryFlags",
-              "Dietary flags",
-              "text",
-              recipe?.dietaryFlags.join(", "),
-              "Separate labels with commas",
-            )}
-          </div>
+          <ComboboxField
+            name="tags"
+            label="Tags"
+            placeholder="Search or add labels"
+            helpText="Choose a suggestion or add a label."
+            error={errorFor(state.errors, "tags")}
+            multiple
+            defaultValue={tags}
+            options={tagOptions}
+            createOption={(query) => {
+              const result = tagNameSchema.safeParse(query);
+              return result.success ? { value: result.data, label: result.data } : null;
+            }}
+          />
+          {field(
+            "dietaryFlags",
+            "Dietary flags",
+            "text",
+            recipe?.dietaryFlags.join(", "),
+            "Separate labels with commas",
+          )}
           {field("sourceUrl", "Source URL", "url", recipe?.sourceUrl)}
           {textarea("notes", "Notes", recipe?.notes)}
         </Stack>

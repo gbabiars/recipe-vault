@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { RecipeForm } from "./recipe-form";
+import { parseRecipeFormData } from "./recipe-form-data";
 
 const saveRecipeAction = vi.fn();
 vi.mock("./actions", () => ({
@@ -36,19 +37,32 @@ test("removes added ingredient and step rows", () => {
   expect(screen.getAllByRole("group", { name: /^Step \d+$/ })).toHaveLength(1);
 });
 
-test("labels fields, connects hints, and submits the expected recipe values", async () => {
+test("uses multiple tag choices and keeps the comma-delimited recipe format", async () => {
   saveRecipeAction.mockResolvedValue({ errors: {} });
-  const { container } = render(<RecipeForm />);
+  const { container } = render(
+    <RecipeForm
+      recipe={{
+        id: "recipe-1",
+        ownerId: "owner-1",
+        title: "Tomato soup",
+        tags: ["quick", "soup"],
+        dietaryFlags: [],
+        ingredients: [{ displayOrder: 1, quantity: 1, unit: "can", ingredientName: "Tomato" }],
+        steps: [{ stepOrder: 1, instruction: "Simmer" }],
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+      }}
+    />,
+  );
 
-  const tags = screen.getByRole("textbox", {
-    name: "Tags",
-    description: "Separate labels with commas",
-  });
+  const tags = screen.getByRole("combobox", { name: "Tags" });
   expect(tags).toBeInstanceOf(HTMLInputElement);
+  expect(screen.getByRole("button", { name: "Remove quick" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Remove soup" })).toBeTruthy();
+
   fireEvent.change(screen.getByRole("textbox", { name: "Title" }), {
     target: { value: "Tomato soup" },
   });
-  fireEvent.change(tags, { target: { value: "quick, soup" } });
   fireEvent.change(screen.getByRole("textbox", { name: "Summary" }), {
     target: { value: "A quick soup" },
   });
@@ -71,15 +85,19 @@ test("labels fields, connects hints, and submits the expected recipe values", as
 
   const form = container.querySelector("form")!;
   const data = new FormData(form);
+  expect(data.getAll("tags")).toEqual(["quick", "soup"]);
   expect(Object.fromEntries(data)).toMatchObject({
     title: "Tomato soup",
     summary: "A quick soup",
-    tags: "quick, soup",
     ingredientCount: "1",
     "ingredient-0-name": "Tomato",
     stepCount: "1",
     "step-0-instruction": "Simmer",
   });
+  expect(parseRecipeFormData(data).tags).toEqual(["quick", "soup"]);
+  const legacyData = new FormData(form);
+  legacyData.set("tags", "quick, soup");
+  expect(parseRecipeFormData(legacyData).tags).toEqual(["quick", "soup"]);
   fireEvent.submit(form);
   await waitFor(() => expect(saveRecipeAction).toHaveBeenCalled());
   expect(Object.fromEntries(saveRecipeAction.mock.calls[0][1] as FormData)).toMatchObject({
