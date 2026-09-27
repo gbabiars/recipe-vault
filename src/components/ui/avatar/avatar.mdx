@@ -1,0 +1,38 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./avatar.stories";
+
+<Meta of={Stories} />
+
+# Avatar
+
+## Purpose and choice
+
+Represents a person with initials in a circular avatar. Use the person’s full
+name so the avatar can expose a useful accessible name.
+
+## Variants and composition
+
+`name` is required. The first grapheme of a one-part name is shown; for names
+with multiple whitespace-separated parts, the first graphemes of the first and
+last parts are shown. Middle parts are skipped. Sizes are `small` (24 px),
+`medium` (32 px, the default), and `large` (40 px).
+
+```tsx
+<Avatar name="Ada Lovelace" size="medium" />
+```
+
+## Content and accessibility
+
+For a nonblank name, the avatar has an image role and uses the normalized full
+name as its accessible name. The initials are visual fallback content. A blank
+name shows a decorative Lucide User icon and is hidden from assistive
+technology. Caller `aria-label`, `aria-labelledby`, `role`, and `aria-hidden`
+props can override these defaults.
+
+## Story
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.SizeScale} />
+
+<Canvas of={Stories.BlankName} />
