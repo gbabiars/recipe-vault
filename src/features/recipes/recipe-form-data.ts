@@ -21,8 +21,10 @@ export const serializeCommaDelimitedLabels = (labels: readonly string[]) =>
     .filter(Boolean)
     .join(", ");
 
-const labels = (value: FormDataEntryValue | null) =>
-  deserializeCommaDelimitedLabels(optional(value));
+const labels = (values: FormDataEntryValue[]) =>
+  values.flatMap((value) =>
+    typeof value === "string" ? deserializeCommaDelimitedLabels(value) : [],
+  );
 
 /** Converts browser FormData into the shared Iteration 1 create wire format. */
 export function parseRecipeFormData(formData: FormData): RecipeCreateInput {
@@ -40,7 +42,7 @@ export function parseRecipeFormData(formData: FormData): RecipeCreateInput {
         formData.getAll("tags").filter((value): value is string => typeof value === "string"),
       ),
     ),
-    dietaryFlags: labels(formData.get("dietaryFlags")),
+    dietaryFlags: labels(formData.getAll("dietaryFlags")),
     sourceUrl: optional(formData.get("sourceUrl")),
     notes: optional(formData.get("notes")),
     ingredients: Array.from(
