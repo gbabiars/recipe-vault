@@ -140,6 +140,12 @@ export const Required: Story = {
 };
 export const InitialSelection: Story = {
   args: { multiple: true, options: choices, defaultValue: ["vegan", "vegetarian"] },
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("combobox", { name: "Tags" }));
+    await expect(
+      await within(document.body).findByRole("option", { name: "Vegan" }),
+    ).toHaveAttribute("aria-selected", "true");
+  },
 };
 export const EmptyResults: Story = {
   args: { loadOptions: async () => [] },
