@@ -19,7 +19,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Inline: Story = {
-  args: { q: "steak", tag: "beef" },
+  args: { q: "steak", tag: ["beef", "quick"] },
   decorators: [
     (Story) => (
       <div style={{ maxWidth: 900 }}>
@@ -32,16 +32,19 @@ export const Inline: Story = {
     const tag = canvas.getByRole("combobox", { name: "Tag" });
     const button = canvas.getByRole("button", { name: "Filter" });
     await expect(search).toHaveValue("steak");
-    await expect(tag).toHaveValue("beef");
+    await expect(new FormData(tag.closest("form")!).getAll("tag")).toEqual(["beef", "quick"]);
     await expect(
       Math.abs(search.getBoundingClientRect().top - tag.getBoundingClientRect().top),
     ).toBeLessThan(2);
     await expect(
       Math.abs(search.getBoundingClientRect().top - button.getBoundingClientRect().top),
     ).toBeLessThan(2);
-    await expect(
-      Math.abs(search.getBoundingClientRect().width - tag.getBoundingClientRect().width),
-    ).toBeLessThan(2);
+    const widthDifference = Math.abs(
+      search.getBoundingClientRect().width - tag.getBoundingClientRect().width,
+    );
+    await expect(widthDifference / Math.max(search.getBoundingClientRect().width, 1)).toBeLessThan(
+      0.02,
+    );
     await expect(search.getBoundingClientRect().width).toBeGreaterThan(
       button.getBoundingClientRect().width,
     );

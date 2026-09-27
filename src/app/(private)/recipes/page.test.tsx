@@ -1,5 +1,7 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
+
+const { listMock } = vi.hoisted(() => ({ listMock: vi.fn(async () => []) }));
 
 let RecipesPage: typeof import("./page").default;
 
@@ -13,7 +15,7 @@ vi.mock("next/form", () => ({
   }: React.ComponentProps<"form"> & { scroll?: boolean }) => <form action={action} {...props} />,
 }));
 vi.mock("@/lib/recipes", () => ({
-  getRecipeService: async () => ({ list: async () => [] }),
+  getRecipeService: async () => ({ list: listMock }),
 }));
 
 beforeAll(async () => {
@@ -27,9 +29,13 @@ afterAll(() => {
   vi.unstubAllGlobals();
 });
 
-test("ignores a saved dietary filter and preserves search and tag values", async () => {
+test("ignores a saved dietary filter and preserves search and repeated tag values", async () => {
   const page = await RecipesPage({
-    searchParams: Promise.resolve({ q: "soup", tag: "quick", dietary: "vegetarian" }),
+    searchParams: Promise.resolve({
+      q: "soup",
+      tag: ["quick", "vegetarian"],
+      dietary: "gluten-free",
+    }),
   });
   const { container } = render(page);
   expect(
@@ -39,10 +45,12 @@ test("ignores a saved dietary filter and preserves search and tag values", async
   expect(screen.getByRole("combobox", { name: "Tag" })).toBeTruthy();
   expect(screen.queryByRole("textbox", { name: "Dietary flag" })).toBeNull();
   expect(container.querySelector("form")!.getAttribute("action")).toBe("/recipes");
-  expect(Object.fromEntries(new FormData(container.querySelector("form")!))).toEqual({
-    q: "soup",
-    tag: "quick",
-  });
+  const formData = new FormData(container.querySelector("form")!);
+  expect(formData.get("q")).toBe("soup");
+  expect(formData.getAll("tag")).toEqual(["quick", "vegetarian"]);
+  await waitFor(() =>
+    expect(listMock).toHaveBeenCalledWith("user-1", "soup", ["quick", "vegetarian"]),
+  );
   const loading = screen.getByText("Loading your recipes…");
   expect(
     container.querySelector("form")!.compareDocumentPosition(loading) &

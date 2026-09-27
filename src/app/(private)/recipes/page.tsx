@@ -16,9 +16,10 @@ import type { RecipeSummary } from "@/lib/db/recipe-repository";
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; tag?: string }>;
+  searchParams: Promise<{ q?: string; tag?: string | string[] }>;
 }) {
   const { q, tag } = await searchParams;
+  const tags = tag == null ? [] : Array.isArray(tag) ? tag : [tag];
   return (
     <PageLayout>
       <PageHeader
@@ -31,16 +32,16 @@ export default async function RecipesPage({
       />
       <PageContent>
         <Stack gap="200">
-          <RecipeFilters q={q} tag={tag} />
+          <RecipeFilters q={q} tag={tags} />
           <Suspense
-            key={JSON.stringify([q, tag])}
+            key={JSON.stringify([q, tags])}
             fallback={
               <Text as="p" aria-live="polite">
                 Loading your recipes…
               </Text>
             }
           >
-            <RecipeResults q={q} tag={tag} />
+            <RecipeResults q={q} tags={tags} />
           </Suspense>
         </Stack>
       </PageContent>
@@ -48,12 +49,12 @@ export default async function RecipesPage({
   );
 }
 
-async function RecipeResults({ q, tag }: { q?: string; tag?: string }) {
+async function RecipeResults({ q, tags }: { q?: string; tags: string[] }) {
   const user = await requireUser();
   let recipes: RecipeSummary[];
   let error: string | undefined;
   try {
-    recipes = await (await getRecipeService()).list(user.id, q?.trim(), tag ? [tag] : []);
+    recipes = await (await getRecipeService()).list(user.id, q?.trim(), tags);
   } catch {
     recipes = [];
     error = "Recipes could not be loaded. Refresh the page to try again.";
@@ -73,7 +74,7 @@ async function RecipeResults({ q, tag }: { q?: string; tag?: string }) {
               No recipes found
             </Heading>
             <Text as="p">
-              {q || tag
+              {q || tags.length > 0
                 ? "Try a different search or filter."
                 : "Start your private collection with your first recipe."}
             </Text>

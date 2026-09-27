@@ -11,12 +11,15 @@ export async function loadOwnedTags(query: string, signal: AbortSignal): Promise
   return payload.data.map(({ name }) => ({ value: name, label: name }));
 }
 
-export function TagFilter({ tag }: { tag?: string }) {
+export function TagFilter({ tag }: { tag?: string | string[] }) {
+  const tags = tag == null ? [] : Array.isArray(tag) ? tag : [tag];
+
   return (
     <ComboboxField
       name="tag"
       label="Tag"
-      defaultValue={tag ?? null}
+      multiple
+      defaultValue={tags}
       loadOptions={loadOwnedTags}
       loadOnEmpty
       helpText="Showing up to 25 tags. Type to narrow the list."

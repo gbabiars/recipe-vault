@@ -34,7 +34,7 @@ test("loads initial tags, searches, and reloads when cleared", async () => {
   expect(await screen.findByRole("option", { name: "weeknight" })).toBeTruthy();
 });
 
-test("keeps an old URL tag visible and submits its canonical value until replaced", async () => {
+test("keeps an old URL tag visible and submits its value until replaced", async () => {
   vi.stubGlobal("fetch", fetchMock);
   const { container } = render(
     <form>
@@ -42,14 +42,36 @@ test("keeps an old URL tag visible and submits its canonical value until replace
     </form>,
   );
   const input = screen.getByRole("combobox", { name: "Tag" });
-  expect(input).toHaveValue("renamed");
+  expect(screen.getByText("renamed")).toBeTruthy();
   expect(new FormData(container.querySelector("form")!).get("tag")).toBe("renamed");
   await waitFor(() => expect(fetchMock).toHaveBeenCalled());
   await userEvent.click(input);
   await userEvent.keyboard("{ArrowDown}");
   await userEvent.click(await screen.findByRole("option", { name: "soup" }));
-  expect(input).toHaveValue("soup");
-  expect(new FormData(container.querySelector("form")!).get("tag")).toBe("soup");
+  expect(new FormData(container.querySelector("form")!).getAll("tag")).toEqual(["renamed", "soup"]);
+});
+
+test("selects and submits multiple tags", async () => {
+  vi.stubGlobal("fetch", fetchMock);
+  const { container } = render(
+    <form>
+      <TagFilter />
+    </form>,
+  );
+  const input = screen.getByRole("combobox", { name: "Tag" });
+  await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+  await userEvent.click(input);
+  await userEvent.keyboard("{ArrowDown}");
+  await userEvent.click(await screen.findByRole("option", { name: "dinner" }));
+  await userEvent.click(input);
+  expect(await screen.findByRole("option", { name: "soup" })).toBeTruthy();
+  await userEvent.click(await screen.findByRole("option", { name: "soup" }));
+
+  expect(new FormData(container.querySelector("form")!).getAll("tag")).toEqual(["dinner", "soup"]);
+  await userEvent.click(screen.getByRole("button", { name: "Remove dinner" }));
+  await userEvent.click(input);
+  expect(await screen.findByRole("option", { name: "dinner" })).toBeTruthy();
+  expect(new FormData(container.querySelector("form")!).getAll("tag")).toEqual(["soup"]);
 });
 
 test("typing without selecting does not submit a tag", async () => {
