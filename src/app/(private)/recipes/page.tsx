@@ -1,18 +1,14 @@
 import styles from "./page.module.css";
-import Form from "next/form";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Grid } from "@/components/ui/grid";
 import { Heading } from "@/components/ui/heading";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
 import { Stack } from "@/components/ui/stack";
-import { TextInput } from "@/components/ui/text-input";
 import { Text } from "@/components/ui/text";
+import { RecipeFilters } from "@/features/recipes/recipe-filters";
 import { RecipeListCard } from "@/features/recipes/recipe-list-card";
-import { TagFilter } from "@/features/recipes/tag-filter";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
@@ -35,17 +31,7 @@ export default async function RecipesPage({
       />
       <PageContent>
         <Stack gap="200">
-          <Form action="/recipes" scroll={false}>
-            <Card variant="subtle">
-              <Grid gap="150" columns={{ minWidth: 180, max: 4 }}>
-                <TextInput name="q" label="Search title" type="search" defaultValue={q} />
-                <TagFilter tag={tag} />
-                <Stack justify="end">
-                  <Button type="submit">Filter</Button>
-                </Stack>
-              </Grid>
-            </Card>
-          </Form>
+          <RecipeFilters q={q} tag={tag} />
           <Suspense
             key={JSON.stringify([q, tag])}
             fallback={
