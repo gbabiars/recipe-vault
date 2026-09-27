@@ -30,13 +30,17 @@ change the Clerk instance's sign-up policy.
 The authenticated API is under `/api/v1`. Identity always comes from Clerk and
 never from a request owner field.
 
-| Method   | Path                  | Behavior                                           |
-| -------- | --------------------- | -------------------------------------------------- |
-| `GET`    | `/api/v1/recipes`     | Paginated owned summaries with search and filters. |
-| `POST`   | `/api/v1/recipes`     | Creates an owned recipe.                           |
-| `GET`    | `/api/v1/recipes/:id` | Returns one owned complete recipe.                 |
-| `PATCH`  | `/api/v1/recipes/:id` | Validates and applies a partial update.            |
-| `DELETE` | `/api/v1/recipes/:id` | Deletes an owned recipe.                           |
+| Method   | Path                  | Behavior                                                                 |
+| -------- | --------------------- | ------------------------------------------------------------------------ |
+| `GET`    | `/api/v1/recipes`     | Paginated owned summaries with search and filters.                       |
+| `GET`    | `/api/v1/tags`        | First 25 owned tag names, or a `search` substring match, alphabetically. |
+| `POST`   | `/api/v1/recipes`     | Creates an owned recipe.                                                 |
+| `GET`    | `/api/v1/recipes/:id` | Returns one owned complete recipe.                                       |
+| `PATCH`  | `/api/v1/recipes/:id` | Validates and applies a partial update.                                  |
+| `DELETE` | `/api/v1/recipes/:id` | Deletes an owned recipe.                                                 |
+
+The tag endpoint returns `{ data: [{ name }], meta: { requestId } }` with a
+private `no-store` response. An empty or omitted `search` lists the first 25.
 
 Recipe `tags: string[]` remains the API format. Tag IDs and associations live
 in owner-scoped database tables; the array is a synchronized compatibility

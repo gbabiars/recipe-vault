@@ -28,7 +28,7 @@ test("labels search filters and preserves their query values", async () => {
     screen.getByRole("heading", { level: 1, name: "Your recipes" }).getAttribute("data-level"),
   ).toBe("2");
   expect(screen.getByRole("searchbox", { name: "Search title" })).toBeTruthy();
-  expect(screen.getByRole("textbox", { name: "Tag" })).toBeTruthy();
+  expect(screen.getByRole("combobox", { name: "Tag" })).toBeTruthy();
   expect(screen.getByRole("textbox", { name: "Dietary flag" })).toBeTruthy();
   expect(Object.fromEntries(new FormData(container.querySelector("form")!))).toEqual({
     q: "soup",

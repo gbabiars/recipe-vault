@@ -22,5 +22,6 @@ cascades associations, never recipes. Application recipe create/update uses
 `recipe_vault_write_recipe` so recipe fields, details, and tags commit or roll
 back together. Association rows have no direct authenticated write grant.
 
-The application currently reads and writes tags through recipe operations. It
-does not expose a separate tag catalog repository.
+`listTags(ownerId, search)` reads up to 25 owned tag names in alphabetical order.
+An empty search lists the first 25; nonempty search matches a literal substring
+case-insensitively. The caller's JWT and RLS still enforce ownership.

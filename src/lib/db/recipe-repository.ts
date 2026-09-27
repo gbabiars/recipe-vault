@@ -112,6 +112,22 @@ function mapRecipe(row: DatabaseRecipe): Recipe {
 export class RecipeRepository {
   constructor(private readonly client: SupabaseClient) {}
 
+  async listTags(ownerId: string, search = ""): Promise<Array<{ name: string }>> {
+    let query = this.client
+      .from("tags")
+      .select("name")
+      .eq("owner_id", ownerId)
+      .order("name", { ascending: true })
+      .limit(25);
+    if (search) {
+      const escaped = search.replace(/[\\%_]/g, "\\$&");
+      query = query.ilike("name", `%${escaped}%`);
+    }
+    const { data, error } = await query;
+    if (error) throw new Error("Could not load tags.");
+    return data as Array<{ name: string }>;
+  }
+
   async list(
     ownerId: string,
     search?: string,

@@ -10,6 +10,7 @@ import { Stack } from "@/components/ui/stack";
 import { TextInput } from "@/components/ui/text-input";
 import { Text } from "@/components/ui/text";
 import { RecipeListCard } from "@/features/recipes/recipe-list-card";
+import { TagFilter } from "@/features/recipes/tag-filter";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
@@ -46,7 +47,7 @@ export default async function RecipesPage({
           <Card as="form" method="get" variant="subtle">
             <Grid gap="150" columns={{ minWidth: 180, max: 4 }}>
               <TextInput name="q" label="Search title" type="search" defaultValue={q} />
-              <TextInput name="tag" label="Tag" defaultValue={tag} placeholder="weeknight" />
+              <TagFilter tag={tag} />
               <TextInput
                 name="dietary"
                 label="Dietary flag"

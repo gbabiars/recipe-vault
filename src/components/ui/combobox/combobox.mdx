@@ -9,6 +9,8 @@ Choose one or several labeled values from local options or an asynchronous searc
 
 The field owns its label, help text, error, keyboard interaction, and selected chips. Each option has a stable `value` and display `label`. `options` supplies local choices; `loadOptions(query, signal)` supplies remote choices. A remote loader should respect the abort signal. The field debounces requests and keeps selected labels while results change.
 
+Remote choices normally load only for nonempty queries. Set `loadOnEmpty` with `loadOptions` to fetch choices on mount and again when the query is cleared. The loader receives an empty string in both cases.
+
 ```tsx
 <ComboboxField
   name="tags"

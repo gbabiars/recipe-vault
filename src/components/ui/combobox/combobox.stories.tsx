@@ -67,6 +67,46 @@ export const SingleAsync: Story = {
     await expect(canvas.getByRole("combobox", { name: "Tags" })).toHaveValue("Vegan");
   },
 };
+export const BrowseThenSearch: Story = {
+  render: () => {
+    function Example() {
+      const [submitted, setSubmitted] = React.useState<string | null>(null);
+      return (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            setSubmitted(new FormData(event.currentTarget).get("tag")?.toString() ?? "");
+          }}
+        >
+          <ComboboxField
+            name="tag"
+            label="Tag"
+            loadOptions={search}
+            loadOnEmpty
+            helpText="Browse or search tags."
+          />
+          <Button type="submit">Filter</Button>
+          <output aria-label="Submitted tag">{submitted}</output>
+        </form>
+      );
+    }
+    return <Example />;
+  },
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole("combobox", { name: "Tag" });
+    await userEvent.click(input);
+    await userEvent.keyboard("{ArrowDown}");
+    await expect(
+      await within(document.body).findByRole("option", { name: "Vegetarian" }),
+    ).toBeVisible();
+    await userEvent.type(input, "vegan");
+    await expect(await within(document.body).findByRole("option", { name: "Vegan" })).toBeVisible();
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    await expect(input).toHaveValue("Vegan");
+    await userEvent.click(canvas.getByRole("button", { name: "Filter" }));
+    await expect(canvas.getByRole("status", { name: "Submitted tag" })).toHaveTextContent("vegan");
+  },
+};
 export const SingleAsyncCreatable: Story = {
   args: { loadOptions: search, createOption: create },
   play: async ({ canvas }) => {
