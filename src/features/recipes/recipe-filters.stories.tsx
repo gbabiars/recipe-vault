@@ -31,21 +31,26 @@ export const Inline: Story = {
     const search = canvas.getByRole("searchbox", { name: "Search title" });
     const tag = canvas.getByRole("combobox", { name: "Tag" });
     const button = canvas.getByRole("button", { name: "Filter" });
+    const searchField = search.closest<HTMLElement>('[data-layout="default"]');
+    const tagField = tag.closest<HTMLElement>('[data-layout="default"]');
+
+    if (!searchField || !tagField) throw new Error("Filter field containers were not rendered.");
+
     await expect(search).toHaveValue("steak");
     await expect(new FormData(tag.closest("form")!).getAll("tag")).toEqual(["beef", "quick"]);
     await expect(
-      Math.abs(search.getBoundingClientRect().top - tag.getBoundingClientRect().top),
+      Math.abs(searchField.getBoundingClientRect().top - tagField.getBoundingClientRect().top),
     ).toBeLessThan(2);
     await expect(
       Math.abs(search.getBoundingClientRect().top - button.getBoundingClientRect().top),
     ).toBeLessThan(2);
     const widthDifference = Math.abs(
-      search.getBoundingClientRect().width - tag.getBoundingClientRect().width,
+      searchField.getBoundingClientRect().width - tagField.getBoundingClientRect().width,
     );
-    await expect(widthDifference / Math.max(search.getBoundingClientRect().width, 1)).toBeLessThan(
-      0.02,
-    );
-    await expect(search.getBoundingClientRect().width).toBeGreaterThan(
+    await expect(
+      widthDifference / Math.max(searchField.getBoundingClientRect().width, 1),
+    ).toBeLessThan(0.02);
+    await expect(searchField.getBoundingClientRect().width).toBeGreaterThan(
       button.getBoundingClientRect().width,
     );
   },
