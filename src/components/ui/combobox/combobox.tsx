@@ -182,8 +182,11 @@ export function ComboboxField(props: ComboboxFieldProps) {
     }
     setCreationError(false);
     setQuery("");
-    setResults([]);
-    setSearchState("idle");
+    const preservingBrowseResults = Boolean(loadOptions && loadOnEmpty && !trimmed);
+    if (!preservingBrowseResults) {
+      setResults([]);
+      setSearchState(loadOptions && loadOnEmpty && trimmed ? "loading" : "idle");
+    }
   }
 
   const status = creationError

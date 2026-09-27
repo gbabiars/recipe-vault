@@ -34,7 +34,7 @@ export const BrowseAndFilter: Story = {
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            setSubmitted(new FormData(event.currentTarget).get("tag")?.toString() ?? "");
+            setSubmitted(new FormData(event.currentTarget).getAll("tag").join(", "));
           }}
         >
           <TagFilter />
@@ -50,9 +50,18 @@ export const BrowseAndFilter: Story = {
     await userEvent.click(input);
     await userEvent.keyboard("{ArrowDown}");
     await userEvent.click(await within(document.body).findByRole("option", { name: "soup" }));
-    await expect(input).toHaveValue("soup");
+    await userEvent.click(input);
+    await expect(
+      await within(document.body).findByRole("option", { name: "weeknight" }),
+    ).toBeVisible();
+    await userEvent.click(await within(document.body).findByRole("option", { name: "weeknight" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Remove soup" }));
+    await userEvent.click(input);
+    await expect(await within(document.body).findByRole("option", { name: "soup" })).toBeVisible();
     await userEvent.click(canvas.getByRole("button", { name: "Filter" }));
-    await expect(canvas.getByRole("status", { name: "Submitted tag" })).toHaveTextContent("soup");
+    await expect(canvas.getByRole("status", { name: "Submitted tag" })).toHaveTextContent(
+      "weeknight",
+    );
   },
 };
 
@@ -60,10 +69,10 @@ export const OldUrlTag: Story = {
   args: { tag: "renamed" },
   play: async ({ canvas }) => {
     const input = canvas.getByRole("combobox", { name: "Tag" });
-    await expect(input).toHaveValue("renamed");
+    await expect(canvas.getByText("renamed")).toBeVisible();
     await userEvent.click(input);
     await userEvent.keyboard("{ArrowDown}");
     await expect(await within(document.body).findByRole("option", { name: "soup" })).toBeVisible();
-    await expect(input).toHaveValue("renamed");
+    await expect(canvas.getByText("renamed")).toBeVisible();
   },
 };

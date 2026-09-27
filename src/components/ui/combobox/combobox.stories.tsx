@@ -140,16 +140,20 @@ export const MultipleLocalCreatable: Story = {
   },
 };
 export const MultipleAsync: Story = {
-  args: { multiple: true, loadOptions: search },
+  args: { multiple: true, loadOptions: search, loadOnEmpty: true },
   play: async ({ canvas }) => {
     const input = canvas.getByRole("combobox", { name: "Tags" });
-    await userEvent.type(input, "vegan");
-    await userEvent.click(await within(document.body).findByRole("option", { name: "Vegan" }));
+    await userEvent.click(input);
+    await userEvent.keyboard("{ArrowDown}");
+    await userEvent.click(await within(document.body).findByRole("option", { name: "Vegetarian" }));
     await userEvent.type(input, "gluten");
     await userEvent.click(
       await within(document.body).findByRole("option", { name: "Gluten-free" }),
     );
-    await expect(canvas.getByRole("button", { name: "Remove Vegan" })).toBeVisible();
+    await expect(input).toHaveValue("");
+    await userEvent.click(canvas.getByRole("button", { name: "Remove Vegetarian" }));
+    await userEvent.click(input);
+    await expect(await within(document.body).findByRole("option", { name: "Vegan" })).toBeVisible();
     await expect(canvas.getByRole("button", { name: "Remove Gluten-free" })).toBeVisible();
   },
 };

@@ -5,7 +5,7 @@ import { TextInput } from "@/components/ui/text-input";
 import { TagFilter } from "./tag-filter";
 import styles from "./recipe-filters.module.css";
 
-export function RecipeFilters({ q, tag }: { q?: string; tag?: string }) {
+export function RecipeFilters({ q, tag }: { q?: string; tag?: string | string[] }) {
   return (
     <Form action="/recipes" scroll={false}>
       <Card variant="subtle" className={styles.card}>
