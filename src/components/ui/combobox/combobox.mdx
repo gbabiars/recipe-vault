@@ -1,0 +1,27 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./combobox.stories";
+
+<Meta of={Stories} />
+
+# ComboboxField
+
+Choose one or several labeled values from local options or an asynchronous search. Use a fixed choice control when searching is unnecessary.
+
+The field owns its label, help text, error, keyboard interaction, and selected chips. Each option has a stable `value` and display `label`. `options` supplies local choices; `loadOptions(query, signal)` supplies remote choices. A remote loader should respect the abort signal. The field debounces requests and keeps selected labels while results change.
+
+```tsx
+<ComboboxField
+  name="tags"
+  label="Tags"
+  multiple
+  loadOptions={searchTags}
+  createOption={(query) => ({ value: query.trim().toLowerCase(), label: query.trim() })}
+/>
+```
+
+For controlled use, pass `value` and `onValueChange`; otherwise pass `defaultValue`. Single selection uses `string | null`; multiple selection uses `string[]`. The field submits one value under `name` in single mode and repeated values in multiple mode. `createOption` only adds the value to the local selection. It must validate and normalize domain values; persistence belongs to the caller.
+
+Creation is offered for nonempty input without an equivalent known or selected option. A null or invalid creation result shows an error. Search loading, empty results, and failures have distinct messages. Pass `error` for an external field error and `required` or `disabled` to match form behavior.
+
+<Canvas of={Stories.SingleLocal} />
+<Canvas of={Stories.MultipleAsyncCreatable} />
