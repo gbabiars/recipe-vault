@@ -64,6 +64,28 @@ test("tag repository passes owner and stable ID to the guarded delete RPC", asyn
   ]);
 });
 
+test("tag repository passes both explicitly selected IDs and owner to merge RPC", async () => {
+  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+  const repository = new TagRepository({
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      calls.push({ name, args });
+      return { data: true, error: null };
+    },
+  } as never);
+
+  assert.equal(await repository.merge("owner-a", firstTag.id, secondTag.id), true);
+  assert.deepEqual(calls, [
+    {
+      name: "recipe_vault_merge_tags",
+      args: {
+        target_owner_id: "owner-a",
+        source_tag_id: firstTag.id,
+        target_tag_id: secondTag.id,
+      },
+    },
+  ]);
+});
+
 test("owner-bound tag service supplies its verified owner to the repository", async () => {
   let requestedOwner: string | undefined;
   const repository = new TagRepository({
@@ -90,6 +112,26 @@ test("owner-bound tag service never accepts an owner from delete input", async (
 
   assert.equal(await service.deleteUnused(secondTag.id), true);
   assert.deepEqual(calls, [{ target_owner_id: "verified-owner", target_tag_id: secondTag.id }]);
+});
+
+test("owner-bound tag service binds both merge IDs to its verified owner", async () => {
+  const calls: Array<Record<string, unknown>> = [];
+  const repository = new TagRepository({
+    rpc: async (_name: string, args: Record<string, unknown>) => {
+      calls.push(args);
+      return { data: true, error: null };
+    },
+  } as never);
+  const service = new OwnerBoundTagService("verified-owner", new TagService(repository));
+
+  assert.equal(await service.merge(firstTag.id, secondTag.id), true);
+  assert.deepEqual(calls, [
+    {
+      target_owner_id: "verified-owner",
+      source_tag_id: firstTag.id,
+      target_tag_id: secondTag.id,
+    },
+  ]);
 });
 
 test("MCP list_tags defaults to the full alphabetic inventory and returns only tag fields", async () => {
@@ -295,5 +337,96 @@ test("MCP delete_unused_tag uses the write rate limit and hides repository error
   });
   assert.deepEqual(resultText(await failed.delete_unused_tag({ tagId: secondTag.id })), {
     error: "Unable to delete tag.",
+  });
+});
+
+test("MCP merge_tags merges explicit IDs and conceals same, missing, and unowned tags", async () => {
+  const calls: Array<{ sourceTagId: string; targetTagId: string }> = [];
+  const unavailableIds = new Set([
+    `${firstTag.id}:${firstTag.id}`,
+    `00000000-0000-4000-8000-000000000003:${secondTag.id}`,
+    `00000000-0000-4000-8000-000000000004:${secondTag.id}`,
+  ]);
+  const tools = createTagMcpTools({
+    userId: "owner-a",
+    service: {
+      async merge(sourceTagId: string, targetTagId: string) {
+        calls.push({ sourceTagId, targetTagId });
+        return !unavailableIds.has(`${sourceTagId}:${targetTagId}`);
+      },
+    } as never,
+  });
+
+  assert.deepEqual(
+    resultText(await tools.merge_tags({ sourceTagId: firstTag.id, targetTagId: secondTag.id })),
+    { merged: true, sourceTagId: firstTag.id, targetTagId: secondTag.id },
+  );
+  const unavailable = [
+    { sourceTagId: firstTag.id, targetTagId: firstTag.id },
+    { sourceTagId: "00000000-0000-4000-8000-000000000003", targetTagId: secondTag.id },
+    { sourceTagId: "00000000-0000-4000-8000-000000000004", targetTagId: secondTag.id },
+  ];
+  for (const selection of unavailable) {
+    const result = await tools.merge_tags(selection);
+    assert.equal(result.isError, true);
+    assert.deepEqual(resultText(result), {
+      merged: false,
+      message: "One or both selected tags were not found or cannot be merged.",
+    });
+  }
+  assert.deepEqual(
+    resultText(await tools.merge_tags({ sourceTagId: "not-a-uuid", targetTagId: secondTag.id })),
+    {
+      error: "Invalid tag merge input.",
+    },
+  );
+  assert.deepEqual(
+    resultText(
+      await tools.merge_tags({
+        sourceTagId: firstTag.id,
+        targetTagId: secondTag.id,
+        ownerId: "owner-b",
+      }),
+    ),
+    { error: "Invalid tag merge input." },
+  );
+  assert.deepEqual(calls, [
+    { sourceTagId: firstTag.id, targetTagId: secondTag.id },
+    ...unavailable,
+  ]);
+});
+
+test("MCP merge_tags uses the write rate limit and hides repository errors", async () => {
+  const selection = { sourceTagId: firstTag.id, targetTagId: secondTag.id };
+  const limiterCalls: Array<{ key: string; limit: number }> = [];
+  const limited = createTagMcpTools({
+    userId: "owner-a",
+    limiter: {
+      check(key, policy) {
+        limiterCalls.push({ key, limit: policy.limit });
+        return { allowed: false, retryAfterSeconds: 1 };
+      },
+    },
+    service: {
+      async merge() {
+        throw new Error("must not run");
+      },
+    } as never,
+  });
+  const denied = await limited.merge_tags(selection);
+  assert.equal(denied.isError, true);
+  assert.deepEqual(resultText(denied), { error: "Rate limit exceeded." });
+  assert.deepEqual(limiterCalls, [{ key: "owner-a:mcp:write", limit: 30 }]);
+
+  const failed = createTagMcpTools({
+    userId: "owner-a",
+    service: {
+      async merge() {
+        throw new Error("private database detail");
+      },
+    } as never,
+  });
+  assert.deepEqual(resultText(await failed.merge_tags(selection)), {
+    error: "Unable to merge tags.",
   });
 });

@@ -10,6 +10,10 @@ export class TagService {
   deleteUnused(ownerId: string, tagId: string) {
     return this.tags.deleteUnused(ownerId, tagId);
   }
+
+  merge(ownerId: string, sourceTagId: string, targetTagId: string) {
+    return this.tags.merge(ownerId, sourceTagId, targetTagId);
+  }
 }
 
 /** Binds tag inventory reads to an owner chosen by verified application auth. */
@@ -25,5 +29,9 @@ export class OwnerBoundTagService {
 
   deleteUnused(tagId: string) {
     return this.tags.deleteUnused(this.ownerId, tagId);
+  }
+
+  merge(sourceTagId: string, targetTagId: string) {
+    return this.tags.merge(this.ownerId, sourceTagId, targetTagId);
   }
 }

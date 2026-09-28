@@ -19,3 +19,6 @@ adapter receives only `OwnerBoundTagService`, whose `list(options)` call derives
 the owner from verified authentication. `OwnerBoundTagService.deleteUnused(tagId)`
 uses that same bound owner and refuses deletion unless the database confirms the
 tag still has zero recipe associations at deletion time.
+`OwnerBoundTagService.merge(sourceTagId, targetTagId)` consolidates only the two
+explicitly selected IDs under the same verified owner; it never performs name
+matching.

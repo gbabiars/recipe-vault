@@ -55,4 +55,14 @@ export class TagRepository {
     if (error || typeof data !== "boolean") throw new Error("Could not delete tag.");
     return data;
   }
+
+  async merge(ownerId: string, sourceTagId: string, targetTagId: string): Promise<boolean> {
+    const { data, error } = await this.client.rpc("recipe_vault_merge_tags", {
+      target_owner_id: ownerId,
+      source_tag_id: sourceTagId,
+      target_tag_id: targetTagId,
+    });
+    if (error || typeof data !== "boolean") throw new Error("Could not merge tags.");
+    return data;
+  }
 }

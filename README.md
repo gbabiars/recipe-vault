@@ -48,7 +48,8 @@ projection until recipe readers and writers move to the new model. The tag
 migration backfills existing arrays using lowercase names, trimmed surrounding
 whitespace, and one space for repeated internal spaces. Similar names are kept
 separate. Recipe writes are atomic database transactions, including tag creation
-and ingredient and step changes. Tag management UI and MCP tag tools will follow.
+and ingredient and step changes. The MCP exposes owner-scoped tag inventory and
+tag maintenance operations; a dedicated tag-management UI remains future work.
 Apply the tag migration before deploying the application code that calls the new
 recipe write function. The migration retains the array and installs its sync
 triggers, so older application instances can continue writing during rollout.
@@ -66,11 +67,14 @@ client compatibility), and the standard OAuth metadata endpoints:
 - `/.well-known/oauth-protected-resource/mcp`
 - `/.well-known/oauth-authorization-server`
 
-The server exposes `list_tags`, `search_recipes`, `get_recipe`, and create-only
-`save_recipe`. Read tools require `recipes:read`; save requires
-`recipes:write`. `list_tags` returns each owned tag's ID, name, and exact
-associated-recipe count, with literal search, used/unused filtering, usage
-sorting, and cursor pagination.
+The server exposes `list_tags`, `delete_unused_tag`, `merge_tags`,
+`search_recipes`, `get_recipe`, and create-only `save_recipe`. Read tools require
+`recipes:read`; tag maintenance and save require `recipes:write`. `list_tags`
+returns each owned tag's ID, name, and exact associated-recipe count, with
+literal search, used/unused filtering, usage sorting, and cursor pagination.
+An agent can remove an unused tag by ID or merge an explicitly selected source
+tag into a target; merge preserves recipe associations, deduplicates recipes
+that already have both, and never guesses similar names.
 
 For MCP Apps-capable hosts, `get_recipe` also renders a portable, read-only
 recipe view after the model searches for and selects a recipe ID. The same tool
