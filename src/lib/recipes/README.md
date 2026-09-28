@@ -16,4 +16,6 @@ search)` exposes the bounded owned tag catalog to the authenticated API.
 `TagService.list(ownerId, options)` provides exact usage counts, filters,
 deterministic sorting, and keyset pagination for MCP tag inventory. The MCP
 adapter receives only `OwnerBoundTagService`, whose `list(options)` call derives
-the owner from verified authentication.
+the owner from verified authentication. `OwnerBoundTagService.deleteUnused(tagId)`
+uses that same bound owner and refuses deletion unless the database confirms the
+tag still has zero recipe associations at deletion time.

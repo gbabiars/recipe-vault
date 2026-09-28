@@ -49,6 +49,8 @@ const tagListInputSchema = z
   })
   .strict();
 
+const deleteUnusedTagInputSchema = z.object({ tagId: z.string().uuid() }).strict();
+
 const tagCursorSchema = z
   .object({
     version: z.literal(1),
@@ -212,6 +214,21 @@ export function createTagMcpTools(context: McpTagToolContext) {
         return text({ error: "Unable to load tags." }, true);
       }
     },
+    delete_unused_tag: async (raw: unknown) => {
+      const parsed = deleteUnusedTagInputSchema.safeParse(raw);
+      if (!parsed.success) return text({ error: "Invalid tag deletion input." }, true);
+      if (!allowed(context, true).allowed) return text({ error: "Rate limit exceeded." }, true);
+
+      try {
+        const deleted = await context.service.deleteUnused(parsed.data.tagId);
+        if (!deleted) {
+          return text({ deleted: false, message: "Tag was in use or not found." }, true);
+        }
+        return text({ deleted: true, tagId: parsed.data.tagId });
+      } catch {
+        return text({ error: "Unable to delete tag." }, true);
+      }
+    },
   };
 }
 
@@ -292,4 +309,5 @@ export const mcpToolSchemas = {
   recipeId: recipeIdInputSchema,
   recipe: recipeCreateInputSchema,
   tags: tagListInputSchema,
+  deleteUnusedTag: deleteUnusedTagInputSchema,
 };

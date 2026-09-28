@@ -34,3 +34,10 @@ and applies owner, search, usage, sort, and keyset cursor predicates in one
 query. The RPC is `SECURITY INVOKER`, has an empty search path, and can be
 executed only by `service_role`. Every call supplies the owner ID bound by the
 verified MCP adapter; no model-controlled identity reaches the database.
+
+`TagRepository.deleteUnused(ownerId, tagId)` calls the restricted
+`recipe_vault_delete_unused_tag` RPC. It locks the owned tag row before
+rechecking recipe associations, so an in-flight association cannot race the
+zero-usage check. It returns `false` for both used tags and missing/unowned IDs
+to avoid revealing another owner's tag existence. The RPC preserves the
+existing tag-deletion trigger behavior and is executable only by `service_role`.

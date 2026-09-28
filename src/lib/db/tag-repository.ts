@@ -46,4 +46,13 @@ export class TagRepository {
 
     return { tags, hasMore: rows.length > options.limit };
   }
+
+  async deleteUnused(ownerId: string, tagId: string): Promise<boolean> {
+    const { data, error } = await this.client.rpc("recipe_vault_delete_unused_tag", {
+      target_owner_id: ownerId,
+      target_tag_id: tagId,
+    });
+    if (error || typeof data !== "boolean") throw new Error("Could not delete tag.");
+    return data;
+  }
 }
