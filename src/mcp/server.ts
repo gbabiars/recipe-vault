@@ -102,6 +102,20 @@ function registerRecipeTools(
     },
   );
   server.registerTool(
+    "merge_tags",
+    {
+      title: "Merge tags",
+      description:
+        "Merge one explicitly selected source tag into a distinct target tag owned by the authenticated user. Use IDs returned by list_tags; source associations move to target, duplicate recipe associations collapse, and the source tag is removed. This does not guess similar names or rename tags.",
+      inputSchema: mcpToolSchemas.mergeTags,
+      annotations: { readOnlyHint: false, idempotentHint: true, destructiveHint: true },
+    },
+    async (input, extra) => {
+      const context = tagToolContext(extra, mcpScopes.write, getTagService);
+      return context ? createTagMcpTools(context).merge_tags(input) : denied();
+    },
+  );
+  server.registerTool(
     "search_recipes",
     {
       title: "Search recipes",

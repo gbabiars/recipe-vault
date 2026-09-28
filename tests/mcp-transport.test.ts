@@ -67,6 +67,7 @@ test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools"
   assert.deepEqual(names, [
     "list_tags",
     "delete_unused_tag",
+    "merge_tags",
     "search_recipes",
     "get_recipe",
     "save_recipe",
@@ -96,6 +97,9 @@ test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools"
   const deleteUnusedTag = listedTools.result.tools.find(
     (tool: { name: string }) => tool.name === "delete_unused_tag",
   );
+  const mergeTags = listedTools.result.tools.find(
+    (tool: { name: string }) => tool.name === "merge_tags",
+  );
   assert.equal(listTags.title, "List tags");
   assert.match(listTags.description, /exact recipe usage counts/u);
   assert.deepEqual(listTags.annotations, { readOnlyHint: true });
@@ -122,6 +126,20 @@ test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools"
   });
   assert.deepEqual(Object.keys(deleteUnusedTag.inputSchema.properties), ["tagId"]);
   assert.equal(deleteUnusedTag.inputSchema.properties.tagId.format, "uuid");
+  assert.equal(mergeTags.title, "Merge tags");
+  assert.match(mergeTags.description, /explicitly selected source tag/u);
+  assert.match(mergeTags.description, /does not guess similar names/u);
+  assert.deepEqual(mergeTags.annotations, {
+    readOnlyHint: false,
+    idempotentHint: true,
+    destructiveHint: true,
+  });
+  assert.deepEqual(Object.keys(mergeTags.inputSchema.properties).sort(), [
+    "sourceTagId",
+    "targetTagId",
+  ]);
+  assert.equal(mergeTags.inputSchema.properties.sourceTagId.format, "uuid");
+  assert.equal(mergeTags.inputSchema.properties.targetTagId.format, "uuid");
   assert.deepEqual(getRecipe._meta, {
     ui: { resourceUri: recipeViewUri, visibility: ["model"] },
     "ui/resourceUri": recipeViewUri,
@@ -278,5 +296,54 @@ test("delete_unused_tag transport binds the verified owner and passes one tag ID
     },
   ]);
   assert.deepEqual(JSON.parse(body.result.content[0].text), { deleted: true, tagId });
+  assert.equal(JSON.stringify(body.result).includes(userId), false);
+});
+
+test("merge_tags transport binds verified owner and passes only the selected IDs", async () => {
+  const userId = "00000000-0000-4000-8000-000000000001";
+  const sourceTagId = "00000000-0000-4000-8000-000000000004";
+  const targetTagId = "00000000-0000-4000-8000-000000000005";
+  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+  const response = await handleMcpRequest(
+    {
+      rpc: async (name: string, args: Record<string, unknown>) => {
+        calls.push({ name, args });
+        return { data: true, error: null };
+      },
+    } as never,
+    userId,
+    new Request(resourceServer, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+        "mcp-protocol-version": "2025-11-25",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 11,
+        method: "tools/call",
+        params: { name: "merge_tags", arguments: { sourceTagId, targetTagId } },
+      }),
+    }),
+  );
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(calls, [
+    {
+      name: "recipe_vault_merge_tags",
+      args: {
+        target_owner_id: userId,
+        source_tag_id: sourceTagId,
+        target_tag_id: targetTagId,
+      },
+    },
+  ]);
+  assert.deepEqual(JSON.parse(body.result.content[0].text), {
+    merged: true,
+    sourceTagId,
+    targetTagId,
+  });
   assert.equal(JSON.stringify(body.result).includes(userId), false);
 });

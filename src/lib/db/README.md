@@ -41,3 +41,12 @@ rechecking recipe associations, so an in-flight association cannot race the
 zero-usage check. It returns `false` for both used tags and missing/unowned IDs
 to avoid revealing another owner's tag existence. The RPC preserves the
 existing tag-deletion trigger behavior and is executable only by `service_role`.
+
+`TagRepository.merge(ownerId, sourceTagId, targetTagId)` calls the restricted
+`recipe_vault_merge_tags` RPC. It locks both owned tag rows in ascending UUID
+order, which serializes against FK-backed association writes and prevents
+reverse-direction merges from acquiring the pair in opposite orders. The RPC
+deletes overlapping source links before retargeting remaining links, then removes
+the source tag in the same transaction. Existing `recipe_tags` triggers refresh
+only affected `recipes.tags` projections; ingredients and other recipe fields
+are left alone. Same, missing, and unowned IDs return the same false result.

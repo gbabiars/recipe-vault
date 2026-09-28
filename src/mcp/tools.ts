@@ -50,6 +50,12 @@ const tagListInputSchema = z
   .strict();
 
 const deleteUnusedTagInputSchema = z.object({ tagId: z.string().uuid() }).strict();
+const mergeTagsInputSchema = z
+  .object({
+    sourceTagId: z.string().uuid(),
+    targetTagId: z.string().uuid(),
+  })
+  .strict();
 
 const tagCursorSchema = z
   .object({
@@ -229,6 +235,34 @@ export function createTagMcpTools(context: McpTagToolContext) {
         return text({ error: "Unable to delete tag." }, true);
       }
     },
+    merge_tags: async (raw: unknown) => {
+      const parsed = mergeTagsInputSchema.safeParse(raw);
+      if (!parsed.success) return text({ error: "Invalid tag merge input." }, true);
+      if (!allowed(context, true).allowed) return text({ error: "Rate limit exceeded." }, true);
+
+      try {
+        const merged = await context.service.merge(
+          parsed.data.sourceTagId,
+          parsed.data.targetTagId,
+        );
+        if (!merged) {
+          return text(
+            {
+              merged: false,
+              message: "One or both selected tags were not found or cannot be merged.",
+            },
+            true,
+          );
+        }
+        return text({
+          merged: true,
+          sourceTagId: parsed.data.sourceTagId,
+          targetTagId: parsed.data.targetTagId,
+        });
+      } catch {
+        return text({ error: "Unable to merge tags." }, true);
+      }
+    },
   };
 }
 
@@ -310,4 +344,5 @@ export const mcpToolSchemas = {
   recipe: recipeCreateInputSchema,
   tags: tagListInputSchema,
   deleteUnusedTag: deleteUnusedTagInputSchema,
+  mergeTags: mergeTagsInputSchema,
 };
