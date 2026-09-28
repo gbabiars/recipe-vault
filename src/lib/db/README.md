@@ -1,6 +1,6 @@
 # Database boundary
 
-`recipe-repository.ts` is the sole application adapter for recipe, ingredient, and step
+`recipe-repository.ts` is the application adapter for recipe, ingredient, and step
 queries. It accepts the authenticated owner ID explicitly and normally uses the
 request-scoped Clerk session JWT, so every browser/API query remains protected by
 the caller's JWT and database RLS. Application features must not query Supabase
@@ -22,6 +22,15 @@ cascades associations, never recipes. Application recipe create/update uses
 `recipe_vault_write_recipe` so recipe fields, details, and tags commit or roll
 back together. Association rows have no direct authenticated write grant.
 
-`listTags(ownerId, search)` reads up to 25 owned tag names in alphabetical order.
-An empty search lists the first 25; nonempty search matches a literal substring
-case-insensitively. The caller's JWT and RLS still enforce ownership.
+`RecipeRepository.listTags(ownerId, search)` reads up to 25 owned tag names in
+alphabetical order for the existing HTTP endpoint. An empty search lists the
+first 25; nonempty search matches a literal substring case-insensitively. The
+caller's JWT and RLS still enforce ownership.
+
+`tag-repository.ts` owns aggregate tag inventory reads for MCP. Its
+`TagRepository.list(ownerId, options)` calls the stable
+`recipe_vault_list_tag_inventory` RPC, which counts distinct associated recipes
+and applies owner, search, usage, sort, and keyset cursor predicates in one
+query. The RPC is `SECURITY INVOKER`, has an empty search path, and can be
+executed only by `service_role`. Every call supplies the owner ID bound by the
+verified MCP adapter; no model-controlled identity reaches the database.

@@ -1,5 +1,7 @@
+import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { Recipe } from "@/lib/db/recipe-repository";
+import type { OwnerBoundTagService } from "@/lib/recipes/tag-service";
 import type { OwnerBoundRecipeService } from "@/lib/recipes/recipe-service";
 import { recipeCreateInputSchema } from "@/lib/validation/recipe";
 import {
@@ -16,6 +18,12 @@ export type McpToolContext = {
   limiter?: RateLimiter;
 };
 
+export type McpTagToolContext = {
+  userId: string;
+  service: OwnerBoundTagService;
+  limiter?: RateLimiter;
+};
+
 const searchInputSchema = z
   .object({
     query: z.string().trim().min(1).max(200).optional(),
@@ -25,6 +33,31 @@ const searchInputSchema = z
   .strict();
 
 const recipeIdInputSchema = z.object({ recipeId: z.string().uuid() }).strict();
+
+const tagListInputSchema = z
+  .object({
+    search: z.string().trim().max(200).optional(),
+    usage: z.enum(["all", "used", "unused"]).default("all"),
+    sort: z.enum(["name_asc", "usage_desc", "usage_asc"]).default("name_asc"),
+    limit: z.number().int().min(1).max(100).default(50),
+    cursor: z
+      .string()
+      .min(1)
+      .max(1024)
+      .regex(/^[A-Za-z0-9_-]+$/u)
+      .optional(),
+  })
+  .strict();
+
+const tagCursorSchema = z
+  .object({
+    version: z.literal(1),
+    fingerprint: z.string().regex(/^[a-f0-9]{64}$/u),
+    usageCount: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
+    name: z.string().min(1).max(64),
+    id: z.string().uuid(),
+  })
+  .strict();
 
 const recipeDisplaySchema = z
   .object({
@@ -92,11 +125,94 @@ function text(value: unknown, isError = false) {
   return { content: [{ type: "text" as const, text: JSON.stringify(value) }], isError };
 }
 
-function allowed(context: McpToolContext, write: boolean) {
+function allowed(context: { userId: string; limiter?: RateLimiter }, write: boolean) {
   return (context.limiter ?? defaultRateLimiter).check(
     `${context.userId}:mcp:${write ? "write" : "read"}`,
     write ? recipeWriteLimit : recipeReadLimit,
   );
+}
+
+function cursorFingerprint(
+  userId: string,
+  query: { search?: string; usage: string; sort: string; limit: number },
+) {
+  return createHash("sha256")
+    .update(
+      JSON.stringify({
+        version: 1,
+        ownerId: userId,
+        search: query.search ?? "",
+        usage: query.usage,
+        sort: query.sort,
+        limit: query.limit,
+      }),
+    )
+    .digest("hex");
+}
+
+function decodeTagCursor(
+  cursor: string,
+  fingerprint: string,
+): { usageCount: number; name: string; id: string } | null {
+  try {
+    const json = Buffer.from(cursor, "base64url");
+    if (json.toString("base64url") !== cursor) return null;
+    const parsed = tagCursorSchema.safeParse(JSON.parse(json.toString("utf8")));
+    if (!parsed.success || parsed.data.fingerprint !== fingerprint) return null;
+    return {
+      usageCount: parsed.data.usageCount,
+      name: parsed.data.name,
+      id: parsed.data.id,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function encodeTagCursor(
+  fingerprint: string,
+  tag: { usageCount: number; name: string; id: string },
+) {
+  return Buffer.from(JSON.stringify({ version: 1, fingerprint, ...tag }), "utf8").toString(
+    "base64url",
+  );
+}
+
+/** The tag adapter has no owner parameter; identity comes from verified MCP auth. */
+export function createTagMcpTools(context: McpTagToolContext) {
+  return {
+    list_tags: async (raw: unknown) => {
+      const parsed = tagListInputSchema.safeParse(raw);
+      if (!parsed.success) return text({ error: "Invalid tag list input." }, true);
+
+      const { search, usage, sort, limit, cursor } = parsed.data;
+      const fingerprint = cursorFingerprint(context.userId, { search, usage, sort, limit });
+      const cursorPosition = cursor ? decodeTagCursor(cursor, fingerprint) : undefined;
+      if (cursor && cursorPosition === null)
+        return text({ error: "Invalid tag cursor. Start a new tag listing." }, true);
+      const after = cursorPosition ?? undefined;
+      if (!allowed(context, false).allowed) return text({ error: "Rate limit exceeded." }, true);
+
+      try {
+        const page = await context.service.list({
+          search: search || undefined,
+          usage,
+          sort,
+          limit,
+          after,
+        });
+        const lastTag = page.tags.at(-1);
+        const nextCursor =
+          page.hasMore && lastTag ? encodeTagCursor(fingerprint, lastTag) : undefined;
+        return text({
+          tags: page.tags,
+          ...(nextCursor ? { nextCursor } : {}),
+        });
+      } catch {
+        return text({ error: "Unable to load tags." }, true);
+      }
+    },
+  };
 }
 
 /**
@@ -175,4 +291,5 @@ export const mcpToolSchemas = {
   search: searchInputSchema,
   recipeId: recipeIdInputSchema,
   recipe: recipeCreateInputSchema,
+  tags: tagListInputSchema,
 };

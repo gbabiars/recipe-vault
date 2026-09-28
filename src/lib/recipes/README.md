@@ -10,5 +10,10 @@ schema removes duplicates after normalization. Tags with distinct canonical
 names remain distinct. The database applies the
 same tag rule to legacy array writes and existing data during backfill.
 
-Recipe listing filters by canonical tag name. `listTags(ownerId, search)` exposes
-the bounded owned tag catalog to the authenticated API.
+Recipe listing filters by canonical tag name. `RecipeService.listTags(ownerId,
+search)` exposes the bounded owned tag catalog to the authenticated API.
+
+`TagService.list(ownerId, options)` provides exact usage counts, filters,
+deterministic sorting, and keyset pagination for MCP tag inventory. The MCP
+adapter receives only `OwnerBoundTagService`, whose `list(options)` call derives
+the owner from verified authentication.
