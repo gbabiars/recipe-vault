@@ -7,14 +7,22 @@ import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createMcpHandler } from "mcp-handler";
 import { RecipeRepository } from "@/lib/db/recipe-repository";
-import { getOwnerBoundMcpRecipeService } from "@/lib/recipes";
+import { TagRepository } from "@/lib/db/tag-repository";
+import { getOwnerBoundMcpRecipeService, getOwnerBoundMcpTagService } from "@/lib/recipes";
 import { OwnerBoundRecipeService, RecipeService } from "@/lib/recipes/recipe-service";
+import { OwnerBoundTagService, TagService } from "@/lib/recipes/tag-service";
 import { authorizeMcpTool, mcpScopes, type McpScope } from "./auth-policy";
-import { createRecipeMcpTools, mcpGetRecipeOutputSchema, mcpToolSchemas } from "./tools";
+import {
+  createRecipeMcpTools,
+  createTagMcpTools,
+  mcpGetRecipeOutputSchema,
+  mcpToolSchemas,
+} from "./tools";
 import { registerRecipeViewResource, recipeViewUri } from "./recipe-view-resource";
 
 type McpExtra = RequestHandlerExtra<ServerRequest, ServerNotification>;
 type OwnedServiceFactory = (userId: string) => OwnerBoundRecipeService;
+type OwnedTagServiceFactory = (userId: string) => OwnerBoundTagService;
 
 function denied() {
   return {
@@ -33,13 +41,23 @@ function toolContext(extra: McpExtra, scope: McpScope, getService: OwnedServiceF
   };
 }
 
+function tagToolContext(extra: McpExtra, scope: McpScope, getService: OwnedTagServiceFactory) {
+  const principal = authorizeMcpTool(extra.authInfo, scope);
+  if (!principal) return null;
+  return {
+    userId: principal.userId,
+    service: getService(principal.userId),
+  };
+}
+
 /** Creates a stateless Streamable HTTP handler for one concrete route. */
 export function createRecipeMcpHandler(
   endpoint: string,
   getService: OwnedServiceFactory = getOwnerBoundMcpRecipeService,
+  getTagService: OwnedTagServiceFactory = getOwnerBoundMcpTagService,
 ) {
   return createMcpHandler(
-    (server) => registerRecipeTools(server, getService),
+    (server) => registerRecipeTools(server, getService, getTagService),
     { serverInfo: { name: "recipe-vault", version: "0.6.0" } },
     {
       streamableHttpEndpoint: endpoint,
@@ -49,8 +67,26 @@ export function createRecipeMcpHandler(
   );
 }
 
-function registerRecipeTools(server: McpServer, getService: OwnedServiceFactory) {
+function registerRecipeTools(
+  server: McpServer,
+  getService: OwnedServiceFactory,
+  getTagService: OwnedTagServiceFactory,
+) {
   registerRecipeViewResource(server);
+  server.registerTool(
+    "list_tags",
+    {
+      title: "List tags",
+      description:
+        "List tags owned by the authenticated user with exact recipe usage counts. Filter by used or unused tags, search literal name substrings, and sort by name or usage count.",
+      inputSchema: mcpToolSchemas.tags,
+      annotations: { readOnlyHint: true },
+    },
+    async (input, extra) => {
+      const context = tagToolContext(extra, mcpScopes.read, getTagService);
+      return context ? createTagMcpTools(context).list_tags(input) : denied();
+    },
+  );
   server.registerTool(
     "search_recipes",
     {
@@ -103,6 +139,7 @@ export async function handleMcpRequest(client: SupabaseClient, userId: string, r
     userId,
     new RecipeService(new RecipeRepository(client)),
   );
+  const tagService = new OwnerBoundTagService(userId, new TagService(new TagRepository(client)));
   const authInfo = {
     token: "test-token",
     clientId: "test-client",
@@ -114,7 +151,11 @@ export async function handleMcpRequest(client: SupabaseClient, userId: string, r
     enableJsonResponse: true,
   });
   const server = new McpServer({ name: "recipe-vault", version: "0.6.0" });
-  registerRecipeTools(server, () => service);
+  registerRecipeTools(
+    server,
+    () => service,
+    () => tagService,
+  );
   await server.connect(transport);
   return transport.handleRequest(request, { authInfo });
 }

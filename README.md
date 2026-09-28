@@ -66,9 +66,11 @@ client compatibility), and the standard OAuth metadata endpoints:
 - `/.well-known/oauth-protected-resource/mcp`
 - `/.well-known/oauth-authorization-server`
 
-The server exposes `search_recipes`, `get_recipe`, and create-only
+The server exposes `list_tags`, `search_recipes`, `get_recipe`, and create-only
 `save_recipe`. Read tools require `recipes:read`; save requires
-`recipes:write`.
+`recipes:write`. `list_tags` returns each owned tag's ID, name, and exact
+associated-recipe count, with literal search, used/unused filtering, usage
+sorting, and cursor pagination.
 
 For MCP Apps-capable hosts, `get_recipe` also renders a portable, read-only
 recipe view after the model searches for and selects a recipe ID. The same tool

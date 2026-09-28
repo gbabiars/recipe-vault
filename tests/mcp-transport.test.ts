@@ -64,7 +64,7 @@ test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools"
   );
   assert.equal(tools.status, 200);
   const names = (await tools.json()).result.tools.map((tool: { name: string }) => tool.name);
-  assert.deepEqual(names, ["search_recipes", "get_recipe", "save_recipe"]);
+  assert.deepEqual(names, ["list_tags", "search_recipes", "get_recipe", "save_recipe"]);
 
   const listedTools = await (
     await handleMcpRequest(
@@ -84,6 +84,26 @@ test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools"
   const getRecipe = listedTools.result.tools.find(
     (tool: { name: string }) => tool.name === "get_recipe",
   );
+  const listTags = listedTools.result.tools.find(
+    (tool: { name: string }) => tool.name === "list_tags",
+  );
+  assert.equal(listTags.title, "List tags");
+  assert.match(listTags.description, /exact recipe usage counts/u);
+  assert.deepEqual(listTags.annotations, { readOnlyHint: true });
+  assert.deepEqual(Object.keys(listTags.inputSchema.properties).sort(), [
+    "cursor",
+    "limit",
+    "search",
+    "sort",
+    "usage",
+  ]);
+  assert.deepEqual(listTags.inputSchema.properties.usage.enum, ["all", "used", "unused"]);
+  assert.deepEqual(listTags.inputSchema.properties.sort.enum, [
+    "name_asc",
+    "usage_desc",
+    "usage_asc",
+  ]);
+  assert.equal(listTags.inputSchema.properties.limit.maximum, 100);
   assert.deepEqual(getRecipe._meta, {
     ui: { resourceUri: recipeViewUri, visibility: ["model"] },
     "ui/resourceUri": recipeViewUri,
@@ -142,4 +162,63 @@ test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools"
   assert.match(readResource.result.contents[0].text, /^<!doctype html>/iu);
   assert.equal(readResource.result.contents[0].text.includes('src="/assets/'), false);
   assert.equal(readResource.result.contents[0].text.includes('href="/assets/'), false);
+});
+
+test("list_tags transport binds the verified owner and returns exact counts", async () => {
+  const userId = "00000000-0000-4000-8000-000000000001";
+  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+  const response = await handleMcpRequest(
+    {
+      rpc: async (name: string, args: Record<string, unknown>) => {
+        calls.push({ name, args });
+        return {
+          data: [
+            {
+              id: "00000000-0000-4000-8000-000000000004",
+              name: "dinner",
+              usage_count: 3,
+            },
+          ],
+          error: null,
+        };
+      },
+    } as never,
+    userId,
+    new Request(resourceServer, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+        "mcp-protocol-version": "2025-11-25",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 9,
+        method: "tools/call",
+        params: { name: "list_tags", arguments: { usage: "used", sort: "usage_desc" } },
+      }),
+    }),
+  );
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(calls, [
+    {
+      name: "recipe_vault_list_tag_inventory",
+      args: {
+        target_owner_id: userId,
+        target_search: null,
+        target_usage: "used",
+        target_sort: "usage_desc",
+        after_usage_count: null,
+        after_name: null,
+        after_tag_id: null,
+        target_limit: 51,
+      },
+    },
+  ]);
+  assert.deepEqual(JSON.parse(body.result.content[0].text), {
+    tags: [{ id: "00000000-0000-4000-8000-000000000004", name: "dinner", usageCount: 3 }],
+  });
+  assert.equal(JSON.stringify(body.result).includes(userId), false);
 });

@@ -1,0 +1,191 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { TagRepository } from "../src/lib/db/tag-repository";
+import { OwnerBoundTagService, TagService } from "../src/lib/recipes/tag-service";
+import { createTagMcpTools } from "../src/mcp/tools";
+import type { RateLimiter } from "../src/lib/api/rate-limit";
+
+const firstTag = {
+  id: "00000000-0000-4000-8000-000000000001",
+  name: "dinner",
+  usageCount: 4,
+};
+const secondTag = {
+  id: "00000000-0000-4000-8000-000000000002",
+  name: "lunch",
+  usageCount: 0,
+};
+
+function resultText(result: { content: Array<{ text: string }> }) {
+  return JSON.parse(result.content[0].text) as Record<string, unknown>;
+}
+
+test("tag repository passes an explicit owner and maps the RPC lookahead page", async () => {
+  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+  const repository = new TagRepository({
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      calls.push({ name, args });
+      return {
+        data: [
+          { id: firstTag.id, name: firstTag.name, usage_count: "4" },
+          { id: secondTag.id, name: secondTag.name, usage_count: 0 },
+        ],
+        error: null,
+      };
+    },
+  } as never);
+  const page = await repository.list("owner-a", {
+    usage: "all",
+    sort: "name_asc",
+    limit: 1,
+  });
+
+  assert.deepEqual(page, { tags: [firstTag], hasMore: true });
+  assert.equal(calls[0].name, "recipe_vault_list_tag_inventory");
+  assert.equal(calls[0].args.target_owner_id, "owner-a");
+  assert.equal(calls[0].args.target_limit, 2);
+});
+
+test("owner-bound tag service supplies its verified owner to the repository", async () => {
+  let requestedOwner: string | undefined;
+  const repository = new TagRepository({
+    rpc: async (_name: string, args: { target_owner_id: string }) => {
+      requestedOwner = args.target_owner_id;
+      return { data: [], error: null };
+    },
+  } as never);
+  const service = new OwnerBoundTagService("verified-owner", new TagService(repository));
+
+  await service.list({ usage: "unused", sort: "usage_asc", limit: 25 });
+  assert.equal(requestedOwner, "verified-owner");
+});
+
+test("MCP list_tags defaults to the full alphabetic inventory and returns only tag fields", async () => {
+  const calls: unknown[] = [];
+  const tools = createTagMcpTools({
+    userId: "owner-a",
+    service: {
+      async list(options: unknown) {
+        calls.push(options);
+        return { tags: [firstTag], hasMore: false };
+      },
+    } as never,
+  });
+
+  assert.deepEqual(resultText(await tools.list_tags({})), { tags: [firstTag] });
+  assert.deepEqual(calls, [
+    {
+      search: undefined,
+      usage: "all",
+      sort: "name_asc",
+      limit: 50,
+      after: undefined,
+    },
+  ]);
+});
+
+test("MCP list_tags supports literal-search options and live keyset pagination", async () => {
+  const calls: Array<Record<string, unknown>> = [];
+  const tools = createTagMcpTools({
+    userId: "owner-a",
+    service: {
+      async list(options: Record<string, unknown>) {
+        calls.push(options);
+        return options.after
+          ? { tags: [secondTag], hasMore: false }
+          : { tags: [firstTag], hasMore: true };
+      },
+    } as never,
+  });
+
+  const firstPage = resultText(
+    await tools.list_tags({
+      search: "  %Dinner_ ",
+      usage: "used",
+      sort: "usage_desc",
+      limit: 1,
+    }),
+  );
+  assert.deepEqual(firstPage.tags, [firstTag]);
+  assert.equal(typeof firstPage.nextCursor, "string");
+  const cursor = firstPage.nextCursor as string;
+  const payload = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
+  assert.equal(payload.version, 1);
+  assert.match(payload.fingerprint, /^[a-f0-9]{64}$/u);
+  assert.equal(JSON.stringify(payload).includes("owner-a"), false);
+
+  const secondPage = resultText(
+    await tools.list_tags({
+      search: "%Dinner_",
+      usage: "used",
+      sort: "usage_desc",
+      limit: 1,
+      cursor,
+    }),
+  );
+  assert.deepEqual(secondPage, { tags: [secondTag] });
+  assert.deepEqual(calls[0], {
+    search: "%Dinner_",
+    usage: "used",
+    sort: "usage_desc",
+    limit: 1,
+    after: undefined,
+  });
+  assert.deepEqual(calls[1].after, firstTag);
+});
+
+test("MCP list_tags rejects malformed and cross-query cursors before querying", async () => {
+  let callCount = 0;
+  const tools = createTagMcpTools({
+    userId: "owner-a",
+    service: {
+      async list() {
+        callCount += 1;
+        return { tags: [firstTag], hasMore: true };
+      },
+    } as never,
+  });
+  const firstPage = resultText(await tools.list_tags({ limit: 1 }));
+  const cursor = firstPage.nextCursor as string;
+
+  assert.deepEqual(resultText(await tools.list_tags({ limit: 1, search: "different", cursor })), {
+    error: "Invalid tag cursor. Start a new tag listing.",
+  });
+  assert.deepEqual(resultText(await tools.list_tags({ limit: 101 })), {
+    error: "Invalid tag list input.",
+  });
+  assert.deepEqual(resultText(await tools.list_tags({ ownerId: "owner-b" })), {
+    error: "Invalid tag list input.",
+  });
+  assert.equal((await tools.list_tags({ cursor: "!" })).isError, true);
+  assert.equal(callCount, 1);
+});
+
+test("MCP list_tags shares read rate limits and hides repository errors", async () => {
+  const limiter: RateLimiter = {
+    check: () => ({ allowed: false, retryAfterSeconds: 1 }),
+  };
+  const denied = createTagMcpTools({
+    userId: "owner-a",
+    limiter,
+    service: {
+      async list() {
+        throw new Error("should not run");
+      },
+    } as never,
+  });
+  assert.equal((await denied.list_tags({})).isError, true);
+  assert.deepEqual(resultText(await denied.list_tags({})), { error: "Rate limit exceeded." });
+
+  const failed = createTagMcpTools({
+    userId: "owner-a",
+    service: {
+      async list() {
+        throw new Error("private database detail");
+      },
+    } as never,
+  });
+  const result = await failed.list_tags({});
+  assert.equal(result.isError, true);
+  assert.deepEqual(resultText(result), { error: "Unable to load tags." });
+});
