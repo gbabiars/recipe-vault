@@ -64,7 +64,13 @@ test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools"
   );
   assert.equal(tools.status, 200);
   const names = (await tools.json()).result.tools.map((tool: { name: string }) => tool.name);
-  assert.deepEqual(names, ["list_tags", "search_recipes", "get_recipe", "save_recipe"]);
+  assert.deepEqual(names, [
+    "list_tags",
+    "delete_unused_tag",
+    "search_recipes",
+    "get_recipe",
+    "save_recipe",
+  ]);
 
   const listedTools = await (
     await handleMcpRequest(
@@ -87,6 +93,9 @@ test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools"
   const listTags = listedTools.result.tools.find(
     (tool: { name: string }) => tool.name === "list_tags",
   );
+  const deleteUnusedTag = listedTools.result.tools.find(
+    (tool: { name: string }) => tool.name === "delete_unused_tag",
+  );
   assert.equal(listTags.title, "List tags");
   assert.match(listTags.description, /exact recipe usage counts/u);
   assert.deepEqual(listTags.annotations, { readOnlyHint: true });
@@ -104,6 +113,15 @@ test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools"
     "usage_asc",
   ]);
   assert.equal(listTags.inputSchema.properties.limit.maximum, 100);
+  assert.equal(deleteUnusedTag.title, "Delete unused tag");
+  assert.match(deleteUnusedTag.description, /only if it has no recipe associations/u);
+  assert.deepEqual(deleteUnusedTag.annotations, {
+    readOnlyHint: false,
+    idempotentHint: true,
+    destructiveHint: true,
+  });
+  assert.deepEqual(Object.keys(deleteUnusedTag.inputSchema.properties), ["tagId"]);
+  assert.equal(deleteUnusedTag.inputSchema.properties.tagId.format, "uuid");
   assert.deepEqual(getRecipe._meta, {
     ui: { resourceUri: recipeViewUri, visibility: ["model"] },
     "ui/resourceUri": recipeViewUri,
@@ -220,5 +238,45 @@ test("list_tags transport binds the verified owner and returns exact counts", as
   assert.deepEqual(JSON.parse(body.result.content[0].text), {
     tags: [{ id: "00000000-0000-4000-8000-000000000004", name: "dinner", usageCount: 3 }],
   });
+  assert.equal(JSON.stringify(body.result).includes(userId), false);
+});
+
+test("delete_unused_tag transport binds the verified owner and passes one tag ID", async () => {
+  const userId = "00000000-0000-4000-8000-000000000001";
+  const tagId = "00000000-0000-4000-8000-000000000004";
+  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+  const response = await handleMcpRequest(
+    {
+      rpc: async (name: string, args: Record<string, unknown>) => {
+        calls.push({ name, args });
+        return { data: true, error: null };
+      },
+    } as never,
+    userId,
+    new Request(resourceServer, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+        "mcp-protocol-version": "2025-11-25",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 10,
+        method: "tools/call",
+        params: { name: "delete_unused_tag", arguments: { tagId } },
+      }),
+    }),
+  );
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(calls, [
+    {
+      name: "recipe_vault_delete_unused_tag",
+      args: { target_owner_id: userId, target_tag_id: tagId },
+    },
+  ]);
+  assert.deepEqual(JSON.parse(body.result.content[0].text), { deleted: true, tagId });
   assert.equal(JSON.stringify(body.result).includes(userId), false);
 });

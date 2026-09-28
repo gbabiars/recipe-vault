@@ -6,6 +6,10 @@ export class TagService {
   list(ownerId: string, options: TagListOptions) {
     return this.tags.list(ownerId, options);
   }
+
+  deleteUnused(ownerId: string, tagId: string) {
+    return this.tags.deleteUnused(ownerId, tagId);
+  }
 }
 
 /** Binds tag inventory reads to an owner chosen by verified application auth. */
@@ -17,5 +21,9 @@ export class OwnerBoundTagService {
 
   list(options: TagListOptions) {
     return this.tags.list(this.ownerId, options);
+  }
+
+  deleteUnused(tagId: string) {
+    return this.tags.deleteUnused(this.ownerId, tagId);
   }
 }

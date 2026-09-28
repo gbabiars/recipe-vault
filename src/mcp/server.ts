@@ -88,6 +88,20 @@ function registerRecipeTools(
     },
   );
   server.registerTool(
+    "delete_unused_tag",
+    {
+      title: "Delete unused tag",
+      description:
+        "Delete one tag only if it has no recipe associations at deletion time. First call list_tags with usage=unused, then pass a returned tagId. A tag that became used will be kept. Unknown or unowned tag IDs are not distinguished.",
+      inputSchema: mcpToolSchemas.deleteUnusedTag,
+      annotations: { readOnlyHint: false, idempotentHint: true, destructiveHint: true },
+    },
+    async (input, extra) => {
+      const context = tagToolContext(extra, mcpScopes.write, getTagService);
+      return context ? createTagMcpTools(context).delete_unused_tag(input) : denied();
+    },
+  );
+  server.registerTool(
     "search_recipes",
     {
       title: "Search recipes",

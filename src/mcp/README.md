@@ -9,9 +9,9 @@ constructing the server-only Supabase client. OAuth tokens are never passed to
 Supabase. Tool code must reuse that service, enforce its required scope, and
 never accept identity claims in tool input.
 
-The server exposes `list_tags`, `search_recipes`, `get_recipe`, and
-create-only `save_recipe`. Read tools require `recipes:read`; save requires
-`recipes:write`.
+The server exposes `list_tags`, `delete_unused_tag`, `search_recipes`,
+`get_recipe`, and create-only `save_recipe`. Read tools require `recipes:read`;
+tag cleanup and save require `recipes:write`.
 
 `list_tags` returns owned tag IDs and names with exact counts of associated
 recipes. It supports literal case-insensitive substring search, `all`,
@@ -21,6 +21,21 @@ and live cursor pagination. For example, an agent can find popular tags with
 cleanup candidates with `{ "usage": "unused" }`. The opaque cursor is bound
 to the owner and normalized query options; refresh the listing before acting on
 results because counts are live.
+
+`delete_unused_tag` removes one selected tag by stable ID. First list cleanup
+candidates, then pass the chosen ID, for example:
+
+```ts
+const { tags } = await list_tags({ usage: "unused" });
+if (tags[0]) await delete_unused_tag({ tagId: tags[0].id });
+```
+
+The database rechecks ownership and zero associations while holding a lock that
+serializes against recipe-tag association writes. If the tag is in use, missing,
+or belongs to another owner, the response does not distinguish those cases.
+This slice deletes only one tag per call; consolidation and bulk cleanup remain
+out of scope. Tag deletion is not added to recipe audit events because the
+existing audit contract requires a recipe target.
 
 `get_recipe` is display-only MCP Apps-enhanced. Models should first call
 `search_recipes`, then pass one returned ID to `get_recipe`; its static

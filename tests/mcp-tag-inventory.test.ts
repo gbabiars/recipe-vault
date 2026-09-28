@@ -46,6 +46,24 @@ test("tag repository passes an explicit owner and maps the RPC lookahead page", 
   assert.equal(calls[0].args.target_limit, 2);
 });
 
+test("tag repository passes owner and stable ID to the guarded delete RPC", async () => {
+  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+  const repository = new TagRepository({
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      calls.push({ name, args });
+      return { data: false, error: null };
+    },
+  } as never);
+
+  assert.equal(await repository.deleteUnused("owner-a", secondTag.id), false);
+  assert.deepEqual(calls, [
+    {
+      name: "recipe_vault_delete_unused_tag",
+      args: { target_owner_id: "owner-a", target_tag_id: secondTag.id },
+    },
+  ]);
+});
+
 test("owner-bound tag service supplies its verified owner to the repository", async () => {
   let requestedOwner: string | undefined;
   const repository = new TagRepository({
@@ -58,6 +76,20 @@ test("owner-bound tag service supplies its verified owner to the repository", as
 
   await service.list({ usage: "unused", sort: "usage_asc", limit: 25 });
   assert.equal(requestedOwner, "verified-owner");
+});
+
+test("owner-bound tag service never accepts an owner from delete input", async () => {
+  const calls: Array<Record<string, unknown>> = [];
+  const repository = new TagRepository({
+    rpc: async (_name: string, args: Record<string, unknown>) => {
+      calls.push(args);
+      return { data: true, error: null };
+    },
+  } as never);
+  const service = new OwnerBoundTagService("verified-owner", new TagService(repository));
+
+  assert.equal(await service.deleteUnused(secondTag.id), true);
+  assert.deepEqual(calls, [{ target_owner_id: "verified-owner", target_tag_id: secondTag.id }]);
 });
 
 test("MCP list_tags defaults to the full alphabetic inventory and returns only tag fields", async () => {
@@ -188,4 +220,80 @@ test("MCP list_tags shares read rate limits and hides repository errors", async 
   const result = await failed.list_tags({});
   assert.equal(result.isError, true);
   assert.deepEqual(resultText(result), { error: "Unable to load tags." });
+});
+
+test("MCP delete_unused_tag deletes one ID and conceals used, missing, and unowned tags", async () => {
+  const calls: string[] = [];
+  const missingTagId = "00000000-0000-4000-8000-000000000003";
+  const otherOwnerTagId = "00000000-0000-4000-8000-000000000004";
+  const tools = createTagMcpTools({
+    userId: "owner-a",
+    service: {
+      async deleteUnused(tagId: string) {
+        calls.push(tagId);
+        return tagId === secondTag.id;
+      },
+    } as never,
+  });
+
+  assert.deepEqual(resultText(await tools.delete_unused_tag({ tagId: secondTag.id })), {
+    deleted: true,
+    tagId: secondTag.id,
+  });
+  const failed = await tools.delete_unused_tag({ tagId: firstTag.id });
+  assert.equal(failed.isError, true);
+  assert.deepEqual(resultText(failed), {
+    deleted: false,
+    message: "Tag was in use or not found.",
+  });
+  assert.deepEqual(resultText(await tools.delete_unused_tag({ tagId: missingTagId })), {
+    deleted: false,
+    message: "Tag was in use or not found.",
+  });
+  assert.deepEqual(resultText(await tools.delete_unused_tag({ tagId: otherOwnerTagId })), {
+    deleted: false,
+    message: "Tag was in use or not found.",
+  });
+  assert.deepEqual(
+    resultText(await tools.delete_unused_tag({ tagId: secondTag.id, ownerId: "owner-b" })),
+    {
+      error: "Invalid tag deletion input.",
+    },
+  );
+  assert.deepEqual(calls, [secondTag.id, firstTag.id, missingTagId, otherOwnerTagId]);
+});
+
+test("MCP delete_unused_tag uses the write rate limit and hides repository errors", async () => {
+  const limiterCalls: Array<{ key: string; limit: number }> = [];
+  const limited = createTagMcpTools({
+    userId: "owner-a",
+    limiter: {
+      check(key, policy) {
+        limiterCalls.push({ key, limit: policy.limit });
+        return { allowed: false, retryAfterSeconds: 1 };
+      },
+    },
+    service: {
+      async deleteUnused() {
+        throw new Error("must not run");
+      },
+    } as never,
+  });
+
+  const result = await limited.delete_unused_tag({ tagId: secondTag.id });
+  assert.equal(result.isError, true);
+  assert.deepEqual(resultText(result), { error: "Rate limit exceeded." });
+  assert.deepEqual(limiterCalls, [{ key: "owner-a:mcp:write", limit: 30 }]);
+
+  const failed = createTagMcpTools({
+    userId: "owner-a",
+    service: {
+      async deleteUnused() {
+        throw new Error("private database detail");
+      },
+    } as never,
+  });
+  assert.deepEqual(resultText(await failed.delete_unused_tag({ tagId: secondTag.id })), {
+    error: "Unable to delete tag.",
+  });
 });
