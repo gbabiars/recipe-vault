@@ -63,6 +63,7 @@ export const SingleAsync: Story = {
   args: { loadOptions: search },
   play: async ({ canvas }) => {
     await userEvent.type(canvas.getByRole("combobox", { name: "Tags" }), "vegan");
+    await expect(await within(document.body).findByRole("listbox", { name: "Tags" })).toBeVisible();
     await userEvent.click(await within(document.body).findByRole("option", { name: "Vegan" }));
     await expect(canvas.getByRole("combobox", { name: "Tags" })).toHaveValue("Vegan");
   },
@@ -145,6 +146,7 @@ export const MultipleAsync: Story = {
     const input = canvas.getByRole("combobox", { name: "Tags" });
     await userEvent.click(input);
     await userEvent.keyboard("{ArrowDown}");
+    await expect(await within(document.body).findByRole("listbox", { name: "Tags" })).toBeVisible();
     await userEvent.click(await within(document.body).findByRole("option", { name: "Vegetarian" }));
     await userEvent.type(input, "gluten");
     await userEvent.click(
