@@ -4,9 +4,6 @@ import { RecipeForm } from "./recipe-form";
 import { parseRecipeFormData } from "./recipe-form-data";
 
 const saveRecipeAction = vi.fn();
-vi.mock("./actions", () => ({
-  saveRecipeAction: (...args: unknown[]) => saveRecipeAction(...args),
-}));
 
 afterEach(() => {
   cleanup();
@@ -14,7 +11,7 @@ afterEach(() => {
 });
 
 test("orders ingredient fields as name, quantity, unit, then notes", () => {
-  render(<RecipeForm />);
+  render(<RecipeForm saveAction={saveRecipeAction} />);
 
   const ingredient = screen.getByRole("group", { name: "Ingredient 1" });
   expect(Array.from(ingredient.querySelectorAll("input"), (input) => input.name)).toEqual([
@@ -26,7 +23,7 @@ test("orders ingredient fields as name, quantity, unit, then notes", () => {
 });
 
 test("removes added ingredient and step rows", () => {
-  render(<RecipeForm />);
+  render(<RecipeForm saveAction={saveRecipeAction} />);
   fireEvent.click(screen.getByRole("button", { name: "Add ingredient" }));
   fireEvent.click(screen.getByRole("button", { name: "Add step" }));
 
@@ -41,6 +38,7 @@ test("uses multiple tag choices and keeps the comma-delimited recipe format", as
   saveRecipeAction.mockResolvedValue({ errors: {} });
   const { container } = render(
     <RecipeForm
+      saveAction={saveRecipeAction}
       recipe={{
         id: "recipe-1",
         ownerId: "owner-1",
@@ -112,7 +110,7 @@ test("shows server errors on their controls and focuses the first invalid field"
     errors: { title: "Enter a title", "steps.0.instruction": "Enter an instruction" },
     message: "Please correct the highlighted fields.",
   });
-  render(<RecipeForm />);
+  render(<RecipeForm saveAction={saveRecipeAction} />);
   fireEvent.click(screen.getByRole("button", { name: "Create recipe" }));
 
   await waitFor(() => expect(screen.getByText("Enter a title")).toBeTruthy());

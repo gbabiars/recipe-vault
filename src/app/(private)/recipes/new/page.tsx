@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth/require-user";
 import { RecipeForm } from "@/features/recipes/recipe-form";
+import { saveRecipeAction } from "@/features/recipes/actions";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
 export default async function NewRecipePage() {
   await requireUser();
@@ -7,7 +8,7 @@ export default async function NewRecipePage() {
     <PageLayout>
       <PageHeader title="Create recipe" />
       <PageContent>
-        <RecipeForm />
+        <RecipeForm saveAction={saveRecipeAction} />
       </PageContent>
     </PageLayout>
   );

@@ -11,21 +11,28 @@ import { TextInput } from "@/components/ui/text-input";
 import { Textarea } from "@/components/ui/textarea";
 import type { Recipe } from "@/lib/db/recipe-repository";
 import { tagNameSchema } from "@/lib/validation/recipe";
-import { saveRecipeAction } from "./actions";
 import { deserializeCommaDelimitedLabels } from "./recipe-form-data";
 import styles from "./recipe-form.module.css";
 import { emptyRecipeFormState } from "./recipe-form-state";
+import type { RecipeFormState } from "./recipe-form-state";
 
 type IngredientRow = { quantity?: number; unit?: string; ingredientName?: string; notes?: string };
 type StepRow = { instruction?: string; durationMinutes?: number };
+type RecipeFormAction = (state: RecipeFormState, formData: FormData) => Promise<RecipeFormState>;
 const blankIngredient: IngredientRow = { quantity: 1, unit: "", ingredientName: "", notes: "" };
 const blankStep: StepRow = { instruction: "", durationMinutes: undefined };
 const commonRecipeTags = ["dinner", "soup", "weeknight"];
 const errorFor = (errors: Record<string, string>, key: string) =>
   errors[key] || errors[key.split(".")[0]];
 
-export function RecipeForm({ recipe }: { recipe?: Recipe }) {
-  const [state, action, pending] = useActionState(saveRecipeAction, emptyRecipeFormState);
+export function RecipeForm({
+  recipe,
+  saveAction,
+}: {
+  recipe?: Recipe;
+  saveAction: RecipeFormAction;
+}) {
+  const [state, action, pending] = useActionState(saveAction, emptyRecipeFormState);
   const formRef = useRef<HTMLFormElement>(null);
   const [ingredients, setIngredients] = useState<IngredientRow[]>(
     recipe?.ingredients.length ? recipe.ingredients : [blankIngredient],
