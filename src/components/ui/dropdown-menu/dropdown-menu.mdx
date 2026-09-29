@@ -1,0 +1,41 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./dropdown-menu.stories";
+
+<Meta of={Stories} />
+
+# DropdownMenu
+
+Show a short list of secondary actions and navigation links from a caller-supplied trigger. Use a regular Button or ButtonLink when the action or destination should be directly visible in the page.
+
+## Composition
+
+DropdownMenu owns open state and composes the menu trigger with a popup. DropdownMenuPopup includes the portal and positioner; it fits its contents and defaults to side="bottom" and align="start". Both values can be set on the popup.
+
+```tsx
+<DropdownMenu open={open} onOpenChange={setOpen}>
+  <DropdownMenuTrigger render={<Button />}>Actions</DropdownMenuTrigger>
+  <DropdownMenuPopup>
+    <DropdownMenuItem onClick={onEdit}>Edit</DropdownMenuItem>
+    <DropdownMenuItem disabled onClick={onArchive}>
+      Archive
+    </DropdownMenuItem>
+    <DropdownMenuLinkItem render={<Link href="/recipes" />}>Browse recipes</DropdownMenuLinkItem>
+  </DropdownMenuPopup>
+</DropdownMenu>
+```
+
+DropdownMenuItem represents an action and accepts the Base UI item props, including onClick and disabled. DropdownMenuLinkItem represents navigation and accepts either an href or a render element such as Next.js Link. Both close the menu when activated.
+
+The trigger stays in its active button style while the menu is open.
+
+The popup and its text rows use the combobox popup's surface and spacing tokens. Keep each row's visible text concise and descriptive. A caller composing an icon-only trigger must provide its accessible name.
+
+Base UI handles menu keyboard navigation and focus management. Open a menu with its trigger, move among rows with arrow keys, and close it with Escape.
+
+## Stories
+
+<Canvas of={Stories.ActionOnly} />
+<Canvas of={Stories.MixedActionsAndLinks} />
+<Canvas of={Stories.DisabledAction} />
+<Canvas of={Stories.ControlledOpenState} />
+<Canvas of={Stories.KeyboardNavigation} />
