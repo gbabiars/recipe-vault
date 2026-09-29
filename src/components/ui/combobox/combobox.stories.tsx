@@ -156,6 +156,7 @@ export const MultipleAsync: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Remove Vegetarian" }));
     await userEvent.click(input);
     await expect(await within(document.body).findByRole("option", { name: "Vegan" })).toBeVisible();
+    await userEvent.keyboard("{Escape}");
     await expect(canvas.getByRole("button", { name: "Remove Gluten-free" })).toBeVisible();
   },
 };
