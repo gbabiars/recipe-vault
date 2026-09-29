@@ -150,6 +150,24 @@ composition guidance, including page headers, fields, actions, cards, and lists.
 `NEXT_PUBLIC_` prefix to either secret, expose them to an MCP client, or log
 them.
 
+## Error monitoring
+
+The app reports browser, Node.js, and Edge errors to the `recipe-vault` Sentry
+project and samples request tracing at 10% in production (100% in development).
+`NEXT_PUBLIC_SENTRY_DSN` is public project configuration. Set `SENTRY_DSN` only
+when a separate server-side value is useful. SDK user info is disabled, and
+event filters remove user objects and `user.*` tags. Telemetry also omits
+cookies, headers, request and response bodies, URL query values, database query
+data, and stack-frame local variables; URL query strings are removed from
+events, breadcrumbs, and spans. Session Replay is not enabled because pages can
+contain private recipes.
+
+Set `SENTRY_AUTH_TOKEN` as a build secret to upload source maps and create Sentry
+releases during production builds. The build detects the Git commit for the
+release by default; set `SENTRY_RELEASE` during the build to use a different
+identifier, such as the deployed commit SHA. The token is optional for local
+error reporting.
+
 ## Architecture
 
 | Location               | Responsibility                                                    |

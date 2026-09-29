@@ -1,5 +1,8 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
+import { useEffect } from "react";
+
 import feedbackStyles from "../page-feedback.module.css";
 
 import { Card } from "@/components/ui/card";
@@ -8,7 +11,17 @@ import { Heading } from "@/components/ui/heading";
 import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
 
-export default function RecipesError({ reset }: { reset: () => void }) {
+export default function RecipesError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    Sentry.captureException(error);
+  }, [error]);
+
   return (
     <Card as="section" className={feedbackStyles.errorMessage} role="alert" padding="large">
       <Stack gap="150">
