@@ -64,6 +64,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
     multiple,
   } = props;
   const inputId = React.useId();
+  const labelId = `${inputId}-label`;
   const [uncontrolled, setUncontrolled] = React.useState<string | null | string[]>(
     props.defaultValue ?? (multiple ? [] : null),
   );
@@ -203,7 +204,9 @@ export function ComboboxField(props: ComboboxFieldProps) {
 
   return (
     <Field disabled={disabled} invalid={hasError || invalid || creationError} className={className}>
-      <FieldLabel htmlFor={inputId}>{label}</FieldLabel>
+      <FieldLabel id={labelId} htmlFor={inputId}>
+        {label}
+      </FieldLabel>
       <Combobox.Root<ComboboxOption, typeof multiple>
         name={name}
         items={items}
@@ -272,7 +275,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
               aria-busy={searchState === "loading" || undefined}
             >
               {status && <Combobox.Status className={styles.status}>{status}</Combobox.Status>}
-              <Combobox.List className={styles.list}>
+              <Combobox.List aria-labelledby={labelId} className={styles.list}>
                 {(item: ComboboxOption) => (
                   <Combobox.Item key={item.value} value={item} className={styles.item}>
                     {item.value.startsWith(CREATE_VALUE) && <Plus aria-hidden="true" size={16} />}
