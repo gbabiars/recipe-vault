@@ -1,4 +1,5 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import type { ReactElement, ReactNode } from "react";
 import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
 
 const { listMock } = vi.hoisted(() => ({ listMock: vi.fn(async () => []) }));
@@ -16,6 +17,22 @@ vi.mock("next/form", () => ({
 }));
 vi.mock("@/lib/recipes", () => ({
   getRecipeService: async () => ({ list: listMock }),
+}));
+vi.mock("@/components/ui/dropdown-menu", () => ({
+  DropdownMenu: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DropdownMenuTrigger: ({ children }: { children: ReactNode }) => <button>{children}</button>,
+  DropdownMenuPopup: ({ children }: { children: ReactNode }) => <div role="menu">{children}</div>,
+  DropdownMenuLinkItem: ({
+    render,
+    children,
+  }: {
+    render: ReactElement<{ href: string }>;
+    children: ReactNode;
+  }) => (
+    <a href={render.props.href} role="menuitem">
+      {children}
+    </a>
+  ),
 }));
 
 beforeAll(async () => {
@@ -56,4 +73,17 @@ test("ignores a saved dietary filter and preserves search and repeated tag value
     container.querySelector("form")!.compareDocumentPosition(loading) &
       Node.DOCUMENT_POSITION_FOLLOWING,
   ).toBeTruthy();
+});
+
+test("offers manual creation and website import from the recipe menu", async () => {
+  const page = await RecipesPage({ searchParams: Promise.resolve({}) });
+  render(page);
+
+  expect(screen.getByRole("button", { name: "Add a recipe" })).toBeTruthy();
+  expect(screen.getByRole("menuitem", { name: "Create manually" }).getAttribute("href")).toBe(
+    "/recipes/new",
+  );
+  expect(screen.getByRole("menuitem", { name: "Import from a website" }).getAttribute("href")).toBe(
+    "/recipes/import",
+  );
 });
