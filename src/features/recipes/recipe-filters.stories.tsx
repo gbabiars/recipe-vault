@@ -22,7 +22,7 @@ export const Inline: Story = {
   args: { q: "steak", tag: ["beef", "quick"] },
   decorators: [
     (Story) => (
-      <div style={{ maxWidth: 900 }}>
+      <div style={{ width: 900 }}>
         <Story />
       </div>
     ),

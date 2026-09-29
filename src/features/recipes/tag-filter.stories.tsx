@@ -58,6 +58,7 @@ export const BrowseAndFilter: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Remove soup" }));
     await userEvent.click(input);
     await expect(await within(document.body).findByRole("option", { name: "soup" })).toBeVisible();
+    await userEvent.keyboard("{Escape}");
     await userEvent.click(canvas.getByRole("button", { name: "Filter" }));
     await expect(canvas.getByRole("status", { name: "Submitted tag" })).toHaveTextContent(
       "weeknight",
