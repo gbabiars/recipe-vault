@@ -37,7 +37,8 @@
   color: var(--color-action-secondary-text);
 }
 
-.button:active:not(:disabled) {
+.button:active:not(:disabled),
+.button[aria-expanded="true"]:not(:disabled) {
   background: var(--color-action-secondary-background-active);
 }
 
@@ -52,7 +53,8 @@
   color: var(--color-action-primary-text);
 }
 
-.button[data-variant="primary"]:active:not(:disabled) {
+.button[data-variant="primary"]:active:not(:disabled),
+.button[data-variant="primary"][aria-expanded="true"]:not(:disabled) {
   background: var(--color-action-primary-background-active);
   color: var(--color-action-primary-text);
 }
@@ -67,7 +69,8 @@
   color: var(--color-action-ghost-text);
 }
 
-.button[data-variant="subtle"]:active:not(:disabled) {
+.button[data-variant="subtle"]:active:not(:disabled),
+.button[data-variant="subtle"][aria-expanded="true"]:not(:disabled) {
   background: var(--color-action-ghost-background-active);
 }
 
@@ -83,7 +86,8 @@
   color: var(--color-action-danger-text);
 }
 
-.button[data-variant="danger"]:active:not(:disabled) {
+.button[data-variant="danger"]:active:not(:disabled),
+.button[data-variant="danger"][aria-expanded="true"]:not(:disabled) {
   background: var(--color-action-danger-background-active);
   border-color: var(--color-action-danger-background-active);
   color: var(--color-action-danger-text);
