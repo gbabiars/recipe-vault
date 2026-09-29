@@ -1,8 +1,14 @@
 import styles from "./page.module.css";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ButtonLink } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuLinkItem,
+  DropdownMenuPopup,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Heading } from "@/components/ui/heading";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
 import { Stack } from "@/components/ui/stack";
@@ -25,9 +31,17 @@ export default async function RecipesPage({
       <PageHeader
         title="Your recipes"
         actions={
-          <ButtonLink variant="primary" render={<Link href="/recipes/new" />}>
-            Create recipe
-          </ButtonLink>
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button />}>Add a recipe</DropdownMenuTrigger>
+            <DropdownMenuPopup align="end">
+              <DropdownMenuLinkItem render={<Link href="/recipes/new" />}>
+                Create manually
+              </DropdownMenuLinkItem>
+              <DropdownMenuLinkItem render={<Link href="/recipes/import" />}>
+                Import from a website
+              </DropdownMenuLinkItem>
+            </DropdownMenuPopup>
+          </DropdownMenu>
         }
       />
       <PageContent>
