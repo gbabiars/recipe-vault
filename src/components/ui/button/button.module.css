@@ -41,6 +41,23 @@
   padding-inline: var(--space-200);
 }
 
+.button.iconOnly {
+  width: var(--height-button-medium);
+  padding-inline: 0;
+}
+
+.iconOnly[data-size="small"] {
+  width: var(--height-button-small);
+}
+
+.iconOnly[data-size="large"] {
+  width: var(--height-button-large);
+}
+
+.iconOnly .icon {
+  margin-inline-end: 0;
+}
+
 .button:hover:not(:disabled) {
   background: var(--color-action-secondary-background-hover);
   color: var(--color-action-secondary-text);
