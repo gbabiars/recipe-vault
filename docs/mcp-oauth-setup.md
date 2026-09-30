@@ -363,6 +363,7 @@ to Production with production values:
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Production publishable key              | Browser-safe        |
 | `SUPABASE_SERVICE_ROLE_KEY`            | Production service-role key             | Server-only         |
 | `ENABLE_EXPERIMENTAL_COREPACK`         | `1`                                     | Build configuration |
+| `NEXT_PUBLIC_SENTRY_DSN`               | Sentry `recipe-vault` project DSN       | Browser-safe        |
 
 Delete `RECIPE_VAULT_OWNER_ID` from every Vercel environment. Do not add
 `SUPABASE_DB_PASSWORD`, `SUPABASE_ACCESS_TOKEN`, or a database connection string
@@ -373,6 +374,11 @@ Supabase staging project or Supabase preview branch configured to trust that
 Clerk development domain. Never expose the production service-role key to an
 untrusted preview deployment. If there is no isolated preview database, do not
 enable authenticated preview testing against production.
+
+Add `NEXT_PUBLIC_SENTRY_DSN` to Preview as well if Sentry should collect events
+from preview deployments. The app uses Vercel's `NEXT_PUBLIC_VERCEL_ENV` marker
+to initialize Sentry only for Preview and Production deployments, never local
+development.
 
 Vercel environment-variable edits affect only new deployments. Redeploy after
 every relevant variable change.
