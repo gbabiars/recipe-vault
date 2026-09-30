@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
-import { Text } from "@/components/ui/text";
+import { RecipeImportPageForm } from "@/features/recipes/recipe-import-form";
 import { requireUser } from "@/lib/auth/require-user";
 
 export default async function ImportRecipePage() {
@@ -20,7 +20,7 @@ export default async function ImportRecipePage() {
         }
       />
       <PageContent>
-        <Text as="p">Website import isn’t available yet.</Text>
+        <RecipeImportPageForm />
       </PageContent>
     </PageLayout>
   );
