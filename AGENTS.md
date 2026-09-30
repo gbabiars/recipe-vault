@@ -10,6 +10,9 @@ foundation deployable without adding product behavior that has not been requeste
 
 - Use Node.js 20.9 or newer and `pnpm` (pinned to 11.23.0) for dependency and
   script commands.
+- On a pnpm store mismatch, preserve the existing store and `node_modules`
+  state. Stop before changing install state or store settings, and ask the user
+  for specific approval before any workaround.
 - Run the narrowest relevant check while working: `pnpm lint`, `pnpm typecheck`,
   `pnpm test`, or `pnpm build`. Run `pnpm check` for changes that span linting,
   types, and tests.
