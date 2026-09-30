@@ -10,12 +10,21 @@
   text-decoration: none;
   white-space: nowrap;
   font-weight: 700;
+  font-size: var(--font-size-button);
+  line-height: var(--line-height-button);
   background: transparent;
   color: var(--color-action-secondary-text);
   transition:
     background-color 150ms ease,
     border-color 150ms ease,
     color 150ms ease;
+}
+
+.icon {
+  flex: none;
+  width: var(--size-button-icon);
+  height: var(--size-button-icon);
+  margin-inline-end: var(--space-100);
 }
 
 .button[data-full-width] {

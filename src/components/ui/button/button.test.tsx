@@ -1,3 +1,4 @@
+import type { SVGProps } from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 
@@ -5,6 +6,10 @@ import { Button } from "./button";
 import styles from "./button.module.css";
 
 afterEach(cleanup);
+
+function TestIcon(props: SVGProps<SVGSVGElement>) {
+  return <svg {...props} data-testid="button-icon" />;
+}
 
 test("renders a medium default button and handles clicks", () => {
   const handleClick = vi.fn();
@@ -22,6 +27,18 @@ test("renders a medium default button and handles clicks", () => {
   fireEvent.click(button);
 
   expect(handleClick).toHaveBeenCalledTimes(1);
+});
+
+test("renders a decorative leading icon without changing the accessible label", () => {
+  render(<Button icon={TestIcon}>Save changes</Button>);
+
+  const button = screen.getByRole("button", { name: "Save changes" });
+  const icon = screen.getByTestId("button-icon");
+
+  expect(button.firstElementChild).toBe(icon);
+  expect(icon.getAttribute("aria-hidden")).toBe("true");
+  expect(icon.getAttribute("focusable")).toBe("false");
+  expect(icon.classList.contains(styles.icon)).toBe(true);
 });
 
 test("keeps button labels on one line", () => {

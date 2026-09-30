@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
+import { Plus } from "lucide-react";
 
 import { Button, type ButtonSize, type ButtonVariant } from "./button";
 
@@ -63,4 +65,38 @@ export const VariantsAndSizes: Story = {
       ))}
     </div>
   ),
+};
+
+export const IconAcrossSizes: Story = {
+  render: () => (
+    <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+      {sizes.map((size) => (
+        <Button key={size} icon={Plus} size={size}>
+          Create recipe
+        </Button>
+      ))}
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const buttons = canvas.getAllByRole("button", { name: "Create recipe" });
+
+    expect(buttons).toHaveLength(sizes.length);
+
+    for (const button of buttons) {
+      const icon = button.querySelector("svg");
+
+      if (icon === null) {
+        throw new Error("Expected each button to render a leading icon");
+      }
+
+      expect(icon).toBe(button.firstElementChild);
+      expect(icon.getAttribute("aria-hidden")).toBe("true");
+      expect(icon.getAttribute("focusable")).toBe("false");
+      expect(getComputedStyle(button).fontSize).toBe("16px");
+      expect(getComputedStyle(button).lineHeight).toBe("16px");
+      expect(getComputedStyle(icon).width).toBe("16px");
+      expect(getComputedStyle(icon).height).toBe("16px");
+      expect(getComputedStyle(icon).marginInlineEnd).toBe("8px");
+    }
+  },
 };

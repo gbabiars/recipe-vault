@@ -1,4 +1,5 @@
 import type { MouseEvent } from "react";
+import type { SVGProps } from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
 
@@ -6,6 +7,10 @@ import { ButtonLink } from "./button-link";
 import styles from "./button.module.css";
 
 afterEach(cleanup);
+
+function TestIcon(props: SVGProps<SVGSVGElement>) {
+  return <svg {...props} data-testid="button-link-icon" />;
+}
 
 let Link: typeof import("next/link").default;
 
@@ -40,6 +45,22 @@ test("renders a styled native anchor and handles clicks", () => {
   fireEvent.click(link);
 
   expect(handleClick).toHaveBeenCalledTimes(1);
+});
+
+test("renders a decorative leading icon without changing the accessible label", () => {
+  render(
+    <ButtonLink href="/recipes" icon={TestIcon}>
+      Recipes
+    </ButtonLink>,
+  );
+
+  const link = screen.getByRole("link", { name: "Recipes" });
+  const icon = screen.getByTestId("button-link-icon");
+
+  expect(link.firstElementChild).toBe(icon);
+  expect(icon.getAttribute("aria-hidden")).toBe("true");
+  expect(icon.getAttribute("focusable")).toBe("false");
+  expect(icon.classList.contains(styles.icon)).toBe(true);
 });
 
 test("forwards a ref to the rendered anchor", () => {
