@@ -16,11 +16,12 @@ afterAll(() => {
   vi.unstubAllGlobals();
 });
 
-test("shows the import placeholder with a recipes breadcrumb", async () => {
+test("shows the import form with a recipes breadcrumb", async () => {
   render(await ImportRecipePage());
 
   expect(screen.getByRole("heading", { level: 1, name: "Import from a website" })).toBeTruthy();
-  expect(screen.getByText("Website import isn’t available yet.")).toBeTruthy();
+  expect(screen.getByRole("textbox", { name: "Recipe website URL" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Import recipe" })).toBeTruthy();
 
   const breadcrumbs = screen.getByRole("navigation", { name: "Breadcrumbs" });
   expect(within(breadcrumbs).getByRole("link", { name: "Recipes" }).getAttribute("href")).toBe(
