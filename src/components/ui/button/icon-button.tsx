@@ -7,11 +7,13 @@ import { Button } from "./button";
 import type { ButtonIcon, ButtonProps } from "./button";
 import styles from "./button.module.css";
 
-export type IconButtonProps = Omit<
+type DistributiveOmit<T, Keys extends PropertyKey> = T extends unknown ? Omit<T, Keys> : never;
+
+export type IconButtonProps = DistributiveOmit<
   ButtonProps,
   "aria-label" | "children" | "fullWidth" | "icon"
 > & {
-  /** Accessible name describing the action. */
+  /** Accessible name describing the action or destination. */
   label: string;
   /** Icon shown in the center of the button. */
   icon: ButtonIcon;

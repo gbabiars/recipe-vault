@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { Trash2 } from "lucide-react";
+import { BookOpen, Trash2 } from "lucide-react";
 import { expect, fn, userEvent } from "storybook/test";
 
 import { IconButton } from "./icon-button";
@@ -46,6 +46,25 @@ export const Default: Story = {
     await userEvent.click(button);
 
     expect(args.onClick).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const Link: Story = {
+  render: () => <IconButton icon={BookOpen} label="Open recipe" href="/recipes/tomato-soup" />,
+  play: async ({ canvas }) => {
+    const link = canvas.getByRole("link", { name: "Open recipe" });
+    const icon = link.querySelector("svg");
+
+    expect(link.getAttribute("href")).toBe("/recipes/tomato-soup");
+    expect(link.hasAttribute("type")).toBe(false);
+    expect(link.hasAttribute("disabled")).toBe(false);
+
+    if (icon === null) {
+      throw new Error("Expected the icon link to render its icon");
+    }
+
+    expect(icon.getAttribute("aria-hidden")).toBe("true");
+    expect(icon.getAttribute("focusable")).toBe("false");
   },
 };
 

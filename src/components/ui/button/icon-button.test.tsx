@@ -29,6 +29,25 @@ test("renders a named medium default button with a decorative icon", () => {
   expect(icon.getAttribute("focusable")).toBe("false");
 });
 
+test("renders href mode as a named link with a decorative icon", () => {
+  const ref = { current: null as HTMLAnchorElement | null };
+
+  render(<IconButton ref={ref} icon={TestIcon} label="Open recipe" href="/recipes/tomato-soup" />);
+
+  const link = screen.getByRole("link", { name: "Open recipe" });
+  const icon = screen.getByTestId("icon-button-icon");
+
+  expect(link).toBeInstanceOf(HTMLAnchorElement);
+  expect(link.getAttribute("href")).toBe("/recipes/tomato-soup");
+  expect(link.hasAttribute("type")).toBe(false);
+  expect(link.hasAttribute("disabled")).toBe(false);
+  expect(screen.queryByRole("button", { name: "Open recipe" })).toBeNull();
+  expect(link.classList.contains(styles.iconOnly)).toBe(true);
+  expect(ref.current).toBe(link);
+  expect(icon.getAttribute("aria-hidden")).toBe("true");
+  expect(icon.getAttribute("focusable")).toBe("false");
+});
+
 test("handles clicks", () => {
   const handleClick = vi.fn();
 
