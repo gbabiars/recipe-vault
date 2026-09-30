@@ -177,6 +177,21 @@ release by default; set `SENTRY_RELEASE` during the build to use a different
 identifier, such as the deployed commit SHA. Sentry telemetry remains disabled
 for local development even when the public DSN is configured.
 
+## Feature gates
+
+The browser Statsig provider runs inside ClerkProvider and waits for Clerk to
+load before initializing. Signed-in evaluations send the Clerk user ID as
+`userID` and the primary email address as `email`, when available. No other
+Clerk profile fields or authentication tokens are sent.
+
+Sign-in, sign-out, account switching, and primary email changes refresh gate
+values. Signed-out sessions use an empty user object and Statsig's anonymous
+browser identity. Gate consumers wait during initialization and identity
+updates; network failures use the current identity's cached values or closed
+gates. Feature components use `useGateValue`, including the existing
+`Recipe_website_import` gate. Targeting and rollout rules are managed in the
+Statsig Console; these client gates do not replace authorization checks.
+
 ## Architecture
 
 | Location               | Responsibility                                                    |

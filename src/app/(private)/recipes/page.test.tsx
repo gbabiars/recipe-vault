@@ -27,7 +27,7 @@ vi.mock("@/lib/recipes", () => ({
 }));
 vi.mock("@/components/ui/dropdown-menu", () => ({
   DropdownMenu: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  DropdownMenuTrigger: ({ children }: { children: ReactNode }) => <button>{children}</button>,
+  DropdownMenuTrigger: ({ render }: { render: ReactElement }) => render,
   DropdownMenuPopup: ({ children }: { children: ReactNode }) => <div role="menu">{children}</div>,
   DropdownMenuLinkItem: ({
     render,
