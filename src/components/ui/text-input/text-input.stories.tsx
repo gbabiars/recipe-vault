@@ -41,7 +41,7 @@ export const Required: Story = {
   render: (args) => (
     <form>
       <TextInput {...args} required />
-      <Button type="submit">Save</Button>
+      <Button label="Save" type="submit" />
     </form>
   ),
 };

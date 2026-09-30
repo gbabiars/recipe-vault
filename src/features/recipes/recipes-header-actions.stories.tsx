@@ -16,7 +16,9 @@ type Story = StoryObj<typeof meta>;
 
 export const WebsiteImportEnabled: Story = {
   play: async ({ canvas }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Add a recipe" }));
+    const trigger = canvas.getByRole("button", { name: "Add a recipe" });
+    await expect(trigger).toHaveTextContent("Add a recipe");
+    await userEvent.click(trigger);
     const menu = within(document.body);
     await expect(await menu.findByRole("menuitem", { name: "Create manually" })).toHaveAttribute(
       "href",
@@ -33,7 +35,9 @@ export const WebsiteImportDisabled: Story = {
     mocked(useGateValue).mockReturnValue(false);
   },
   play: async ({ canvas }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Add a recipe" }));
+    const trigger = canvas.getByRole("button", { name: "Add a recipe" });
+    await expect(trigger).toHaveTextContent("Add a recipe");
+    await userEvent.click(trigger);
     const menu = within(document.body);
     await expect(await menu.findByRole("menuitem", { name: "Create manually" })).toHaveAttribute(
       "href",

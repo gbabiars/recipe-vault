@@ -13,7 +13,7 @@ clear accessible name.
 
 - **Variants:** `default` is a neutral action, `primary` emphasizes an action, `subtle` reduces visual weight, and `danger` signals a destructive action. Sizes are `small`, `medium`, and `large`.
 - **Width:** The button fits its content by default. Set `fullWidth` to fill the width of its parent.
-- **Composition and content:** Use a short, descriptive label. Without `href`, the button triggers an action. In a form, set `type="submit"`; outside a form, the default is `type="button"`. With `href`, it renders a native anchor for navigation. Use `Inline` to arrange related actions.
+- **Label:** Provide a required `label` string. Button renders it as visible text and the default accessible name. Without `href`, it triggers an action. In a form, set `type="submit"`; outside a form, the default is `type="button"`. With `href`, it renders a native anchor for navigation. Use `Inline` to arrange related actions.
 - **Next.js navigation:** Pass `href` directly for a native anchor, or compose Next.js `Link` through `render`. In client components, the callback receives anchor props, including `href`, styles, handlers, and the forwarded ref. In a server component, pass a `Link` element to `render` and keep its `href` equal to the Button's `href`.
 - **Leading icon:** Pass an SVG component with `icon`; it is sized and marked decorative internally. Keep the visible label so it remains the accessible name.
 - **Caller accessibility:** Make the label describe the action, and reflect pending or unavailable states with `disabled` when appropriate. Explain a destructive action in its surrounding UI.
@@ -21,23 +21,23 @@ clear accessible name.
 ```tsx
 import { Plus } from "lucide-react";
 
-<Button icon={Plus}>Add recipe</Button>;
+<Button label="Add recipe" icon={Plus} />;
 ```
 
 ```tsx
 import Link from "next/link";
 
-<Button href="/recipes/new" render={(anchorProps) => <Link {...anchorProps} prefetch={false} />}>
-  Create recipe
-</Button>;
+<Button
+  label="Create recipe"
+  href="/recipes/new"
+  render={(anchorProps) => <Link {...anchorProps} prefetch={false} />}
+/>;
 ```
 
 ```tsx
 import Link from "next/link";
 
-<Button href="/recipes/new" render={<Link href="/recipes/new" />}>
-  Create recipe
-</Button>;
+<Button label="Create recipe" href="/recipes/new" render={<Link href="/recipes/new" />} />;
 ```
 
 ## Story

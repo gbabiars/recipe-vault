@@ -13,7 +13,7 @@ export function RecipeFilters({ q, tag }: { q?: string; tag?: string | string[] 
           <TextInput name="q" label="Search title" type="search" defaultValue={q} />
           <TagFilter tag={tag} />
           <div className={styles.action}>
-            <Button type="submit">Filter</Button>
+            <Button label="Filter" type="submit" />
           </div>
         </div>
       </Card>

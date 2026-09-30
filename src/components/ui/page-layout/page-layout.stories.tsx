@@ -39,7 +39,7 @@ export const WithSlots: Story = {
           </Breadcrumbs>
         }
         description="Fresh basil soup"
-        actions={<Button href="#edit">Edit recipe</Button>}
+        actions={<Button label="Edit recipe" href="#edit" />}
       />
       <PageContent>
         <Card padding="large">Recipe details</Card>

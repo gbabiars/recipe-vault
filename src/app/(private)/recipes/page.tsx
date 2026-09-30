@@ -73,9 +73,11 @@ async function RecipeResults({ q, tags }: { q?: string; tags: string[] }) {
                 : "Start your private collection with your first recipe."}
             </Text>
             <div>
-              <Button href="/recipes/new" render={<Link href="/recipes/new" />}>
-                Create a recipe
-              </Button>
+              <Button
+                label="Create a recipe"
+                href="/recipes/new"
+                render={<Link href="/recipes/new" />}
+              />
             </div>
           </Stack>
         </Card>

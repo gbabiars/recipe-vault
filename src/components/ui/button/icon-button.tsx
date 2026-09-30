@@ -30,6 +30,7 @@ export const IconButton = React.forwardRef<HTMLElement, IconButtonProps>(functio
       aria-label={label}
       className={cn(styles.iconOnly, className)}
       icon={icon}
+      label=""
     />
   );
 });

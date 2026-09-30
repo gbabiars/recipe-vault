@@ -37,9 +37,12 @@ export function DeleteRecipeForm({
           </Text>
         )}
         <Inline>
-          <Button type="submit" variant="danger" disabled={pending}>
-            {pending ? "Deleting…" : "Delete recipe"}
-          </Button>
+          <Button
+            label={pending ? "Deleting…" : "Delete recipe"}
+            type="submit"
+            variant="danger"
+            disabled={pending}
+          />
         </Inline>
       </Stack>
     </form>

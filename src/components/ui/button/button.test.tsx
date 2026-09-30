@@ -25,7 +25,7 @@ function TestIcon(props: SVGProps<SVGSVGElement>) {
 test("renders a medium default button and handles clicks", () => {
   const handleClick = vi.fn();
 
-  render(<Button onClick={handleClick}>Create recipe</Button>);
+  render(<Button label="Create recipe" onClick={handleClick} />);
 
   const button = screen.getByRole("button", { name: "Create recipe" });
 
@@ -42,9 +42,7 @@ test("renders a medium default button and handles clicks", () => {
 
 test("renders href mode as an anchor with link semantics", () => {
   render(
-    <Button href="/recipes/new" variant="primary" title="Create a recipe">
-      Create recipe
-    </Button>,
+    <Button label="Create recipe" href="/recipes/new" variant="primary" title="Create a recipe" />,
   );
 
   const link = screen.getByRole("link", { name: "Create recipe" });
@@ -66,6 +64,7 @@ test("forwards anchor props, styles, handlers, and refs through Next.js Link", (
   render(
     <Button
       ref={ref}
+      label="Create recipe"
       href="/recipes/new"
       className="recipe-link"
       onClick={(event) => {
@@ -73,9 +72,7 @@ test("forwards anchor props, styles, handlers, and refs through Next.js Link", (
         event.preventDefault();
       }}
       render={(anchorProps) => <Link {...anchorProps} prefetch={false} />}
-    >
-      Create recipe
-    </Button>,
+    />,
   );
 
   const link = screen.getByRole("link", { name: "Create recipe" });
@@ -92,9 +89,11 @@ test("forwards anchor props, styles, handlers, and refs through Next.js Link", (
 
 test("composes a Next.js Link element for server component callers", () => {
   render(
-    <Button href="/recipes/new" render={<Link href="/recipes/new" prefetch={false} />}>
-      Create recipe
-    </Button>,
+    <Button
+      label="Create recipe"
+      href="/recipes/new"
+      render={<Link href="/recipes/new" prefetch={false} />}
+    />,
   );
 
   const link = screen.getByRole("link", { name: "Create recipe" });
@@ -104,7 +103,7 @@ test("composes a Next.js Link element for server component callers", () => {
 });
 
 test("renders a decorative leading icon without changing the accessible label", () => {
-  render(<Button icon={TestIcon}>Save changes</Button>);
+  render(<Button label="Save changes" icon={TestIcon} />);
 
   const button = screen.getByRole("button", { name: "Save changes" });
   const icon = screen.getByTestId("button-icon");
@@ -116,11 +115,7 @@ test("renders a decorative leading icon without changing the accessible label", 
 });
 
 test("renders a decorative leading icon in href mode", () => {
-  render(
-    <Button href="/recipes" icon={TestIcon}>
-      Recipes
-    </Button>,
-  );
+  render(<Button label="Recipes" href="/recipes" icon={TestIcon} />);
 
   const link = screen.getByRole("link", { name: "Recipes" });
   const icon = screen.getByTestId("button-icon");
@@ -132,7 +127,7 @@ test("renders a decorative leading icon in href mode", () => {
 });
 
 test("keeps button labels on one line", () => {
-  render(<Button>Edit recipe</Button>);
+  render(<Button label="Edit recipe" />);
 
   const button = screen.getByRole("button", { name: "Edit recipe" });
 
@@ -142,8 +137,8 @@ test("keeps button labels on one line", () => {
 test("fits its content by default and can fill its parent", () => {
   render(
     <div style={{ display: "grid", width: "320px" }}>
-      <Button>Fit content</Button>
-      <Button fullWidth>Fill parent</Button>
+      <Button label="Fit content" />
+      <Button label="Fill parent" fullWidth />
     </div>,
   );
 
@@ -158,7 +153,7 @@ test("fits its content by default and can fill its parent", () => {
 });
 
 test("allows an explicit button type", () => {
-  render(<Button type="submit">Save changes</Button>);
+  render(<Button label="Save changes" type="submit" />);
 
   expect(screen.getByRole("button", { name: "Save changes" }).getAttribute("type")).toBe("submit");
 });
@@ -166,10 +161,8 @@ test("allows an explicit button type", () => {
 test("renders href mode at full width when requested", () => {
   render(
     <div style={{ display: "grid", width: "320px" }}>
-      <Button href="/recipes">Fit content</Button>
-      <Button href="/recipes" fullWidth>
-        Fill parent
-      </Button>
+      <Button label="Fit content" href="/recipes" />
+      <Button label="Fill parent" href="/recipes" fullWidth />
     </div>,
   );
 
@@ -185,7 +178,7 @@ test("renders href mode at full width when requested", () => {
 test.each(["default", "primary", "subtle", "danger"] as const)(
   "renders the %s variant",
   (variant) => {
-    render(<Button variant={variant}>Action</Button>);
+    render(<Button label="Action" variant={variant} />);
 
     const button = screen.getByRole("button", { name: "Action" });
 
@@ -195,7 +188,7 @@ test.each(["default", "primary", "subtle", "danger"] as const)(
 );
 
 test.each(["small", "medium", "large"] as const)("renders the %s size", (size) => {
-  render(<Button size={size}>Action</Button>);
+  render(<Button label="Action" size={size} />);
 
   const button = screen.getByRole("button", { name: "Action" });
 
@@ -204,7 +197,7 @@ test.each(["small", "medium", "large"] as const)("renders the %s size", (size) =
 });
 
 test("merges a consumer class name with the button class", () => {
-  render(<Button className="recipe-button">Create recipe</Button>);
+  render(<Button label="Create recipe" className="recipe-button" />);
 
   const button = screen.getByRole("button", { name: "Create recipe" });
 
@@ -215,11 +208,7 @@ test("merges a consumer class name with the button class", () => {
 test("does not handle clicks while disabled", () => {
   const handleClick = vi.fn();
 
-  render(
-    <Button disabled onClick={handleClick}>
-      Create recipe
-    </Button>,
-  );
+  render(<Button label="Create recipe" disabled onClick={handleClick} />);
 
   const button = screen.getByRole("button", { name: "Create recipe" });
 

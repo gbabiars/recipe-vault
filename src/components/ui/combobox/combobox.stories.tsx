@@ -86,7 +86,7 @@ export const BrowseThenSearch: Story = {
             loadOnEmpty
             helpText="Browse or search tags."
           />
-          <Button type="submit">Filter</Button>
+          <Button label="Filter" type="submit" />
           <output aria-label="Submitted tag">{submitted}</output>
         </form>
       );
@@ -181,7 +181,7 @@ export const Required: Story = {
   render: (args) => (
     <form>
       <ComboboxField {...args} name="tags" label="Tags" options={choices} required />
-      <Button type="submit">Save</Button>
+      <Button label="Save" type="submit" />
     </form>
   ),
 };
@@ -262,7 +262,7 @@ export const FormValues: Story = {
           }}
         >
           <ComboboxField name="tags" label="Tags" multiple options={choices} />
-          <Button type="submit">Save</Button>
+          <Button label="Save" type="submit" />
           <output aria-label="Submitted tags">{submitted.join(", ")}</output>
         </form>
       );

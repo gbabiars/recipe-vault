@@ -12,7 +12,7 @@ const meta = {
   title: "UI/Button",
   component: Button,
   args: {
-    children: "Create recipe",
+    label: "Create recipe",
     onClick: fn(),
   },
 } satisfies Meta<typeof Button>;
@@ -34,7 +34,7 @@ export const Default: Story = {
 export const Submit: Story = {
   render: () => (
     <form>
-      <Button type="submit">Save recipe</Button>
+      <Button label="Save recipe" type="submit" />
     </form>
   ),
   play: async ({ canvas }) => {
@@ -45,7 +45,7 @@ export const Submit: Story = {
 };
 
 export const NativeLink: Story = {
-  render: () => <Button href="/recipes/new">Create recipe</Button>,
+  render: () => <Button label="Create recipe" href="/recipes/new" />,
   play: async ({ canvas }) => {
     const link = canvas.getByRole("link", { name: "Create recipe" });
 
@@ -60,6 +60,7 @@ export const NextLink: Story = {
   args: { onClick: fn() },
   render: (args) => (
     <Button
+      label="Create recipe"
       href="/recipes/new"
       onClick={args.onClick}
       render={(anchorProps) => (
@@ -72,9 +73,7 @@ export const NextLink: Story = {
           }}
         />
       )}
-    >
-      Create recipe
-    </Button>
+    />
   ),
   play: async ({ args, canvas }) => {
     const link = canvas.getByRole("link", { name: "Create recipe" });
@@ -89,9 +88,11 @@ export const NextLink: Story = {
 
 export const NextLinkElement: Story = {
   render: () => (
-    <Button href="/recipes/new" render={<Link href="/recipes/new" prefetch={false} />}>
-      Create recipe
-    </Button>
+    <Button
+      label="Create recipe"
+      href="/recipes/new"
+      render={<Link href="/recipes/new" prefetch={false} />}
+    />
   ),
   play: async ({ canvas }) => {
     const link = canvas.getByRole("link", { name: "Create recipe" });
@@ -113,7 +114,7 @@ export const Subtle: Story = {
 export const Danger: Story = {
   args: {
     variant: "danger",
-    children: "Delete recipe",
+    label: "Delete recipe",
   },
 };
 
@@ -133,8 +134,8 @@ export const Disabled: Story = {
 export const Width: Story = {
   render: () => (
     <div style={{ display: "grid", gap: "1rem", width: "20rem" }}>
-      <Button>Fit content</Button>
-      <Button fullWidth>Fill parent</Button>
+      <Button label="Fit content" />
+      <Button label="Fill parent" fullWidth />
     </div>
   ),
 };
@@ -145,9 +146,7 @@ export const VariantsAndSizes: Story = {
       {variants.map((variant) => (
         <div key={variant} style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           {sizes.map((size) => (
-            <Button key={size} variant={variant} size={size}>
-              {variant} {size}
-            </Button>
+            <Button key={size} label={`${variant} ${size}`} variant={variant} size={size} />
           ))}
         </div>
       ))}
@@ -159,9 +158,7 @@ export const IconAcrossSizes: Story = {
   render: () => (
     <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
       {sizes.map((size) => (
-        <Button key={size} icon={Plus} size={size}>
-          Create recipe
-        </Button>
+        <Button key={size} label="Create recipe" icon={Plus} size={size} />
       ))}
     </div>
   ),

@@ -38,7 +38,7 @@ export const Required: Story = {
   render: (args) => (
     <form>
       <Textarea {...args} required />
-      <Button type="submit">Save</Button>
+      <Button label="Save" type="submit" />
     </form>
   ),
 };
