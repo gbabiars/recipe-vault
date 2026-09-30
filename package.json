@@ -36,6 +36,7 @@
     "@modelcontextprotocol/ext-apps": "1.7.5",
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@sentry/nextjs": "^11.0.0",
+    "@statsig/next": "^3.33.5",
     "@statsig/react-bindings": "^3.33.5",
     "@supabase/supabase-js": "^2.116.0",
     "ai": "^7.0.119",

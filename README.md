@@ -179,18 +179,21 @@ for local development even when the public DSN is configured.
 
 ## Feature gates
 
-The browser Statsig provider runs inside ClerkProvider and waits for Clerk to
-load before initializing. Signed-in evaluations send the Clerk user ID as
-`userID` and the primary email address as `email`, when available. No other
-Clerk profile fields or authentication tokens are sent.
+Set `NEXT_PUBLIC_STATSIG_CLIENT_KEY` before building and `STATSIG_SERVER_KEY`
+in the server environment. The client key is included in the browser bundle;
+the server key must remain private. The previous `STATSG_SECRET_KEY` spelling
+is accepted temporarily for existing deployments.
 
-Sign-in, sign-out, account switching, and primary email changes refresh gate
-values. Signed-out sessions use an empty user object and Statsig's anonymous
-browser identity. Gate consumers wait during initialization and identity
-updates; network failures use the current identity's cached values or closed
-gates. Feature components use `useGateValue`, including the existing
-`Recipe_website_import` gate. Targeting and rollout rules are managed in the
-Statsig Console; these client gates do not replace authorization checks.
+The private layout bootstraps the browser Statsig client with server-evaluated
+values for the authenticated Clerk user ID. No email address, other Clerk
+profile fields, authentication tokens, or device stable ID are sent. Gate
+consumers can render without waiting for a browser initialization request.
+Account changes refresh values for the new user; while they update, gate
+consumers wait. On network failure, they use that user's cached values or
+closed gates. Feature components use `useGateValue`, including
+`Recipe_website_import`. Targeting and rollout
+rules are managed in the Statsig Console; these client gates do not replace
+authorization checks.
 
 ## Architecture
 

@@ -13,7 +13,7 @@ const dirname =
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
   optimizeDeps: {
-    include: ["next/form"],
+    include: ["next/form", "@statsig/next"],
   },
   resolve: {
     alias: {
@@ -44,6 +44,7 @@ export default defineConfig({
         test: {
           name: "components",
           include: ["src/**/*.test.tsx"],
+          fileParallelism: false,
           browser: {
             enabled: true,
             headless: true,
