@@ -6,3 +6,7 @@ Place shared input and domain validation schemas here as routes and recipe comma
 web routes and MCP tools must validate against it before calling recipe-domain services;
 database column names deliberately remain an implementation detail. Create commands
 require at least one ingredient and one step. Update commands are non-empty patches.
+
+`RecipeIngredientInput` contains `displayOrder`, `ingredientName`, optional `amount`,
+and optional `notes`. Amount is free text, trimmed when parsed, and limited to 1-128
+characters when supplied.

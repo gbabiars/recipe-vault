@@ -18,12 +18,13 @@ const optionalText = (maxLength: number) => z.string().trim().min(1).max(maxLeng
 export const recipeIngredientInputSchema = z
   .object({
     displayOrder: z.number().int().positive(),
-    quantity: z.number().finite().nonnegative(),
-    unit: z.string().trim().min(1).max(32),
+    amount: optionalText(128),
     ingredientName: z.string().trim().min(1).max(200),
     notes: optionalText(1_000),
   })
   .strict();
+
+export type RecipeIngredientInput = z.output<typeof recipeIngredientInputSchema>;
 
 export const recipeStepInputSchema = z
   .object({

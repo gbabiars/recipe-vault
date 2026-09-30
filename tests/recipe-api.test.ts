@@ -7,7 +7,7 @@ import type { RateLimiter } from "../src/lib/api/rate-limit";
 const input = {
   title: "Pasta",
   tags: ["Dinner"],
-  ingredients: [{ displayOrder: 1, quantity: 1, unit: "box", ingredientName: "pasta" }],
+  ingredients: [{ displayOrder: 1, amount: "1 box", ingredientName: "pasta" }],
   steps: [{ stepOrder: 1, instruction: "Cook." }],
 };
 type Stored = typeof input & { id: string; ownerId: string; createdAt: string; updatedAt: string };
@@ -166,6 +166,18 @@ test("API rejects invalid and ownership-bearing recipe bodies", async () => {
     422,
   );
   assert.equal(
+    (await api.create(
+      req("http://test/api/v1/recipes", {
+        method: "POST",
+        body: JSON.stringify({
+          ...input,
+          ingredients: [{ displayOrder: 1, quantity: 1, unit: "box", ingredientName: "pasta" }],
+        }),
+      }),
+    ))!.status,
+    422,
+  );
+  assert.equal(
     (await api.update(
       req("http://test/api/v1/recipes/none", { method: "PATCH", body: JSON.stringify({}) }),
       "none",
@@ -178,8 +190,12 @@ test("API creates, partially updates, deletes, and audits successful writes", as
   const created = (await api.create(
     req("http://test/api/v1/recipes", { method: "POST", body: JSON.stringify(input) }),
   ))!;
-  const recipe = (await created.json()).data as { id: string };
+  const recipe = (await created.json()).data as {
+    id: string;
+    ingredients: Array<{ amount: string }>;
+  };
   assert.equal(created.status, 201);
+  assert.equal(recipe.ingredients[0].amount, "1 box");
   assert.equal(
     (await api.update(
       req(`http://test/api/v1/recipes/${recipe.id}`, {

@@ -9,7 +9,7 @@ const validRecipe = {
   totalTimeMinutes: 25,
   servings: 2,
   tags: ["Weeknight", "weeknight"],
-  ingredients: [{ displayOrder: 1, quantity: 200, unit: "g", ingredientName: "spaghetti" }],
+  ingredients: [{ displayOrder: 1, amount: "200 g", ingredientName: "spaghetti" }],
   steps: [{ stepOrder: 1, instruction: "Cook the pasta.", durationMinutes: 10 }],
 };
 
@@ -19,9 +19,38 @@ test("accepts a structured recipe and canonicalizes labels", () => {
   assert.deepEqual(result.tags, ["weeknight"]);
 });
 
-test("rejects invalid quantities, durations, servings, and ordering", () => {
+test("accepts optional free-text amounts and rejects invalid ingredient amounts", () => {
+  assert.deepEqual(
+    recipeCreateInputSchema.parse({
+      ...validRecipe,
+      ingredients: [{ displayOrder: 1, ingredientName: "salt" }],
+    }).ingredients,
+    [{ displayOrder: 1, ingredientName: "salt" }],
+  );
+  assert.deepEqual(
+    recipeCreateInputSchema.parse({
+      ...validRecipe,
+      ingredients: [{ displayOrder: 1, amount: "  1 1/2 cups  ", ingredientName: "milk" }],
+    }).ingredients[0].amount,
+    "1 1/2 cups",
+  );
+  for (const amount of [" ", "x".repeat(129)]) {
+    assert.equal(
+      recipeCreateInputSchema.safeParse({
+        ...validRecipe,
+        ingredients: [{ displayOrder: 1, amount, ingredientName: "salt" }],
+      }).success,
+      false,
+    );
+  }
+});
+
+test("rejects retired quantity and unit fields, durations, servings, and ordering", () => {
   for (const invalid of [
-    { ...validRecipe, ingredients: [{ ...validRecipe.ingredients[0], quantity: -1 }] },
+    {
+      ...validRecipe,
+      ingredients: [{ displayOrder: 1, quantity: 1, unit: "g", ingredientName: "spaghetti" }],
+    },
     { ...validRecipe, steps: [{ ...validRecipe.steps[0], durationMinutes: -1 }] },
     { ...validRecipe, servings: 0 },
     { ...validRecipe, steps: [{ ...validRecipe.steps[0], stepOrder: 0 }] },

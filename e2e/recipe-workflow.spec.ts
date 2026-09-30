@@ -24,13 +24,15 @@ test.describe("recipe creation", () => {
     await expect(page.getByLabel("Title")).toBeFocused();
 
     await page.getByLabel("Title").fill(title);
-    await page.getByLabel("Quantity").fill("2");
-    await page.getByLabel("Unit").fill("cups");
+    await page.getByLabel("Amount (optional)").fill("2 cups");
     await page.getByLabel("Ingredient name").fill("vegetable stock");
     await page.getByLabel("Instruction").fill("Warm the stock and serve.");
     await page.getByRole("button", { name: "Create recipe" }).click();
 
     await expect(page).toHaveURL(/\/recipes$/);
-    await expect(page.getByRole("link", { name: title })).toBeVisible();
+    const createdRecipe = page.getByRole("link", { name: title });
+    await expect(createdRecipe).toBeVisible();
+    await createdRecipe.click();
+    await expect(page.getByText("2 cups vegetable stock")).toBeVisible();
   });
 });

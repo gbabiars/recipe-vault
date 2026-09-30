@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { Recipe } from "@/lib/db/recipe-repository";
 import type { OwnerBoundTagService } from "@/lib/recipes/tag-service";
 import type { OwnerBoundRecipeService } from "@/lib/recipes/recipe-service";
-import { recipeCreateInputSchema } from "@/lib/validation/recipe";
+import { recipeCreateInputSchema, recipeIngredientInputSchema } from "@/lib/validation/recipe";
 import {
   defaultRateLimiter,
   type RateLimiter,
@@ -76,16 +76,7 @@ const recipeDisplaySchema = z
     totalTimeMinutes: z.number().int().nonnegative().optional(),
     servings: z.number().int().positive().optional(),
     tags: z.array(z.string()),
-    ingredients: z.array(
-      z
-        .object({
-          quantity: z.number().finite().nonnegative(),
-          unit: z.string(),
-          ingredientName: z.string(),
-          notes: z.string().optional(),
-        })
-        .strict(),
-    ),
+    ingredients: z.array(recipeIngredientInputSchema.omit({ displayOrder: true })),
     steps: z.array(
       z
         .object({
@@ -113,9 +104,8 @@ function displayRecipe(recipe: Recipe) {
         : {}),
       ...(recipe.servings !== undefined ? { servings: recipe.servings } : {}),
       tags: recipe.tags,
-      ingredients: recipe.ingredients.map(({ quantity, unit, ingredientName, notes }) => ({
-        quantity,
-        unit,
+      ingredients: recipe.ingredients.map(({ amount, ingredientName, notes }) => ({
+        ...(amount !== undefined ? { amount } : {}),
         ingredientName,
         ...(notes !== undefined ? { notes } : {}),
       })),

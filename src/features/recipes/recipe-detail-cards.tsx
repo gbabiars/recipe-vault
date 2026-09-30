@@ -68,7 +68,8 @@ export function RecipeIngredientsCard({ ingredients }: { ingredients: Recipe["in
         <Stack as="ul" gap="100" className={styles.list}>
           {ingredients.map((item) => (
             <Text as="li" key={item.displayOrder}>
-              {item.quantity} {item.unit} {item.ingredientName}
+              {item.amount ? `${item.amount} ` : ""}
+              {item.ingredientName}
               {item.notes && ` — ${item.notes}`}
             </Text>
           ))}

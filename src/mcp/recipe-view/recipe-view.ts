@@ -14,8 +14,7 @@ type RecipeView = {
   servings?: number;
   tags: string[];
   ingredients: Array<{
-    quantity: number;
-    unit: string;
+    amount?: string;
     ingredientName: string;
     notes?: string;
   }>;
@@ -73,8 +72,7 @@ function isRecipeView(value: unknown): value is RecipeView {
       (ingredient) =>
         ingredient &&
         typeof ingredient === "object" &&
-        typeof (ingredient as Record<string, unknown>).quantity === "number" &&
-        typeof (ingredient as Record<string, unknown>).unit === "string" &&
+        hasOptionalString((ingredient as Record<string, unknown>).amount) &&
         typeof (ingredient as Record<string, unknown>).ingredientName === "string" &&
         hasOptionalString((ingredient as Record<string, unknown>).notes),
     ) &&
@@ -127,7 +125,7 @@ function renderRecipe(recipe: RecipeView) {
   for (const ingredient of recipe.ingredients) {
     const item = element(
       "li",
-      `${ingredient.quantity} ${ingredient.unit} ${ingredient.ingredientName}`,
+      `${ingredient.amount ? `${ingredient.amount} ` : ""}${ingredient.ingredientName}`,
     );
     if (ingredient.notes) item.append(document.createTextNode(` (${ingredient.notes})`));
     ingredientList.append(item);

@@ -22,7 +22,7 @@ const recipe: Recipe = {
   tags: ["soup"],
   notes: "First line\nSecond line",
   ingredients: [
-    { displayOrder: 1, quantity: 2, unit: "cups", ingredientName: "tomatoes", notes: "chopped" },
+    { displayOrder: 1, amount: "2 cups", ingredientName: "tomatoes", notes: "chopped" },
   ],
   steps: [{ stepOrder: 1, instruction: "Simmer tomatoes.", durationMinutes: 0 }],
   createdAt: "2026-09-01T12:00:00.000Z",
@@ -79,6 +79,11 @@ test("ingredient and method cards keep semantic lists and optional annotations",
     "Simmer tomatoes.0 minutes",
   ]);
   expect(screen.getAllByRole("list").map((list) => list.tagName)).toEqual(["UL", "OL"]);
+});
+
+test("ingredient displays omit amount cleanly when it is absent", () => {
+  render(<RecipeIngredientsCard ingredients={[{ displayOrder: 1, ingredientName: "salt" }]} />);
+  expect(screen.getByRole("listitem")).toHaveTextContent("salt");
 });
 
 test("notes preserve line breaks and delete card renders the shared form", () => {

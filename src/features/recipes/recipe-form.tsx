@@ -16,10 +16,10 @@ import styles from "./recipe-form.module.css";
 import { emptyRecipeFormState } from "./recipe-form-state";
 import type { RecipeFormState } from "./recipe-form-state";
 
-type IngredientRow = { quantity?: number; unit?: string; ingredientName?: string; notes?: string };
+type IngredientRow = { amount?: string; ingredientName?: string; notes?: string };
 type StepRow = { instruction?: string; durationMinutes?: number };
 type RecipeFormAction = (state: RecipeFormState, formData: FormData) => Promise<RecipeFormState>;
-const blankIngredient: IngredientRow = { quantity: 1, unit: "", ingredientName: "", notes: "" };
+const blankIngredient: IngredientRow = { amount: "", ingredientName: "", notes: "" };
 const blankStep: StepRow = { instruction: "", durationMinutes: undefined };
 const commonRecipeTags = ["dinner", "soup", "weeknight"];
 const errorFor = (errors: Record<string, string>, key: string) =>
@@ -142,22 +142,16 @@ export function RecipeForm({
                     `ingredients.${index}.ingredientName`,
                   )}
                 </div>
-                {field(
-                  `ingredient-${index}-quantity`,
-                  "Quantity",
-                  "number",
-                  ingredient.quantity,
-                  undefined,
-                  `ingredients.${index}.quantity`,
-                )}
-                {field(
-                  `ingredient-${index}-unit`,
-                  "Unit",
-                  "text",
-                  ingredient.unit,
-                  undefined,
-                  `ingredients.${index}.unit`,
-                )}
+                <div className={styles.ingredientAmount}>
+                  {field(
+                    `ingredient-${index}-amount`,
+                    "Amount (optional)",
+                    "text",
+                    ingredient.amount,
+                    undefined,
+                    `ingredients.${index}.amount`,
+                  )}
+                </div>
                 <div className={styles.ingredientNotes}>
                   {field(
                     `ingredient-${index}-notes`,

@@ -11,7 +11,7 @@ const recipe: Recipe = {
   summary: "Fresh basil soup",
   tags: [],
   notes: "A note",
-  ingredients: [{ displayOrder: 1, quantity: 2, unit: "cups", ingredientName: "tomatoes" }],
+  ingredients: [{ displayOrder: 1, amount: "2 cups", ingredientName: "tomatoes" }],
   steps: [{ stepOrder: 1, instruction: "Simmer." }],
   createdAt: "2026-09-01T12:00:00.000Z",
   updatedAt: "2026-09-01T12:00:00.000Z",

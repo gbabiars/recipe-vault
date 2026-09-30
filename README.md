@@ -54,6 +54,13 @@ Apply the tag migration before deploying the application code that calls the new
 recipe write function. The migration retains the array and installs its sync
 triggers, so older application instances can continue writing during rollout.
 
+Recipe ingredients use `displayOrder`, `ingredientName`, optional free-text
+`amount` (up to 128 trimmed characters), and optional `notes`. Amounts can
+preserve source wording such as `1 1/2 cups` or `to taste`.
+Apply the ingredient amount migration before deploying application code that
+uses this contract; it converts existing quantity/unit values before dropping
+those columns.
+
 Successful writes record safe audit events. Recipe bodies, cookies,
 credentials, and request headers are never placed in audit metadata or
 application logs.

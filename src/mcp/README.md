@@ -63,3 +63,19 @@ other hosts and ambiguous or empty searches remain text-only clarification
 flows. The renderer receives a display projection only: never owner, audit, or
 authentication data. It does not add scopes, browser access, database access,
 or app-initiated tool calls.
+
+`save_recipe` follows the shared ingredient contract. For example:
+
+```ts
+await save_recipe({
+  title: "Lemon pasta",
+  ingredients: [
+    { displayOrder: 1, amount: "200 g", ingredientName: "spaghetti" },
+    { displayOrder: 2, amount: "to taste", ingredientName: "salt" },
+  ],
+  steps: [{ stepOrder: 1, instruction: "Cook the pasta." }],
+});
+```
+
+`amount` is optional free text. `get_recipe` returns it when present and omits it
+when the ingredient has no amount.

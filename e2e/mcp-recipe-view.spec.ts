@@ -62,8 +62,7 @@ test("renders a recipe result safely in a generic MCP Apps host", async ({ page 
               tags: ["weeknight"],
               ingredients: [
                 {
-                  quantity: 450,
-                  unit: "g",
+                  amount: "450 g",
                   ingredientName: "beef <script>window.pwned=true</script>",
                   notes: "80/20",
                 },
@@ -82,7 +81,7 @@ test("renders a recipe result safely in a generic MCP Apps host", async ({ page 
   await expect(frame.getByRole("heading", { level: 1 })).toHaveText(
     '<img src=x onerror="window.pwned=true"> Smash burger',
   );
-  await expect(frame.getByText("beef <script>window.pwned=true</script>")).toBeVisible();
+  await expect(frame.getByText("450 g beef <script>window.pwned=true</script>")).toBeVisible();
   await expect(frame.locator("img")).toHaveCount(0);
   expect(await frame.evaluate(() => window.pwned)).toBeUndefined();
   await expect(frame.locator(".notes")).toHaveText(
@@ -101,7 +100,7 @@ test("renders a recipe result safely in a generic MCP Apps host", async ({ page 
             recipe: {
               title: "Plain eggs",
               tags: [],
-              ingredients: [{ quantity: 2, unit: "", ingredientName: "eggs" }],
+              ingredients: [{ ingredientName: "eggs" }],
               steps: [{ instruction: "Cook." }],
             },
           },
@@ -112,6 +111,7 @@ test("renders a recipe result safely in a generic MCP Apps host", async ({ page 
   });
 
   await expect(frame.getByRole("heading", { level: 1 })).toHaveText("Plain eggs");
+  await expect(frame.getByText("eggs", { exact: true })).toBeVisible();
   await expect(frame.getByRole("heading", { name: "Notes" })).toHaveCount(0);
   await expect(frame.locator(".source")).toHaveCount(0);
   await expect

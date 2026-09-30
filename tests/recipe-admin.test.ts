@@ -12,8 +12,7 @@ function validForm() {
   for (const [key, value] of Object.entries({
     title: "Toast",
     ingredientCount: "1",
-    "ingredient-0-quantity": "2",
-    "ingredient-0-unit": "slices",
+    "ingredient-0-amount": "2 slices",
     "ingredient-0-name": "bread",
     stepCount: "1",
     "step-0-instruction": "Toast the bread.",
@@ -58,7 +57,7 @@ test("recipe form validation retains the shared schema rules", () => {
   missingTitle.set("title", "");
   assert.throws(() => parseRecipeFormData(missingTitle));
   const invalidUpdate = validForm();
-  invalidUpdate.set("ingredient-0-quantity", "-1");
+  invalidUpdate.set("ingredient-0-amount", "x".repeat(129));
   assert.throws(() => parseRecipeFormData(invalidUpdate));
 });
 
@@ -100,7 +99,7 @@ test("recipe service scopes create, edit, and delete commands to the current own
 });
 
 function inputIngredients() {
-  return [{ displayOrder: 1, quantity: 2, unit: "slices", ingredientName: "bread" }];
+  return [{ displayOrder: 1, amount: "2 slices", ingredientName: "bread" }];
 }
 function inputSteps() {
   return [{ stepOrder: 1, instruction: "Toast the bread." }];

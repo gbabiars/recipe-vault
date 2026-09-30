@@ -43,8 +43,7 @@ export function parseRecipeFormData(formData: FormData): RecipeCreateInput {
       { length: Number.isInteger(rowCount) && rowCount > 0 ? rowCount : 0 },
       (_, index) => ({
         displayOrder: index + 1,
-        quantity: number(formData.get(`ingredient-${index}-quantity`)),
-        unit: optional(formData.get(`ingredient-${index}-unit`)),
+        amount: optional(formData.get(`ingredient-${index}-amount`)),
         ingredientName: optional(formData.get(`ingredient-${index}-name`)),
         notes: optional(formData.get(`ingredient-${index}-notes`)),
       }),

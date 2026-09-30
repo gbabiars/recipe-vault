@@ -81,7 +81,7 @@ begin
     perform public.recipe_vault_write_recipe(
       'user_tags_owner', null,
       '{"title":"Failure fixture","tags":["new tag"]}'::jsonb,
-      '[{"display_order":1,"quantity":1,"unit":"g","ingredient_name":"flour"}]'::jsonb,
+      '[{"display_order":1,"amount":"1 g","ingredient_name":"flour"}]'::jsonb,
       '[{"step_order":1,"instruction":"ok"},{"step_order":1,"instruction":"duplicate"}]'::jsonb
     );
     raise exception 'invalid write succeeded';
@@ -112,7 +112,7 @@ begin
     perform public.recipe_vault_write_recipe(
       'user_tags_owner', null,
       '{"title":"Intrusion","tags":[]}'::jsonb,
-      '[{"display_order":1,"quantity":1,"unit":"g","ingredient_name":"flour"}]'::jsonb,
+      '[{"display_order":1,"amount":"1 g","ingredient_name":"flour"}]'::jsonb,
       '[{"step_order":1,"instruction":"ok"}]'::jsonb
     );
     raise exception 'other owner could write recipe';
