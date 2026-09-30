@@ -26,6 +26,9 @@ importers:
       '@sentry/nextjs':
         specifier: ^11.0.0
         version: 11.0.0(next@16.3.5(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@24.10.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
+      '@statsig/react-bindings':
+        specifier: ^3.33.5
+        version: 3.33.5(react@19.3.0)
       '@supabase/supabase-js':
         specifier: ^2.116.0
         version: 2.116.0(@opentelemetry/api@1.9.1)
@@ -2227,6 +2230,17 @@ packages:
 
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+
+  '@statsig/client-core@3.33.5':
+    resolution: {integrity: sha512-wGStmLCXMiZ2XYawLm/m8pgQS2NmYEvNXXhpsie/Hs06LKsnSHK3H15mkSCj5br+gut6K6GuU1U8mi2obQPYXg==}
+
+  '@statsig/js-client@3.33.5':
+    resolution: {integrity: sha512-QOPoLJQQegNT+onF1fsV6YnR7X8t3Di9bOTLezlAfv6R46QzsuLz+6Oqk9P1n9lWGPhdXHnxUNRohradF9sN2w==}
+
+  '@statsig/react-bindings@3.33.5':
+    resolution: {integrity: sha512-LLu2nvqP5Dme1FFJGWhOffSVWOULoLFpPC15/hipYIlGUacqQuF1rnOpItFH4f5NtwZqozteQfnjVBHhA01jRg==}
+    peerDependencies:
+      react: ^16.6.3 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   '@storybook/addon-a11y@10.6.0':
     resolution: {integrity: sha512-Z/CZor/F8H74/+IoeLroEQXQoVxvmjVtUgATJ95KPBolHxMaHLXLsYU0wosIiiORxmfRCnpen5pQl1n4+pBWQw==}
@@ -5998,6 +6012,18 @@ snapshots:
   '@stablelib/base64@1.0.1': {}
 
   '@standard-schema/spec@1.1.0': {}
+
+  '@statsig/client-core@3.33.5': {}
+
+  '@statsig/js-client@3.33.5':
+    dependencies:
+      '@statsig/client-core': 3.33.5
+
+  '@statsig/react-bindings@3.33.5(react@19.3.0)':
+    dependencies:
+      '@statsig/client-core': 3.33.5
+      '@statsig/js-client': 3.33.5
+      react: 19.3.0
 
   '@storybook/addon-a11y@10.6.0(storybook@10.6.0(@types/react@19.3.0)(react@19.3.0))':
     dependencies:
