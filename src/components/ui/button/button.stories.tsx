@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
+import { expect, fn, userEvent } from "storybook/test";
+import Link from "next/link";
 import { Plus } from "lucide-react";
 
 import { Button, type ButtonSize, type ButtonVariant } from "./button";
@@ -12,6 +13,7 @@ const meta = {
   component: Button,
   args: {
     children: "Create recipe",
+    onClick: fn(),
   },
 } satisfies Meta<typeof Button>;
 
@@ -19,7 +21,86 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  play: async ({ args, canvas }) => {
+    const button = canvas.getByRole("button", { name: "Create recipe" });
+
+    expect(button.getAttribute("type")).toBe("button");
+    await userEvent.click(button);
+    expect(args.onClick).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const Submit: Story = {
+  render: () => (
+    <form>
+      <Button type="submit">Save recipe</Button>
+    </form>
+  ),
+  play: async ({ canvas }) => {
+    const button = canvas.getByRole("button", { name: "Save recipe" });
+
+    expect(button.getAttribute("type")).toBe("submit");
+  },
+};
+
+export const NativeLink: Story = {
+  render: () => <Button href="/recipes/new">Create recipe</Button>,
+  play: async ({ canvas }) => {
+    const link = canvas.getByRole("link", { name: "Create recipe" });
+
+    expect(link.getAttribute("href")).toBe("/recipes/new");
+    expect(canvas.queryByRole("button", { name: "Create recipe" })).toBeNull();
+    expect(link.hasAttribute("type")).toBe(false);
+    expect(link.hasAttribute("disabled")).toBe(false);
+  },
+};
+
+export const NextLink: Story = {
+  args: { onClick: fn() },
+  render: (args) => (
+    <Button
+      href="/recipes/new"
+      onClick={args.onClick}
+      render={(anchorProps) => (
+        <Link
+          {...anchorProps}
+          prefetch={false}
+          onClick={(event) => {
+            anchorProps.onClick?.(event);
+            event.preventDefault();
+          }}
+        />
+      )}
+    >
+      Create recipe
+    </Button>
+  ),
+  play: async ({ args, canvas }) => {
+    const link = canvas.getByRole("link", { name: "Create recipe" });
+
+    expect(link.getAttribute("href")).toBe("/recipes/new");
+    expect(link.classList.length).toBeGreaterThan(0);
+    expect(canvas.queryByRole("button", { name: "Create recipe" })).toBeNull();
+    await userEvent.click(link);
+    expect(args.onClick).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const NextLinkElement: Story = {
+  render: () => (
+    <Button href="/recipes/new" render={<Link href="/recipes/new" prefetch={false} />}>
+      Create recipe
+    </Button>
+  ),
+  play: async ({ canvas }) => {
+    const link = canvas.getByRole("link", { name: "Create recipe" });
+
+    expect(link.getAttribute("href")).toBe("/recipes/new");
+    expect(link.classList.length).toBeGreaterThan(0);
+    expect(canvas.queryByRole("button", { name: "Create recipe" })).toBeNull();
+  },
+};
 
 export const Primary: Story = {
   args: { variant: "primary" },
@@ -39,6 +120,13 @@ export const Danger: Story = {
 export const Disabled: Story = {
   args: {
     disabled: true,
+  },
+  play: async ({ args, canvas }) => {
+    const button = canvas.getByRole("button", { name: "Create recipe" });
+
+    expect(button).toBeDisabled();
+    await userEvent.click(button);
+    expect(args.onClick).not.toHaveBeenCalled();
   },
 };
 

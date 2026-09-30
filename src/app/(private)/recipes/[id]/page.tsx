@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs";
-import { ButtonLink } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
 import { Stack } from "@/components/ui/stack";
 import {
@@ -33,7 +33,12 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
         }
         description={recipe.summary}
         actions={
-          <ButtonLink render={<Link href={`/recipes/${recipe.id}/edit`} />}>Edit recipe</ButtonLink>
+          <Button
+            href={`/recipes/${recipe.id}/edit`}
+            render={<Link href={`/recipes/${recipe.id}/edit`} />}
+          >
+            Edit recipe
+          </Button>
         }
       />
       <PageContent>

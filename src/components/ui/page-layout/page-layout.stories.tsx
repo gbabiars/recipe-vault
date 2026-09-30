@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import Link from "next/link";
 
 import { Breadcrumbs, BreadcrumbsItem } from "../breadcrumbs";
-import { ButtonLink } from "../button";
+import { Button } from "../button";
 import { Card } from "../card";
 import { PageContent, PageHeader, PageLayout } from "./page-layout";
 
@@ -39,7 +39,7 @@ export const WithSlots: Story = {
           </Breadcrumbs>
         }
         description="Fresh basil soup"
-        actions={<ButtonLink render={<a href="#edit" />}>Edit recipe</ButtonLink>}
+        actions={<Button href="#edit">Edit recipe</Button>}
       />
       <PageContent>
         <Card padding="large">Recipe details</Card>

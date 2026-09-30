@@ -5,13 +5,13 @@ import * as Stories from "./icon-button.stories";
 
 # IconButton
 
-Use `IconButton` for a compact, icon-only action when the icon clearly communicates what it does. Use `Button` with a visible label when the action needs explanation, and `ButtonLink` for navigation.
+Use `IconButton` for a compact, icon-only action or destination when the icon clearly communicates its meaning. Use `Button` with a visible label when the action or destination needs explanation.
 
 ## Use and composition
 
-- **Accessible name:** Provide a specific, action-oriented `label`. It becomes the button's `aria-label`; the SVG icon is hidden from assistive technology.
+- **Accessible name:** Provide a specific `label`. For actions, name the action and target; for links, name the destination. It becomes the control's `aria-label`, and the SVG icon is hidden from assistive technology.
 - **Variants and sizes:** `IconButton` shares Button's `default`, `primary`, `subtle`, and `danger` variants and `small`, `medium`, and `large` sizes. Each size is square: 32×32, 36×36, and 40×40 pixels.
-- **Behavior:** It renders a native action button, defaults to `type="button"`, and accepts Button's native button props such as `disabled`, `onClick`, and `type`.
+- **Behavior:** Without `href`, it renders a native action button, defaults to `type="button"`, and accepts button props such as `disabled`, `onClick`, and `type`. With `href`, it renders a link and accepts anchor props.
 - **Icon choice:** Prefer a familiar icon and name the action and its target, such as “Delete recipe.”
 
 ```tsx
@@ -24,6 +24,12 @@ import { Trash2 } from "lucide-react";
   size="small"
   onClick={removeRecipe}
 />;
+```
+
+```tsx
+import { BookOpen } from "lucide-react";
+
+<IconButton icon={BookOpen} label="Open recipe" href="/recipes/tomato-soup" />;
 ```
 
 ## Stories
