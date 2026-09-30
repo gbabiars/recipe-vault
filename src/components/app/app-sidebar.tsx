@@ -3,13 +3,14 @@ import styles from "./app-sidebar.module.css";
 
 type AppSidebarProps = {
   pathname: string;
+  userName: string;
   onSignOut: () => void | Promise<void>;
 };
 
-export function AppSidebar({ pathname, onSignOut }: AppSidebarProps) {
+export function AppSidebar({ pathname, userName, onSignOut }: AppSidebarProps) {
   return (
     <aside className={styles.sidebar}>
-      <AppNavigation pathname={pathname} onSignOut={onSignOut} />
+      <AppNavigation pathname={pathname} userName={userName} onSignOut={onSignOut} />
     </aside>
   );
 }

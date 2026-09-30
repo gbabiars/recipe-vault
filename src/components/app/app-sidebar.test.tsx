@@ -39,30 +39,35 @@ test("brand links to recipes and nav links expose active and current states sepa
 });
 
 test.each([
-  ["/recipes", "Recipes", "Recipes"],
-  ["/recipes/example", "Recipes", "Recipes"],
-  ["/settings", "Settings", "Settings"],
-  ["/user-profile", "Settings", null],
-  ["/user-profile/security", "Settings", null],
-  ["/", null, null],
-  ["/recipes-archive", null, null],
-] as const)("sidebar states on %s", (pathname, activeName, currentName) => {
-  render(<AppSidebar pathname={pathname} onSignOut={() => {}} />);
+  ["/recipes", true, false],
+  ["/recipes/example", true, false],
+  ["/settings", false, true],
+  ["/user-profile", false, true],
+  ["/user-profile/security", false, true],
+  ["/", false, false],
+  ["/recipes-archive", false, false],
+] as const)("sidebar states on %s", (pathname, recipesActive, settingsAreaActive) => {
+  render(<AppSidebar pathname={pathname} userName="Ada Lovelace" onSignOut={() => {}} />);
 
   const navigation = screen.getByRole("navigation", { name: "Primary", hidden: true });
   const links = Array.from(navigation.querySelectorAll("a"));
   expect(
     links.filter((link) => link.classList.contains(styles.active)).map((link) => link.textContent),
-  ).toEqual(activeName ? [activeName] : []);
+  ).toEqual(recipesActive ? ["Recipes"] : []);
   expect(
     links
       .filter((link) => link.getAttribute("aria-current") === "page")
       .map((link) => link.textContent),
-  ).toEqual(currentName ? [currentName] : []);
+  ).toEqual(recipesActive ? ["Recipes"] : []);
+  expect(
+    screen
+      .getByRole("button", { name: "Ada Lovelace", hidden: true })
+      .classList.contains(styles.active),
+  ).toBe(settingsAreaActive);
 });
 
-test("sidebar exposes the expected navigation and sign-out controls", () => {
-  render(<AppSidebar pathname="/recipes" onSignOut={() => {}} />);
+test("sidebar places Settings in the account menu instead of primary navigation", () => {
+  render(<AppSidebar pathname="/settings" userName="Ada Lovelace" onSignOut={() => {}} />);
 
   const navigation = screen.getByRole("navigation", { name: "Primary", hidden: true });
   expect(
@@ -71,23 +76,26 @@ test("sidebar exposes the expected navigation and sign-out controls", () => {
   expect(screen.getByRole("link", { name: "Recipes", hidden: true }).getAttribute("href")).toBe(
     "/recipes",
   );
-  expect(screen.getByRole("link", { name: "Settings", hidden: true }).getAttribute("href")).toBe(
-    "/settings",
-  );
   expect(Array.from(navigation.querySelectorAll("a"), (link) => link.textContent)).toEqual([
     "Recipes",
-    "Settings",
   ]);
-  expect(screen.getByRole("button", { name: "Sign out", hidden: true }).getAttribute("type")).toBe(
-    "button",
-  );
+  expect(screen.queryByRole("link", { name: "Settings", hidden: true })).toBeNull();
+
+  const accountMenu = screen.getByRole("button", { name: "Ada Lovelace", hidden: true });
+  expect(accountMenu.firstElementChild?.textContent).toBe("AL");
+  fireEvent.click(accountMenu);
+
+  const settings = screen.getByRole("menuitem", { name: "Settings", hidden: true });
+  expect(settings).toHaveAttribute("href", "/settings");
+  expect(settings).toHaveAttribute("aria-current", "page");
 });
 
 test("sidebar invokes the supplied sign-out callback", () => {
   const onSignOut = vi.fn();
-  render(<AppSidebar pathname="/recipes" onSignOut={onSignOut} />);
+  render(<AppSidebar pathname="/recipes" userName="Ada Lovelace" onSignOut={onSignOut} />);
 
-  fireEvent.click(screen.getByRole("button", { name: "Sign out", hidden: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Ada Lovelace", hidden: true }));
+  fireEvent.click(screen.getByRole("menuitem", { name: "Sign out", hidden: true }));
 
   expect(onSignOut).toHaveBeenCalledOnce();
 });
