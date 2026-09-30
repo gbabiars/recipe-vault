@@ -1,7 +1,6 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import MyStatsig from "./my-statsig";
 import type { ReactNode } from "react";
 import "./globals.css";
 
@@ -20,9 +19,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html className={inter.variable} lang="en">
       <body>
-        <ClerkProvider>
-          <MyStatsig>{children}</MyStatsig>
-        </ClerkProvider>
+        <ClerkProvider>{children}</ClerkProvider>
       </body>
     </html>
   );
