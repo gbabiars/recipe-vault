@@ -1,0 +1,33 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./icon-button.stories";
+
+<Meta of={Stories} />
+
+# IconButton
+
+Use `IconButton` for a compact, icon-only action when the icon clearly communicates what it does. Use `Button` with a visible label when the action needs explanation, and `ButtonLink` for navigation.
+
+## Use and composition
+
+- **Accessible name:** Provide a specific, action-oriented `label`. It becomes the button's `aria-label`; the SVG icon is hidden from assistive technology.
+- **Variants and sizes:** `IconButton` shares Button's `default`, `primary`, `subtle`, and `danger` variants and `small`, `medium`, and `large` sizes. Each size is square: 32×32, 36×36, and 40×40 pixels.
+- **Behavior:** It renders a native action button, defaults to `type="button"`, and accepts Button's native button props such as `disabled`, `onClick`, and `type`.
+- **Icon choice:** Prefer a familiar icon and name the action and its target, such as “Delete recipe.”
+
+```tsx
+import { Trash2 } from "lucide-react";
+
+<IconButton
+  icon={Trash2}
+  label="Delete recipe"
+  variant="danger"
+  size="small"
+  onClick={removeRecipe}
+/>;
+```
+
+## Stories
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.VariantsAndSizes} />
