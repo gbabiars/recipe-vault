@@ -15,6 +15,16 @@ Shares Button variants default, primary, subtle, danger and sizes small, medium,
 
 The link fits its content by default. Set `fullWidth` to fill the width of its parent.
 
+Pass an SVG component with `icon` to show a decorative leading icon. ButtonLink sizes it internally; keep a visible label to provide the accessible name.
+
+```tsx
+import { BookOpen } from "lucide-react";
+
+<ButtonLink icon={BookOpen} href="/recipes">
+  Recipes
+</ButtonLink>;
+```
+
 ## Content and accessibility
 
 Keep link semantics and a meaningful destination.
@@ -22,3 +32,7 @@ Keep link semantics and a meaningful destination.
 ## Story
 
 <Canvas of={Stories.NextLink} />
+
+## Leading icon sizes
+
+<Canvas of={Stories.IconAcrossSizes} />

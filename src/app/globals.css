@@ -157,6 +157,9 @@
   --line-height-text-large: 1.5rem;
   --font-weight-text-large: var(--font-weight-regular);
 
+  --font-size-button: 1rem;
+  --line-height-button: 1rem;
+
   --font-size-heading-1: 2.25rem;
   --line-height-heading-1: 2.75rem;
   --font-weight-heading-1: var(--font-weight-semibold);
@@ -204,6 +207,7 @@
   --height-button-small: 2rem;
   --height-button-medium: 2.25rem;
   --height-button-large: 2.5rem;
+  --size-button-icon: 1rem;
   --size-choice-control: 1.125rem;
 
   --radius-0: 0rem;
