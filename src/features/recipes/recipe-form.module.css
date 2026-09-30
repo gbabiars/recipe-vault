@@ -8,6 +8,10 @@
   grid-column: span 2;
 }
 
+.ingredientAmount {
+  grid-column: span 2;
+}
+
 .ingredientNotes {
   grid-column: 1 / -1;
 }
@@ -18,6 +22,10 @@
   }
 
   .ingredientName {
+    grid-column: 1 / -1;
+  }
+
+  .ingredientAmount {
     grid-column: 1 / -1;
   }
 }

@@ -6,7 +6,7 @@ import type { RateLimiter } from "../src/lib/api/rate-limit";
 const recipe = {
   title: "Owner Pasta",
   tags: ["dinner"],
-  ingredients: [{ displayOrder: 1, quantity: 1, unit: "box", ingredientName: "pasta" }],
+  ingredients: [{ displayOrder: 1, amount: "1 box", ingredientName: "pasta" }],
   steps: [{ stepOrder: 1, instruction: "Cook." }],
 };
 
@@ -123,7 +123,7 @@ test("MCP get keeps its JSON fallback and returns a display-only recipe projecti
       totalTimeMinutes: 15,
       servings: 2,
       tags: ["dinner"],
-      ingredients: [{ quantity: 1, unit: "box", ingredientName: "pasta" }],
+      ingredients: [{ amount: "1 box", ingredientName: "pasta" }],
       steps: [{ instruction: "Cook." }],
       notes: "Use a hot pan.\nRest before serving.",
       sourceUrl: "https://example.test/burger",
@@ -152,6 +152,12 @@ test("MCP save validates first, derives owner, and records a safe audit event", 
   const { tools, rows, audit } = setup();
   const invalid = await tools.save_recipe({ ...recipe, ownerId: "attacker" });
   assert.equal(invalid.isError, true);
+  assert.equal(rows.size, 0);
+  const legacyIngredients = await tools.save_recipe({
+    ...recipe,
+    ingredients: [{ displayOrder: 1, quantity: 1, unit: "box", ingredientName: "pasta" }],
+  });
+  assert.equal(legacyIngredients.isError, true);
   assert.equal(rows.size, 0);
   const saved = resultText(await tools.save_recipe(recipe));
   assert.deepEqual(saved, { recipeId: "recipe-1", message: "Recipe saved." });

@@ -20,11 +20,11 @@ begin
     'Seed data only; safe to remove locally.'
   ) returning id into sample_recipe_id;
 
-  insert into public.recipe_ingredients (recipe_id, display_order, quantity, unit, ingredient_name)
+  insert into public.recipe_ingredients (recipe_id, display_order, amount, ingredient_name)
   values
-    (sample_recipe_id, 1, 200, 'g', 'spaghetti'),
-    (sample_recipe_id, 2, 1, 'each', 'lemon'),
-    (sample_recipe_id, 3, 2, 'tbsp', 'olive oil');
+    (sample_recipe_id, 1, '200 g', 'spaghetti'),
+    (sample_recipe_id, 2, '1 each', 'lemon'),
+    (sample_recipe_id, 3, '2 tbsp', 'olive oil');
 
   insert into public.recipe_steps (recipe_id, step_order, instruction, duration_minutes)
   values

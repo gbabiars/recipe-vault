@@ -20,7 +20,9 @@ creates tags with a unique owner/name constraint, and replaces associations in
 one transaction. Tag rename and delete refresh affected recipe arrays; deletion
 cascades associations, never recipes. Application recipe create/update uses
 `recipe_vault_write_recipe` so recipe fields, details, and tags commit or roll
-back together. Association rows have no direct authenticated write grant.
+back together. Ingredient amounts are nullable text; the writer accepts the same
+optional free-text amount used by the recipe input contract. Association rows have
+no direct authenticated write grant.
 
 `RecipeRepository.listTags(ownerId, search)` reads up to 25 owned tag names in
 alphabetical order for the existing HTTP endpoint. An empty search lists the

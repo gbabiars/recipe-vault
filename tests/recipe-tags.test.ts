@@ -6,7 +6,7 @@ import { recipeCreateInputSchema } from "../src/lib/validation/recipe";
 const input = recipeCreateInputSchema.parse({
   title: "Soup",
   tags: [" Dinner  Party ", "dinner party", "Week  Night"],
-  ingredients: [{ displayOrder: 1, quantity: 1, unit: "cup", ingredientName: "water" }],
+  ingredients: [{ displayOrder: 1, amount: "1 cup", ingredientName: "water" }],
   steps: [{ stepOrder: 1, instruction: "Boil." }],
 });
 
@@ -30,6 +30,14 @@ test("recipe create sends one atomic database write and propagates failure", asy
   assert.equal(calls[0].name, "recipe_vault_write_recipe");
   assert.equal(calls[0].args.target_owner_id, "owner-a");
   assert.deepEqual((calls[0].args.recipe_data as { tags: string[] }).tags, input.tags);
+  assert.deepEqual(calls[0].args.ingredient_data, [
+    {
+      display_order: 1,
+      amount: "1 cup",
+      ingredient_name: "water",
+      notes: null,
+    },
+  ]);
 });
 
 test("recipe update uses the same atomic write boundary", async () => {
@@ -42,6 +50,67 @@ test("recipe update uses the same atomic write boundary", async () => {
   } as never);
   await assert.rejects(repository.update("owner-a", "recipe-a", input));
   assert.deepEqual(calls, ["recipe_vault_write_recipe:recipe-a"]);
+});
+
+test("recipe reads map optional amounts and order ingredients by display order", async () => {
+  const selections: string[] = [];
+  const query = {
+    select: (fields: string) => {
+      selections.push(fields);
+      return query;
+    },
+    eq: () => query,
+    maybeSingle: async () => ({
+      data: {
+        id: "recipe-a",
+        owner_id: "owner-a",
+        title: "Soup",
+        summary: null,
+        prep_time_minutes: null,
+        cook_time_minutes: null,
+        total_time_minutes: null,
+        servings: null,
+        tags: [],
+        source_url: null,
+        notes: null,
+        created_at: "now",
+        updated_at: "now",
+        recipe_ingredients: [
+          {
+            display_order: 2,
+            amount: "to taste",
+            ingredient_name: "pepper",
+            notes: null,
+          },
+          { display_order: 1, amount: null, ingredient_name: "water", notes: "cold" },
+        ],
+        recipe_steps: [],
+      },
+      error: null,
+    }),
+  };
+  const repository = new RecipeRepository({ from: () => query } as never);
+
+  const result = await repository.get("owner-a", "recipe-a");
+
+  assert.match(
+    selections[0],
+    /recipe_ingredients\(display_order, amount, ingredient_name, notes\)/,
+  );
+  assert.doesNotMatch(selections[0], /quantity|unit/);
+  assert.deepEqual(
+    result?.ingredients.map(({ displayOrder, ingredientName }) => [displayOrder, ingredientName]),
+    [
+      [1, "water"],
+      [2, "pepper"],
+    ],
+  );
+  assert.equal(result?.ingredients[0].amount, undefined);
+  assert.equal(result?.ingredients[1].amount, "to taste");
+  assert.deepEqual(JSON.parse(JSON.stringify(result?.ingredients)), [
+    { displayOrder: 1, ingredientName: "water", notes: "cold" },
+    { displayOrder: 2, amount: "to taste", ingredientName: "pepper" },
+  ]);
 });
 
 test("multiple recipe tag filters use any-match semantics", async () => {

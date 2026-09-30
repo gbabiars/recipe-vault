@@ -14,9 +14,9 @@ values
   ('tag_merge_owner', 'unused_target'),
   ('tag_merge_owner', 'empty_target');
 insert into public.recipe_ingredients (
-  recipe_id, display_order, quantity, unit, ingredient_name
+  recipe_id, display_order, amount, ingredient_name
 )
-select id, 1, 1, 'cup', 'preserved ingredient'
+select id, 1, '1 cup', 'preserved ingredient'
 from public.recipes
 where owner_id = 'tag_merge_owner' and title = 'Merge both tags';
 
@@ -86,7 +86,7 @@ begin
   if (select title from public.recipes where id = both_recipe_id) <> 'Merge both tags'
     or (select notes from public.recipes where id = both_recipe_id) <> 'keep both fields'
     or (select ingredient_name from public.recipe_ingredients where recipe_id = both_recipe_id) <> 'preserved ingredient'
-    or (select quantity from public.recipe_ingredients where recipe_id = both_recipe_id) <> 1 then
+    or (select amount from public.recipe_ingredients where recipe_id = both_recipe_id) <> '1 cup' then
     raise exception 'merge changed recipe or ingredient data beyond the tag projection';
   end if;
 

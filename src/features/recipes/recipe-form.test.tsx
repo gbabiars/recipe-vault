@@ -10,14 +10,13 @@ afterEach(() => {
   saveRecipeAction.mockReset();
 });
 
-test("orders ingredient fields as name, quantity, unit, then notes", () => {
+test("orders ingredient fields as name, optional amount, then notes", () => {
   render(<RecipeForm saveAction={saveRecipeAction} />);
 
   const ingredient = screen.getByRole("group", { name: "Ingredient 1" });
   expect(Array.from(ingredient.querySelectorAll("input"), (input) => input.name)).toEqual([
     "ingredient-0-name",
-    "ingredient-0-quantity",
-    "ingredient-0-unit",
+    "ingredient-0-amount",
     "ingredient-0-notes",
   ]);
 });
@@ -44,7 +43,7 @@ test("uses multiple tag choices and keeps the comma-delimited recipe format", as
         ownerId: "owner-1",
         title: "Tomato soup",
         tags: ["quick", "soup"],
-        ingredients: [{ displayOrder: 1, quantity: 1, unit: "can", ingredientName: "Tomato" }],
+        ingredients: [{ displayOrder: 1, amount: "1 can", ingredientName: "Tomato" }],
         steps: [{ stepOrder: 1, instruction: "Simmer" }],
         createdAt: "2026-01-01T00:00:00.000Z",
         updatedAt: "2026-01-01T00:00:00.000Z",
@@ -73,6 +72,14 @@ test("uses multiple tag choices and keeps the comma-delimited recipe format", as
     },
   );
   fireEvent.change(
+    within(screen.getByRole("group", { name: "Ingredient 1" })).getByRole("textbox", {
+      name: "Amount (optional)",
+    }),
+    {
+      target: { value: "1 1/2 cups" },
+    },
+  );
+  fireEvent.change(
     within(screen.getByRole("group", { name: "Step 1" })).getByRole("textbox", {
       name: "Instruction",
     }),
@@ -89,10 +96,12 @@ test("uses multiple tag choices and keeps the comma-delimited recipe format", as
     summary: "A quick soup",
     ingredientCount: "1",
     "ingredient-0-name": "Tomato",
+    "ingredient-0-amount": "1 1/2 cups",
     stepCount: "1",
     "step-0-instruction": "Simmer",
   });
   expect(parseRecipeFormData(data).tags).toEqual(["quick", "soup"]);
+  expect(parseRecipeFormData(data).ingredients[0].amount).toBe("1 1/2 cups");
   const legacyData = new FormData(form);
   legacyData.set("tags", "quick, soup");
   expect(parseRecipeFormData(legacyData).tags).toEqual(["quick", "soup"]);
@@ -101,6 +110,7 @@ test("uses multiple tag choices and keeps the comma-delimited recipe format", as
   expect(Object.fromEntries(saveRecipeAction.mock.calls[0][1] as FormData)).toMatchObject({
     title: "Tomato soup",
     "ingredient-0-name": "Tomato",
+    "ingredient-0-amount": "1 1/2 cups",
     "step-0-instruction": "Simmer",
   });
 });

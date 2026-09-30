@@ -41,8 +41,7 @@ type DatabaseRecipe = {
   updated_at: string;
   recipe_ingredients?: Array<{
     display_order: number;
-    quantity: number;
-    unit: string;
+    amount: string | null;
     ingredient_name: string;
     notes: string | null;
   }>;
@@ -89,8 +88,7 @@ function mapRecipe(row: DatabaseRecipe): Recipe {
       .sort((a, b) => a.display_order - b.display_order)
       .map((item) => ({
         displayOrder: item.display_order,
-        quantity: item.quantity,
-        unit: item.unit,
+        amount: item.amount ?? undefined,
         ingredientName: item.ingredient_name,
         notes: item.notes ?? undefined,
       })),
@@ -203,7 +201,7 @@ export class RecipeRepository {
     const { data, error } = await this.client
       .from("recipes")
       .select(
-        `${selectFields}, recipe_ingredients(display_order, quantity, unit, ingredient_name, notes), recipe_steps(step_order, instruction, duration_minutes)`,
+        `${selectFields}, recipe_ingredients(display_order, amount, ingredient_name, notes), recipe_steps(step_order, instruction, duration_minutes)`,
       )
       .eq("owner_id", ownerId)
       .eq("id", id)
@@ -223,8 +221,7 @@ export class RecipeRepository {
       recipe_data: nullableFields(input),
       ingredient_data: input.ingredients.map((item) => ({
         display_order: item.displayOrder,
-        quantity: item.quantity,
-        unit: item.unit,
+        amount: item.amount ?? null,
         ingredient_name: item.ingredientName,
         notes: item.notes ?? null,
       })),
