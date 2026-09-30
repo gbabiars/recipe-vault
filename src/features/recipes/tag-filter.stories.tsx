@@ -38,7 +38,7 @@ export const BrowseAndFilter: Story = {
           }}
         >
           <TagFilter />
-          <Button type="submit">Filter</Button>
+          <Button label="Filter" type="submit" />
           <output aria-label="Submitted tag">{submitted}</output>
         </form>
       );

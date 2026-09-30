@@ -26,7 +26,7 @@ const onArchive = fn();
 export const ActionOnly: Story = {
   render: () => (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button />}>Recipe actions</DropdownMenuTrigger>
+      <DropdownMenuTrigger render={<Button label="Recipe actions" />} />
       <DropdownMenuPopup>
         <DropdownMenuItem onClick={onEdit}>Edit</DropdownMenuItem>
         <DropdownMenuItem onClick={() => undefined}>Duplicate</DropdownMenuItem>
@@ -48,7 +48,7 @@ export const ActionOnly: Story = {
 export const MixedActionsAndLinks: Story = {
   render: () => (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button />}>Recipe actions</DropdownMenuTrigger>
+      <DropdownMenuTrigger render={<Button label="Recipe actions" />} />
       <DropdownMenuPopup>
         <DropdownMenuItem onClick={() => undefined}>Edit recipe</DropdownMenuItem>
         <DropdownMenuLinkItem render={<Link href="#recipe-details" />}>
@@ -69,7 +69,7 @@ export const MixedActionsAndLinks: Story = {
 export const DisabledAction: Story = {
   render: () => (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button />}>Recipe actions</DropdownMenuTrigger>
+      <DropdownMenuTrigger render={<Button label="Recipe actions" />} />
       <DropdownMenuPopup>
         <DropdownMenuItem onClick={() => undefined}>Edit</DropdownMenuItem>
         <DropdownMenuItem disabled onClick={onArchive}>
@@ -100,7 +100,7 @@ export const ControlledOpenState: Story = {
 
       return (
         <DropdownMenu open={open} onOpenChange={setOpen}>
-          <DropdownMenuTrigger render={<Button />}>Recipe actions</DropdownMenuTrigger>
+          <DropdownMenuTrigger render={<Button label="Recipe actions" />} />
           <DropdownMenuPopup>
             <DropdownMenuItem onClick={() => undefined}>Edit</DropdownMenuItem>
           </DropdownMenuPopup>
@@ -126,7 +126,7 @@ export const ControlledOpenState: Story = {
 export const KeyboardNavigation: Story = {
   render: () => (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button />}>Recipe actions</DropdownMenuTrigger>
+      <DropdownMenuTrigger render={<Button label="Recipe actions" />} />
       <DropdownMenuPopup>
         <DropdownMenuItem onClick={() => undefined}>Edit</DropdownMenuItem>
         <DropdownMenuItem onClick={() => undefined}>Duplicate</DropdownMenuItem>

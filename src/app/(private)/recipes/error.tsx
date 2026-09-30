@@ -28,7 +28,7 @@ export default function RecipesError({
         <Heading>Something went wrong</Heading>
         <Text as="p">Recipe Vault could not complete that request.</Text>
         <div>
-          <Button onClick={reset}>Try again</Button>
+          <Button label="Try again" onClick={reset} />
         </div>
       </Stack>
     </Card>

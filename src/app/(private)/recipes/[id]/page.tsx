@@ -34,11 +34,10 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
         description={recipe.summary}
         actions={
           <Button
+            label="Edit recipe"
             href={`/recipes/${recipe.id}/edit`}
             render={<Link href={`/recipes/${recipe.id}/edit`} />}
-          >
-            Edit recipe
-          </Button>
+          />
         }
       />
       <PageContent>

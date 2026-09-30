@@ -123,9 +123,11 @@ export function RecipeForm({
             <Heading as="h2" level={5}>
               Ingredients
             </Heading>
-            <Button type="button" onClick={() => setIngredients([...ingredients, blankIngredient])}>
-              Add ingredient
-            </Button>
+            <Button
+              label="Add ingredient"
+              type="button"
+              onClick={() => setIngredients([...ingredients, blankIngredient])}
+            />
           </div>
           <input type="hidden" name="ingredientCount" value={ingredients.length} />
           {ingredients.map((ingredient, index) => (
@@ -165,12 +167,11 @@ export function RecipeForm({
               </div>
               {ingredients.length > 1 && (
                 <Button
+                  label={`Remove ingredient ${index + 1}`}
                   type="button"
                   variant="subtle"
                   onClick={() => setIngredients(ingredients.filter((_, row) => row !== index))}
-                >
-                  Remove ingredient {index + 1}
-                </Button>
+                />
               )}
             </fieldset>
           ))}
@@ -182,9 +183,11 @@ export function RecipeForm({
             <Heading as="h2" level={5}>
               Steps
             </Heading>
-            <Button type="button" onClick={() => setSteps([...steps, blankStep])}>
-              Add step
-            </Button>
+            <Button
+              label="Add step"
+              type="button"
+              onClick={() => setSteps([...steps, blankStep])}
+            />
           </div>
           <input type="hidden" name="stepCount" value={steps.length} />
           {steps.map((step, index) => (
@@ -206,21 +209,23 @@ export function RecipeForm({
               )}
               {steps.length > 1 && (
                 <Button
+                  label={`Remove step ${index + 1}`}
                   type="button"
                   variant="subtle"
                   onClick={() => setSteps(steps.filter((_, row) => row !== index))}
-                >
-                  Remove step {index + 1}
-                </Button>
+                />
               )}
             </fieldset>
           ))}
         </Stack>
       </Card>
       <div>
-        <Button type="submit" variant="primary" disabled={pending}>
-          {pending ? "Saving…" : recipe ? "Save changes" : "Create recipe"}
-        </Button>
+        <Button
+          label={pending ? "Saving…" : recipe ? "Save changes" : "Create recipe"}
+          type="submit"
+          variant="primary"
+          disabled={pending}
+        />
       </div>
     </Stack>
   );

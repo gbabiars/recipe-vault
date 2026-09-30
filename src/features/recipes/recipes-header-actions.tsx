@@ -15,7 +15,7 @@ export function RecipesHeaderActions() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button />}>Add a recipe</DropdownMenuTrigger>
+      <DropdownMenuTrigger render={<Button label="Add a recipe" />} />
       <DropdownMenuPopup align="end">
         <DropdownMenuLinkItem render={<Link href="/recipes/new" />}>
           Create manually

@@ -14,6 +14,8 @@ export type ButtonSize = "small" | "medium" | "large";
 export type ButtonIcon = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
 type ButtonVisualProps = {
+  /** Visible text and accessible name for the action or destination. */
+  label: string;
   variant?: ButtonVariant;
   size?: ButtonSize;
   fullWidth?: boolean;
@@ -22,7 +24,7 @@ type ButtonVisualProps = {
 };
 
 export type ButtonAnchorProps = Omit<React.ComponentPropsWithoutRef<"a">, "children" | "href"> & {
-  children?: React.ReactNode;
+  children: React.ReactNode;
   "data-variant": ButtonVariant;
   "data-size": ButtonSize;
   "data-full-width"?: "" | undefined;
@@ -30,7 +32,7 @@ export type ButtonAnchorProps = Omit<React.ComponentPropsWithoutRef<"a">, "child
   ref?: React.Ref<HTMLAnchorElement>;
 };
 
-type ButtonActionProps = Omit<BaseButtonProps, "type"> &
+type ButtonActionProps = Omit<BaseButtonProps, "children" | "type"> &
   ButtonVisualProps & {
     href?: undefined;
     type?: React.ComponentProps<"button">["type"];
@@ -41,7 +43,6 @@ type ButtonHrefProps = Omit<
   "children" | "className" | "disabled" | "href" | "type"
 > &
   ButtonVisualProps & {
-    children?: React.ReactNode;
     className?: string;
     disabled?: never;
     href: string;
@@ -54,12 +55,12 @@ export type ButtonProps = ButtonActionProps | ButtonHrefProps;
 const ButtonAnchor = React.forwardRef<HTMLAnchorElement, ButtonHrefProps>(
   function ButtonAnchor(props, ref) {
     const {
-      children,
       className,
       disabled,
       fullWidth = false,
       href,
       icon: Icon,
+      label,
       render,
       size = "medium",
       type,
@@ -71,10 +72,10 @@ const ButtonAnchor = React.forwardRef<HTMLAnchorElement, ButtonHrefProps>(
     const resolvedChildren = Icon ? (
       <>
         <Icon className={styles.icon} aria-hidden="true" focusable={false} />
-        {children}
+        {label}
       </>
     ) : (
-      children
+      label
     );
     const anchorProps: ButtonAnchorProps = {
       ...anchorAttributes,
@@ -110,16 +111,16 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(
       size = "medium",
       type = "button",
       variant = "default",
-      children,
+      label,
       ...buttonProps
     } = props;
     const resolvedChildren = Icon ? (
       <>
         <Icon className={styles.icon} aria-hidden="true" focusable={false} />
-        {children}
+        {label}
       </>
     ) : (
-      children
+      label
     );
 
     return (

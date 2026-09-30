@@ -46,9 +46,12 @@ export function RecipeImportForm({ importAction }: { importAction: RecipeImportA
             </Text>
           )}
           <div>
-            <Button type="submit" variant="primary" disabled={pending}>
-              {pending ? "Importing…" : "Import recipe"}
-            </Button>
+            <Button
+              label={pending ? "Importing…" : "Import recipe"}
+              type="submit"
+              variant="primary"
+              disabled={pending}
+            />
           </div>
         </Stack>
       </form>
