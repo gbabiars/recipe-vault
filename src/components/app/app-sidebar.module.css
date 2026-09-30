@@ -28,8 +28,7 @@
 }
 
 .link,
-.signOut {
-  display: block;
+.accountMenuTrigger {
   width: 100%;
   padding: var(--space-100) var(--space-150);
   border-radius: var(--radius-100);
@@ -38,10 +37,34 @@
   text-decoration: none;
 }
 
+.link {
+  display: block;
+}
+
+.accountMenuTrigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-100);
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
 .link:hover,
-.signOut:hover {
+.accountMenuTrigger:hover,
+.accountMenuTrigger[aria-expanded="true"] {
   background: var(--color-background-surface-hover);
   color: var(--color-text-primary);
+}
+
+.accountName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .active {
@@ -56,11 +79,8 @@
   padding-top: var(--space-200);
 }
 
-.signOut {
-  border: 0;
-  background: transparent;
-  text-decoration: underline;
-  cursor: pointer;
+.accountMenuPopup.accountMenuPopup {
+  width: var(--anchor-width);
 }
 
 .mobileNavigation {
@@ -107,7 +127,7 @@
 .iconButton:focus-visible,
 .link:focus-visible,
 .brand:focus-visible,
-.signOut:focus-visible {
+.accountMenuTrigger:focus-visible {
   outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
 }

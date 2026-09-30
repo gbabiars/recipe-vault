@@ -5,9 +5,10 @@ Clerk, and Supabase. Every authenticated Clerk user receives an isolated vault;
 the application has no public recipes, sharing, or cross-user access.
 
 Private pages show a sidebar at 768px and wider. Below 768px, a Recipe Vault
-title bar opens a left navigation drawer. Both contain Recipes, Settings, and
-Sign out. Settings at `/settings` links to Profile (`/user-profile`); sign-in
-remains a standalone page. The root URL redirects to `/recipes`.
+title bar opens a left navigation drawer. Both provide Recipes and an account
+menu with Settings and Sign out. Settings at `/settings` links to Profile
+(`/user-profile`); sign-in remains a standalone page. The root URL redirects to
+`/recipes`.
 
 ## Authentication and data access
 

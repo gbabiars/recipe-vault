@@ -4,7 +4,7 @@ import { AppSidebar } from "./app-sidebar";
 const meta = {
   title: "app/Navigation/Sidebar",
   component: AppSidebar,
-  args: { pathname: "/recipes", onSignOut: () => {} },
+  args: { pathname: "/recipes", userName: "Ada Lovelace", onSignOut: () => {} },
   parameters: {
     layout: "fullscreen",
   },

@@ -8,10 +8,11 @@ import styles from "./app-sidebar.module.css";
 
 type AppMobileNavigationProps = {
   pathname: string;
+  userName: string;
   onSignOut: () => void | Promise<void>;
 };
 
-export function AppMobileNavigation({ pathname, onSignOut }: AppMobileNavigationProps) {
+export function AppMobileNavigation({ pathname, userName, onSignOut }: AppMobileNavigationProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -43,6 +44,7 @@ export function AppMobileNavigation({ pathname, onSignOut }: AppMobileNavigation
             </div>
             <AppNavigation
               pathname={pathname}
+              userName={userName}
               onSelect={() => setOpen(false)}
               onSignOut={onSignOut}
             />
