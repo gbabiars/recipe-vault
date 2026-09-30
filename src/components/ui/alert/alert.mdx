@@ -1,0 +1,33 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./alert.stories";
+import { Alert } from "./alert";
+
+<Meta of={Stories} />
+
+# Alert
+
+## Purpose and choice
+
+Communicates a persistent status or important context within a page section. Use
+Alert for a titled message with supporting content; use a separately managed
+announcement when dynamic feedback needs to be announced.
+
+## Variants and composition
+
+The variants are default, danger, warning, and success. Each Alert is a named
+section with a level-three heading and medium Card padding. Descriptions accept
+React content, including links.
+
+## Content and accessibility
+
+Write a specific title and explain the meaning or next step in the description.
+The icon is decorative; the title and description carry the message. Alert does
+not create a live region, so callers should choose focus management or a
+separately managed announcement when dynamically adding essential feedback.
+
+## Stories
+
+<Canvas of={Stories.Default} />
+<Canvas of={Stories.Danger} />
+<Canvas of={Stories.Warning} />
+<Canvas of={Stories.Success} />
