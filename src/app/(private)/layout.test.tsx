@@ -1,4 +1,5 @@
 import { cleanup, render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import PrivateLayout from "./layout";
 
@@ -11,6 +12,9 @@ vi.mock("@/lib/auth/require-user", () => ({ requireUser }));
 vi.mock("@/lib/launchdarkly", () => ({ createLaunchDarklyUserConfig }));
 vi.mock("@/components/app/app-sidebar-client", () => ({
   AppSidebarClient: () => <div>Sidebar</div>,
+}));
+vi.mock("@/components/app/clerk-app-sidebar-provider", () => ({
+  ClerkAppSidebarProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 beforeEach(() => {
