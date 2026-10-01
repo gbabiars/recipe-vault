@@ -78,7 +78,7 @@ test("standalone checkbox supports controlled, read-only, disabled, invalid, and
         error="Check this setting."
       />
       <CheckboxInput name="locked" label="Locked" readOnly defaultChecked />
-      <CheckboxInput name="disabled" label="Disabled" disabled />
+      <CheckboxInput name="disabled" label="Disabled" disabled helpText="This setting is locked." />
       <CheckboxInput name="mixed" label="Mixed" indeterminate visuallyHiddenLabel />
     </>,
   );
@@ -94,9 +94,13 @@ test("standalone checkbox supports controlled, read-only, disabled, invalid, and
   expect(screen.getByRole("checkbox", { name: "Locked" }).getAttribute("aria-checked")).toBe(
     "true",
   );
-  expect(screen.getByRole("checkbox", { name: "Disabled" }).hasAttribute("data-disabled")).toBe(
-    true,
-  );
+  const disabled = screen.getByRole("checkbox", {
+    name: "Disabled",
+    description: "This setting is locked.",
+  });
+  expect(disabled.getAttribute("aria-disabled")).toBe("true");
+  expect(screen.getByText("This setting is locked.").hasAttribute("aria-disabled")).toBe(true);
+  expect(disabled.hasAttribute("data-disabled")).toBe(true);
   expect(screen.getByRole("checkbox", { name: "Mixed" }).getAttribute("aria-checked")).toBe(
     "mixed",
   );

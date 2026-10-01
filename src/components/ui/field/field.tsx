@@ -58,6 +58,7 @@ export const FieldDescription = React.forwardRef<HTMLParagraphElement, FieldDesc
       <BaseField.Description
         {...props}
         ref={ref}
+        render={(renderProps, state) => <p {...renderProps} aria-disabled={state.disabled} />}
         className={
           typeof className === "function"
             ? (state) => cn(styles.description, className(state))

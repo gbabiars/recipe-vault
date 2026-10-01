@@ -55,5 +55,10 @@ export const HiddenLabel: Story = {
 };
 
 export const Disabled: Story = {
-  args: { disabled: true, required: true, defaultValue: "Tomato soup" },
+  args: {
+    disabled: true,
+    required: true,
+    defaultValue: "Tomato soup",
+    helpText: "This title is locked for editing.",
+  },
 };

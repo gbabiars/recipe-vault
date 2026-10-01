@@ -175,7 +175,13 @@ export const MultipleAsyncCreatable: Story = {
   },
 };
 export const Disabled: Story = {
-  args: { options: choices, disabled: true, required: true, defaultValue: "vegan" },
+  args: {
+    options: choices,
+    disabled: true,
+    required: true,
+    defaultValue: "vegan",
+    helpText: "Tag selection is locked.",
+  },
 };
 export const Required: Story = {
   render: (args) => (
