@@ -1,5 +1,6 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import type { ReactElement, ReactNode } from "react";
+import type { ComponentProps } from "react";
+import { userEvent } from "vitest/browser";
 import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
 
 const { listMock } = vi.hoisted(() => ({
@@ -15,26 +16,10 @@ vi.mock("next/form", () => ({
     action,
     scroll: _scroll,
     ...props
-  }: React.ComponentProps<"form"> & { scroll?: boolean }) => <form action={action} {...props} />,
+  }: ComponentProps<"form"> & { scroll?: boolean }) => <form action={action} {...props} />,
 }));
 vi.mock("@/lib/recipes", () => ({
   getRecipeService: async () => ({ list: listMock }),
-}));
-vi.mock("@/components/ui/dropdown-menu", () => ({
-  DropdownMenu: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  DropdownMenuTrigger: ({ render }: { render: ReactElement }) => render,
-  DropdownMenuPopup: ({ children }: { children: ReactNode }) => <div role="menu">{children}</div>,
-  DropdownMenuLinkItem: ({
-    render,
-    children,
-  }: {
-    render: ReactElement<{ href: string }>;
-    children: ReactNode;
-  }) => (
-    <a href={render.props.href} role="menuitem">
-      {children}
-    </a>
-  ),
 }));
 
 beforeAll(async () => {
@@ -81,11 +66,21 @@ test("keeps website import available in the recipe menu", async () => {
   const page = await RecipesPage({ searchParams: Promise.resolve({}) });
   render(page);
 
-  expect(screen.getByRole("button", { name: "Add a recipe" })).toBeTruthy();
+  const trigger = screen.getByRole("button", { name: "Add a recipe" });
+  expect(screen.queryByRole("menu")).toBeNull();
+
+  await userEvent.click(trigger);
+
+  expect(await screen.findByRole("menu")).toBeTruthy();
   expect(screen.getByRole("menuitem", { name: "Create manually" }).getAttribute("href")).toBe(
     "/recipes/new",
   );
   expect(screen.getByRole("menuitem", { name: "Import from a website" }).getAttribute("href")).toBe(
     "/recipes/import",
   );
+
+  await userEvent.keyboard("{Escape}");
+
+  await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+  expect(document.activeElement).toBe(trigger);
 });
