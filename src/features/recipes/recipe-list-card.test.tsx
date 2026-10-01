@@ -1,6 +1,7 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
+import { afterEach, expect, test } from "vitest";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
+import { RecipeListCard } from "./recipe-list-card";
 
 const recipe: RecipeSummary = {
   id: "tomato-soup",
@@ -13,18 +14,7 @@ const recipe: RecipeSummary = {
   updatedAt: "2026-09-15T12:00:00.000Z",
 };
 
-let RecipeListCard: typeof import("./recipe-list-card").RecipeListCard;
-
-beforeAll(async () => {
-  vi.stubGlobal("process", { env: {} });
-  RecipeListCard = (await import("./recipe-list-card")).RecipeListCard;
-});
-
 afterEach(cleanup);
-
-afterAll(() => {
-  vi.unstubAllGlobals();
-});
 
 test("shows recipe details in a linked list item", () => {
   render(
