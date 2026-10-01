@@ -1,10 +1,8 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { render, screen, within } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
 import ImportRecipePage from "./page";
 
 vi.mock("@/lib/auth/require-user", () => ({ requireUser: async () => ({ id: "user-1" }) }));
-
-afterEach(cleanup);
 
 test("shows the import form with a recipes breadcrumb", async () => {
   render(await ImportRecipePage());

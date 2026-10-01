@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
 import { AppSidebarStateProvider, type AppSidebarUser } from "./app-sidebar-context";
 import { AppSidebarClient } from "./app-sidebar-client";
 
@@ -14,10 +14,6 @@ function renderSidebar(user: AppSidebarUser | null) {
 
   return { onSignOut };
 }
-
-afterEach(() => {
-  cleanup();
-});
 
 test("client sidebar shows the account name and calls the provided sign-out action", () => {
   const { onSignOut } = renderSidebar({ fullName: "Ada Lovelace", username: "ada" });

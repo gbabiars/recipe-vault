@@ -1,5 +1,5 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { render, screen, within } from "@testing-library/react";
+import { expect, test } from "vitest";
 import type { Recipe } from "@/lib/db/recipe-repository";
 import {
   RecipeDeleteCard,
@@ -28,8 +28,6 @@ const recipe: Recipe = {
   createdAt: "2026-09-01T12:00:00.000Z",
   updatedAt: "2026-09-01T12:00:00.000Z",
 };
-
-afterEach(cleanup);
 
 test("details render metadata, source, and labels, including zero servings", () => {
   const { container } = render(<RecipeDetailsCard recipe={recipe} />);

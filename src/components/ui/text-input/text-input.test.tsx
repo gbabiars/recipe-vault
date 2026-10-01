@@ -1,12 +1,10 @@
 import * as React from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
 
 import "../../../app/globals.css";
 import { TextInput } from "./text-input";
 import styles from "./text-input.module.css";
-
-afterEach(cleanup);
 
 test("associates its label and help text and submits an uncontrolled value", () => {
   const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => {

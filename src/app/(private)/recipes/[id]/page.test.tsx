@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
 import type { Recipe } from "@/lib/db/recipe-repository";
 import RecipePage from "./page";
 
@@ -23,8 +23,6 @@ vi.mock("@/lib/recipes", () => ({
 vi.mock("@/features/recipes/actions", () => ({
   deleteRecipeAction: async () => ({ errors: {} }),
 }));
-
-afterEach(cleanup);
 
 test("shows cards in order with Notes when present", async () => {
   render(await RecipePage({ params: Promise.resolve({ id: recipe.id }) }));

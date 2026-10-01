@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "vitest/browser";
 import { afterEach, expect, test, vi } from "vitest";
 import { TagFilter, loadOwnedTags } from "./tag-filter";
@@ -12,7 +12,6 @@ const fetchMock = vi.fn(async (input: URL) => {
 });
 
 afterEach(() => {
-  cleanup();
   vi.unstubAllGlobals();
   fetchMock.mockClear();
 });

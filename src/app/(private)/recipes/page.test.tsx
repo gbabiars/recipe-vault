@@ -1,7 +1,7 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import type { ComponentProps } from "react";
 import { userEvent } from "vitest/browser";
-import { afterEach, expect, test, vi } from "vitest";
+import { expect, test, vi } from "vitest";
 import RecipesPage from "./page";
 
 const { listMock } = vi.hoisted(() => ({
@@ -20,8 +20,6 @@ vi.mock("next/form", () => ({
 vi.mock("@/lib/recipes", () => ({
   getRecipeService: async () => ({ list: listMock }),
 }));
-
-afterEach(cleanup);
 
 test("ignores a saved dietary filter and preserves search and repeated tag values", async () => {
   const page = await RecipesPage({

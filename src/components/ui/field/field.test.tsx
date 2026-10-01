@@ -1,10 +1,8 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
 
 import { Field, FieldDescription, FieldError, FieldLabel } from "./field";
 import { Field as BaseField } from "@base-ui/react/field";
-
-afterEach(cleanup);
 
 test("connects the label and description to the textarea", () => {
   render(

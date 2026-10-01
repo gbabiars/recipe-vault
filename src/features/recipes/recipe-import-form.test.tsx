@@ -1,12 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
 import {
   RecipeImportForm,
   type RecipeImportAction,
   type RecipeImportFormState,
 } from "./recipe-import-form";
-
-afterEach(cleanup);
 
 test("requires a valid website URL using native URL validation", () => {
   const importAction = vi.fn<RecipeImportAction>(async () => ({ errors: {} }));

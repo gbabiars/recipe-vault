@@ -1,11 +1,9 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
 import { AppBrand } from "./app-brand";
 import { AppNavLink } from "./app-nav-link";
 import { AppSidebar } from "./app-sidebar";
 import styles from "./app-sidebar.module.css";
-
-afterEach(cleanup);
 
 test("brand links to recipes and nav links expose active and current states separately", () => {
   render(
