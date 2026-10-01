@@ -6,6 +6,15 @@ import "../../../app/globals.css";
 import { TextInput } from "./text-input";
 import styles from "./text-input.module.css";
 
+function colorForToken(token: string) {
+  const element = document.createElement("span");
+  element.style.color = `var(${token})`;
+  document.body.append(element);
+  const color = window.getComputedStyle(element).color;
+  element.remove();
+  return color;
+}
+
 test("associates its label and help text and submits an uncontrolled value", () => {
   const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -28,6 +37,7 @@ test("associates its label and help text and submits an uncontrolled value", () 
     description: "A name to remember",
   }) as HTMLInputElement;
   expect(input.value).toBe("Tomato soup");
+  expect(input.labels?.[0]?.querySelector('[aria-hidden="true"]')).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
   expect(onSubmit).toHaveReturnedWith({ title: "Tomato soup" });
 });
@@ -154,6 +164,7 @@ test("keeps a visually hidden label accessible and separates wrapper and input s
     <TextInput
       label="Search recipes"
       visuallyHiddenLabel
+      required
       className="field-custom"
       style={{ marginTop: 8 }}
       inputClassName="input-custom"
@@ -163,8 +174,30 @@ test("keeps a visually hidden label accessible and separates wrapper and input s
   const input = screen.getByRole("textbox", { name: "Search recipes" });
   const label = screen.getByText("Search recipes");
   expect(label.classList.contains("visually-hidden")).toBe(true);
+  expect(label.querySelector('[aria-hidden="true"]')?.textContent).toBe("*");
   expect(input.classList.contains("input-custom")).toBe(true);
   expect(input.parentElement?.classList.contains("field-custom")).toBe(true);
   expect(input.parentElement?.style.marginTop).toBe("8px");
   expect((input as HTMLInputElement).style.width).toBe("120px");
+});
+
+test("marks required labels decoratively and uses the disabled text token when disabled", () => {
+  const { rerender } = render(<TextInput label="Title" required />);
+  const input = screen.getByRole("textbox", { name: "Title" }) as HTMLInputElement;
+  const enabledMarker = input.labels?.[0]?.querySelector("[aria-hidden='true']");
+
+  expect(input.required).toBe(true);
+  expect(enabledMarker?.textContent).toBe("*");
+  expect(enabledMarker?.getAttribute("aria-hidden")).toBe("true");
+  expect(window.getComputedStyle(enabledMarker!).color).toBe(colorForToken("--color-error-text"));
+
+  rerender(<TextInput label="Title" required disabled />);
+  const disabledMarker = input.labels?.[0]?.querySelector("[aria-hidden='true']");
+  expect(disabledMarker?.hasAttribute("data-disabled")).toBe(true);
+  expect(window.getComputedStyle(disabledMarker!).color).toBe(
+    colorForToken("--color-text-disabled"),
+  );
+
+  rerender(<TextInput label="Title" />);
+  expect(input.labels?.[0]?.querySelector("[aria-hidden='true']")).toBeNull();
 });

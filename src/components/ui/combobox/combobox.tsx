@@ -5,6 +5,7 @@ import { Combobox } from "@base-ui/react/combobox";
 import { Check, Plus, X } from "lucide-react";
 import { cn } from "cn";
 import { Field, FieldDescription, FieldError, FieldLabel } from "../field";
+import { RequiredIndicator } from "../field/required-indicator";
 import styles from "./combobox.module.css";
 
 export type ComboboxOption = { value: string; label: string };
@@ -206,6 +207,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
     <Field disabled={disabled} invalid={hasError || invalid || creationError} className={className}>
       <FieldLabel id={labelId} htmlFor={inputId}>
         {label}
+        {required && <RequiredIndicator disabled={disabled} />}
       </FieldLabel>
       <Combobox.Root<ComboboxOption, typeof multiple>
         name={name}

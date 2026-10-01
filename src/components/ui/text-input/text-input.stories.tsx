@@ -51,9 +51,9 @@ export const ExternalError: Story = {
 };
 
 export const HiddenLabel: Story = {
-  args: { label: "Search recipes", visuallyHiddenLabel: true, type: "search" },
+  args: { label: "Search recipes", visuallyHiddenLabel: true, type: "search", required: true },
 };
 
 export const Disabled: Story = {
-  args: { disabled: true, defaultValue: "Tomato soup" },
+  args: { disabled: true, required: true, defaultValue: "Tomato soup" },
 };

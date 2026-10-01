@@ -23,7 +23,7 @@ Remote choices normally load only for nonempty queries. Set `loadOnEmpty` with `
 
 For controlled use, pass `value` and `onValueChange`; otherwise pass `defaultValue`. Single selection uses `string | null`; multiple selection uses `string[]`. The field submits one value under `name` in single mode and repeated values in multiple mode. `createOption` only adds the value to the local selection. It must validate and normalize domain values; persistence belongs to the caller.
 
-Creation is offered for nonempty input without an equivalent known or selected option. A null or invalid creation result shows an error. Search loading, empty results, and failures have distinct messages. Pass `error` for an external field error and `required` or `disabled` to match form behavior.
+Creation is offered for nonempty input without an equivalent known or selected option. A null or invalid creation result shows an error. Search loading, empty results, and failures have distinct messages. When `required` is set, the label includes a decorative `*`; required remains the accessible form signal. Pass `error` for an external field error and `required` or `disabled` to match form behavior.
 
 <Canvas of={Stories.SingleLocal} />
 <Canvas of={Stories.MultipleAsyncCreatable} />

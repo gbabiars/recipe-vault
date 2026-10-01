@@ -22,6 +22,21 @@ export const Standalone: Story = {
   args: { value: "yes", helpText: "Occasional recipe news." },
 };
 
+export const Required: Story = {
+  args: {
+    label: "I agree to the recipe guidelines",
+    name: "agreement",
+    value: "yes",
+    required: true,
+    helpText: "Confirm before saving this recipe.",
+  },
+};
+
 export const Disabled: Story = {
-  args: { defaultChecked: true, disabled: true, helpText: "This preference is locked." },
+  args: {
+    defaultChecked: true,
+    disabled: true,
+    required: true,
+    helpText: "This preference is locked.",
+  },
 };

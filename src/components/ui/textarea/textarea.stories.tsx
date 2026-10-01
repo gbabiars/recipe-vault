@@ -48,9 +48,9 @@ export const ExternalError: Story = {
 };
 
 export const HiddenLabel: Story = {
-  args: { visuallyHiddenLabel: true },
+  args: { visuallyHiddenLabel: true, required: true },
 };
 
 export const Disabled: Story = {
-  args: { disabled: true, defaultValue: "Add fresh basil before serving." },
+  args: { disabled: true, required: true, defaultValue: "Add fresh basil before serving." },
 };

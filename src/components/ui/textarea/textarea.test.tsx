@@ -29,6 +29,7 @@ test("associates its label and help text and submits an uncontrolled value", () 
   }) as HTMLTextAreaElement;
   expect(textarea.value).toBe("Add fresh basil");
   expect(textarea.rows).toBe(3);
+  expect(screen.queryByText("*", { exact: true })).toBeNull();
   expect(window.getComputedStyle(textarea).resize).toBe("vertical");
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
   expect(onSubmit).toHaveReturnedWith({ notes: "Add fresh basil" });
@@ -112,6 +113,10 @@ test("keeps native required validation and read-only and disabled behavior", () 
     </form>,
   );
   const textarea = screen.getByRole("textbox", { name: "Notes" }) as HTMLTextAreaElement;
+  const marker = textarea.labels?.[0]?.querySelector("[aria-hidden='true']");
+  expect(textarea.required).toBe(true);
+  expect(marker?.textContent).toBe("*");
+  expect(marker?.getAttribute("aria-hidden")).toBe("true");
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
   expect(textarea.validity.valueMissing).toBe(true);
   expect(onSubmit).not.toHaveBeenCalled();
@@ -131,6 +136,7 @@ test("keeps a visually hidden label accessible and separates wrapper and control
     <Textarea
       label="Private notes"
       visuallyHiddenLabel
+      required
       className="field-custom"
       style={{ marginTop: 8 }}
       textareaClassName="textarea-custom"
@@ -140,6 +146,7 @@ test("keeps a visually hidden label accessible and separates wrapper and control
   const textarea = screen.getByRole("textbox", { name: "Private notes" }) as HTMLTextAreaElement;
   const label = screen.getByText("Private notes");
   expect(label.classList.contains("visually-hidden")).toBe(true);
+  expect(label.querySelector('[aria-hidden="true"]')?.textContent).toBe("*");
   expect(textarea.classList.contains("textarea-custom")).toBe(true);
   expect(textarea.parentElement?.classList.contains("field-custom")).toBe(true);
   expect(textarea.parentElement?.style.marginTop).toBe("8px");
