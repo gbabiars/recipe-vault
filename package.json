@@ -39,6 +39,7 @@
     "@supabase/supabase-js": "^2.116.0",
     "ai": "^7.0.119",
     "cn": "^0.3.0",
+    "launchdarkly-react-client-sdk": "^3.9.4",
     "lucide-react": "^1.47.0",
     "mcp-handler": "^1.1.0",
     "next": "^16.3.5",

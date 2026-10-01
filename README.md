@@ -101,7 +101,8 @@ hosting, rollout, and verification instructions.
 1. Use Node.js 24 or newer and pnpm 11.23.0.
 2. Run `pnpm install`.
 3. Copy `.env.example` to `.env.local` and add the remote Supabase and Clerk
-   values. `pnpm dev` uses this remote database by default.
+   values. Add LaunchDarkly's client-side ID and server-side SDK key to enable
+   feature flags. `pnpm dev` uses this remote database by default.
 4. To use a local Supabase database instead, create an ignored `.env.local-db`
    file containing local replacements for all three Supabase variables below.
    Obtain the values after `pnpm supabase:start` with `pnpm supabase:status`.
@@ -154,9 +155,16 @@ composition guidance, including page headers, fields, actions, cards, and lists.
 
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and
 `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` are public client configuration.
-`CLERK_SECRET_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are server-only. Never add a
-`NEXT_PUBLIC_` prefix to either secret, expose them to an MCP client, or log
-them.
+`NEXT_PUBLIC_LD_CLIENT_ID` is the public LaunchDarkly client-side ID. Private
+pages use the Clerk user ID as the LaunchDarkly user context key, without sending
+the user's name or email. The server uses `LD_SDK_KEY` to sign that key for
+LaunchDarkly secure mode; keep it server-only and enable secure mode in each
+LaunchDarkly environment. Make each flag available to client-side SDKs before
+reading it in the browser.
+
+`CLERK_SECRET_KEY`, `LD_SDK_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are
+server-only. Never add a `NEXT_PUBLIC_` prefix to these secrets, expose them to
+an MCP client, or log them.
 
 ## Error monitoring
 
@@ -183,16 +191,17 @@ The recipes menu always offers manual recipe creation and website import.
 
 ## Architecture
 
-| Location               | Responsibility                                                    |
-| ---------------------- | ----------------------------------------------------------------- |
-| `src/app`              | Thin pages, API routes, OAuth metadata, and MCP route handlers.   |
-| `src/components/app`   | Shared private sidebar, navigation, and brand.                    |
-| `src/features/recipes` | Recipe UI and feature composition.                                |
-| `src/lib/auth`         | Clerk identity, OAuth verification, and Supabase clients.         |
-| `src/lib/db`           | Recipe persistence and Supabase access.                           |
-| `src/lib/recipes`      | Ownership-aware domain services.                                  |
-| `src/lib/validation`   | Shared input schemas.                                             |
-| `src/mcp`              | MCP transport composition, principals, scopes, and tool adapters. |
+| Location                  | Responsibility                                                    |
+| ------------------------- | ----------------------------------------------------------------- |
+| `src/app`                 | Thin pages, API routes, OAuth metadata, and MCP route handlers.   |
+| `src/components/app`      | Shared private sidebar, navigation, brand, and providers.         |
+| `src/features/recipes`    | Recipe UI and feature composition.                                |
+| `src/lib/auth`            | Clerk identity, OAuth verification, and Supabase clients.         |
+| `src/lib/db`              | Recipe persistence and Supabase access.                           |
+| `src/lib/launchdarkly.ts` | Server-side LaunchDarkly context signing.                         |
+| `src/lib/recipes`         | Ownership-aware domain services.                                  |
+| `src/lib/validation`      | Shared input schemas.                                             |
+| `src/mcp`                 | MCP transport composition, principals, scopes, and tool adapters. |
 
 ## Design token follow-up
 

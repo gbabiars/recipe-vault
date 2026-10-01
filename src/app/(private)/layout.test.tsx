@@ -2,11 +2,13 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import PrivateLayout from "./layout";
 
-const { requireUser } = vi.hoisted(() => ({
+const { requireUser, createLaunchDarklyUserConfig } = vi.hoisted(() => ({
   requireUser: vi.fn(),
+  createLaunchDarklyUserConfig: vi.fn(() => null),
 }));
 
 vi.mock("@/lib/auth/require-user", () => ({ requireUser }));
+vi.mock("@/lib/launchdarkly", () => ({ createLaunchDarklyUserConfig }));
 vi.mock("@/components/app/app-sidebar-client", () => ({
   AppSidebarClient: () => <div>Sidebar</div>,
 }));
@@ -26,4 +28,5 @@ test("requires an authenticated user before rendering the private app", async ()
   expect(screen.getByText("Recipes")).toBeInTheDocument();
   expect(screen.getByText("Sidebar")).toBeInTheDocument();
   expect(requireUser).toHaveBeenCalledOnce();
+  expect(createLaunchDarklyUserConfig).toHaveBeenCalledWith("user_ada");
 });
