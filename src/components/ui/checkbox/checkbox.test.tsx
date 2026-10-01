@@ -1,10 +1,8 @@
 import * as React from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
 
 import { CheckboxGroup, CheckboxGroupItem, CheckboxInput } from "./checkbox";
-
-afterEach(cleanup);
 
 test("standalone checkbox owns its label, help text, and form value", () => {
   const inputRef = React.createRef<HTMLInputElement>();

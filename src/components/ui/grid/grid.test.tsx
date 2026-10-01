@@ -1,12 +1,10 @@
 import * as React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { expect, test } from "vitest";
 
 import "../../../app/globals.css";
 
 import { Grid, GridItem } from "./grid";
-
-afterEach(cleanup);
 
 test("renders semantic direct children and forwards element props and refs", () => {
   const ref = React.createRef<HTMLUListElement>();

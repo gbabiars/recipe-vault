@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { RecipeForm } from "./recipe-form";
 import { parseRecipeFormData } from "./recipe-form-data";
@@ -6,7 +6,6 @@ import { parseRecipeFormData } from "./recipe-form-data";
 const saveRecipeAction = vi.fn();
 
 afterEach(() => {
-  cleanup();
   saveRecipeAction.mockReset();
 });
 

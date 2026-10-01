@@ -1,11 +1,9 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { expect, test } from "vitest";
 
 import "../../../app/globals.css";
 
 import { PageContent, PageHeader, PageLayout } from "./page-layout";
-
-afterEach(cleanup);
 
 test("places the header and content 1.5rem apart", () => {
   render(

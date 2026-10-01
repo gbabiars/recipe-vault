@@ -1,8 +1,6 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { expect, test } from "vitest";
 import SettingsPage from "./page";
-
-afterEach(cleanup);
 
 test("renders settings headings and destination links", () => {
   render(<SettingsPage />);

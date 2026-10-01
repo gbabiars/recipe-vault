@@ -1,11 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { DeleteRecipeForm } from "./delete-recipe-form";
 
 const deleteRecipeAction = vi.fn();
 
 afterEach(() => {
-  cleanup();
   deleteRecipeAction.mockReset();
 });
 

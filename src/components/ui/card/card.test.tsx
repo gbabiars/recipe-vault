@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import Link from "next/link";
 import { userEvent } from "vitest/browser";
 import { afterEach, expect, test, vi } from "vitest";
@@ -9,7 +9,6 @@ import { Card } from "./card";
 import styles from "./card.module.css";
 
 afterEach(() => {
-  cleanup();
   document.documentElement.removeAttribute("data-theme");
 });
 

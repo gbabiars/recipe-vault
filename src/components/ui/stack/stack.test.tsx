@@ -1,12 +1,10 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { expect, test } from "vitest";
 
 import "../../../app/globals.css";
 
 import { Stack, type StackGap, type StackPadding } from "./stack";
 import styles from "./stack.module.css";
-
-afterEach(cleanup);
 
 const paddings = [
   ["0", 0],

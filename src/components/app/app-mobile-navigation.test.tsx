@@ -1,8 +1,6 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
 import { AppMobileNavigation } from "./app-mobile-navigation";
-
-afterEach(cleanup);
 
 test("mobile account menu closes the drawer when signing out", async () => {
   const onSignOut = vi.fn();

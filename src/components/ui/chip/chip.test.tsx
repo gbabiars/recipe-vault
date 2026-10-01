@@ -1,10 +1,8 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
 
 import { Chip } from "./chip";
 import styles from "./chip.module.css";
-
-afterEach(cleanup);
 
 test("renders a span with its content", () => {
   render(<Chip>weeknight</Chip>);

@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import PrivateLayout from "./layout";
@@ -22,7 +22,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  cleanup();
   vi.resetAllMocks();
 });
 

@@ -1,5 +1,5 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { render, screen, within } from "@testing-library/react";
+import { expect, test } from "vitest";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
 import { RecipeListCard } from "./recipe-list-card";
 
@@ -13,8 +13,6 @@ const recipe: RecipeSummary = {
   createdAt: "2026-09-01T12:00:00.000Z",
   updatedAt: "2026-09-15T12:00:00.000Z",
 };
-
-afterEach(cleanup);
 
 test("shows recipe details in a linked list item", () => {
   render(

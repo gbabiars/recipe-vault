@@ -52,6 +52,7 @@ export default defineConfig({
           name: "components",
           include: ["src/**/*.test.tsx"],
           fileParallelism: false,
+          setupFiles: [path.join(dirname, "vitest.setup.ts")],
           browser: {
             enabled: true,
             headless: true,

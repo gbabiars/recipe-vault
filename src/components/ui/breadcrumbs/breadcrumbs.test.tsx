@@ -1,11 +1,9 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { expect, test } from "vitest";
 
 import "../../../app/globals.css";
 
 import { Breadcrumbs, BreadcrumbsItem } from "./breadcrumbs";
-
-afterEach(cleanup);
 
 test("renders a labeled navigation landmark with an ordered list and current page", () => {
   render(

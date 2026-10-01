@@ -1,11 +1,9 @@
 import type { SVGProps } from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
 
 import { IconButton } from "./icon-button";
 import styles from "./button.module.css";
-
-afterEach(cleanup);
 
 function TestIcon(props: SVGProps<SVGSVGElement>) {
   return <svg {...props} data-testid="icon-button-icon" />;

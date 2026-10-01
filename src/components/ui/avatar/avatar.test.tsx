@@ -1,12 +1,10 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { expect, test } from "vitest";
 
 import "../../../app/globals.css";
 
 import { Avatar } from "./avatar";
 import styles from "./avatar.module.css";
-
-afterEach(cleanup);
 
 test("renders uppercase first and last initials with the full name as its accessible name", () => {
   render(<Avatar name="Ada Lovelace" />);

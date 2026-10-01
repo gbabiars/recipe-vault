@@ -1,12 +1,10 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { expect, test } from "vitest";
 
 import "../../../app/globals.css";
 
 import { Heading } from "./heading";
 import styles from "./heading.module.css";
-
-afterEach(cleanup);
 
 test("renders an h1 with level-1 styling by default", () => {
   render(<Heading>Recipe Vault</Heading>);
