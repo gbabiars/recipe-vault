@@ -1,35 +1,26 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterAll, afterEach, beforeAll, beforeEach, expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
+import { AppSidebarStateProvider, type AppSidebarUser } from "./app-sidebar-context";
+import { AppSidebarClient } from "./app-sidebar-client";
 
-const { signOut, useUser } = vi.hoisted(() => ({ signOut: vi.fn(), useUser: vi.fn() }));
+function renderSidebar(user: AppSidebarUser | null) {
+  const onSignOut = vi.fn();
 
-vi.mock("@clerk/nextjs", () => ({ useClerk: () => ({ signOut }), useUser }));
-vi.mock("next/navigation", () => ({ default: {}, usePathname: () => "/settings" }));
+  render(
+    <AppSidebarStateProvider value={{ pathname: "/settings", user, onSignOut }}>
+      <AppSidebarClient />
+    </AppSidebarStateProvider>,
+  );
 
-let AppSidebarClient: typeof import("./app-sidebar-client").AppSidebarClient;
-
-beforeAll(async () => {
-  vi.stubGlobal("process", { env: {} });
-  ({ AppSidebarClient } = await import("./app-sidebar-client"));
-});
-
-beforeEach(() => {
-  useUser.mockReturnValue({
-    isLoaded: true,
-    user: { fullName: "Ada Lovelace", username: "ada" },
-  });
-});
-
-afterAll(() => vi.unstubAllGlobals());
+  return { onSignOut };
+}
 
 afterEach(() => {
   cleanup();
-  signOut.mockClear();
-  useUser.mockReset();
 });
 
-test("client sidebar shows the Clerk user and signs out to sign-in", () => {
-  render(<AppSidebarClient />);
+test("client sidebar shows the account name and calls the provided sign-out action", () => {
+  const { onSignOut } = renderSidebar({ fullName: "Ada Lovelace", username: "ada" });
 
   fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
   const accountMenu = screen.getByRole("button", { name: "Ada Lovelace" });
@@ -37,25 +28,18 @@ test("client sidebar shows the Clerk user and signs out to sign-in", () => {
   fireEvent.click(accountMenu);
   fireEvent.click(screen.getByRole("menuitem", { name: "Sign out" }));
 
-  expect(signOut).toHaveBeenCalledWith({ redirectUrl: "/sign-in" });
+  expect(onSignOut).toHaveBeenCalledOnce();
 });
 
 test("client sidebar falls back to the username when the full name is blank", () => {
-  useUser.mockReturnValue({
-    isLoaded: true,
-    user: { fullName: "   ", username: "  ada  " },
-  });
-
-  render(<AppSidebarClient />);
+  renderSidebar({ fullName: "   ", username: "  ada  " });
 
   fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
   expect(screen.getByRole("button", { name: "ada" })).toBeInTheDocument();
 });
 
-test("client sidebar uses Account while Clerk is loading without a user name", () => {
-  useUser.mockReturnValue({ isLoaded: false, user: null });
-
-  render(<AppSidebarClient />);
+test("client sidebar uses Account when no user is available", () => {
+  renderSidebar(null);
 
   fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
   expect(screen.getByRole("button", { name: "Account" })).toBeInTheDocument();

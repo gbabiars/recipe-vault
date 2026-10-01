@@ -1,17 +1,12 @@
 "use client";
 
-import { useClerk, useUser } from "@clerk/nextjs";
-import { usePathname } from "next/navigation";
+import { useAppSidebarState } from "./app-sidebar-context";
 import { AppSidebar } from "./app-sidebar";
 import { AppMobileNavigation } from "./app-mobile-navigation";
 
 export function AppSidebarClient() {
-  const pathname = usePathname();
-  const { signOut } = useClerk();
-  const { user } = useUser();
+  const { pathname, user, onSignOut } = useAppSidebarState();
   const userName = user?.fullName?.trim() || user?.username?.trim() || "Account";
-
-  const onSignOut = () => signOut({ redirectUrl: "/sign-in" });
 
   return (
     <>
