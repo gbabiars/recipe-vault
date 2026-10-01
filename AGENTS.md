@@ -21,6 +21,11 @@ foundation deployable without adding product behavior that has not been requeste
   but it does not replace this required formatting step.
 - Add or update focused tests when changing observable behavior. Colocate
   component tests with their components; put other tests in `tests/`.
+- Test UI interactions with the real components in Vitest's Playwright-backed
+  `components` browser project. Do not mock a UI component whose rendering or
+  interaction is under test; mock unrelated server or service boundaries.
+- Run a focused browser component test with
+  `pnpm exec vitest run --project components path/to/file.test.tsx`.
 - Do not hand-edit generated files such as `next-env.d.ts` or `.next/` output.
 
 ## Architecture
