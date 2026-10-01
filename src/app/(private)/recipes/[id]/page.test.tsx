@@ -1,8 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import type { Recipe } from "@/lib/db/recipe-repository";
-
-let RecipePage: typeof import("./page").default;
+import RecipePage from "./page";
 
 const recipe: Recipe = {
   id: "recipe-1",
@@ -25,16 +24,7 @@ vi.mock("@/features/recipes/actions", () => ({
   deleteRecipeAction: async () => ({ errors: {} }),
 }));
 
-beforeAll(async () => {
-  vi.stubGlobal("process", { env: {} });
-  RecipePage = (await import("./page")).default;
-});
-
 afterEach(cleanup);
-
-afterAll(() => {
-  vi.unstubAllGlobals();
-});
 
 test("shows cards in order with Notes when present", async () => {
   render(await RecipePage({ params: Promise.resolve({ id: recipe.id }) }));

@@ -1,14 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
-
-let AppMobileNavigation: typeof import("./app-mobile-navigation").AppMobileNavigation;
-
-beforeAll(async () => {
-  vi.stubGlobal("process", { env: {} });
-  ({ AppMobileNavigation } = await import("./app-mobile-navigation"));
-});
-
-afterAll(() => vi.unstubAllGlobals());
+import { afterEach, expect, test, vi } from "vitest";
+import { AppMobileNavigation } from "./app-mobile-navigation";
 
 afterEach(cleanup);
 

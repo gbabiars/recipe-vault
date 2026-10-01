@@ -1,19 +1,9 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
+import { AppBrand } from "./app-brand";
+import { AppNavLink } from "./app-nav-link";
+import { AppSidebar } from "./app-sidebar";
 import styles from "./app-sidebar.module.css";
-
-let AppBrand: typeof import("./app-brand").AppBrand;
-let AppNavLink: typeof import("./app-nav-link").AppNavLink;
-let AppSidebar: typeof import("./app-sidebar").AppSidebar;
-
-beforeAll(async () => {
-  vi.stubGlobal("process", { env: {} });
-  ({ AppBrand } = await import("./app-brand"));
-  ({ AppNavLink } = await import("./app-nav-link"));
-  ({ AppSidebar } = await import("./app-sidebar"));
-});
-
-afterAll(() => vi.unstubAllGlobals());
 
 afterEach(cleanup);
 

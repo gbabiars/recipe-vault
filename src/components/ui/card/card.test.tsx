@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import Link from "next/link";
 import { userEvent } from "vitest/browser";
-import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 
 import "../../../app/globals.css";
 
@@ -10,17 +11,6 @@ import styles from "./card.module.css";
 afterEach(() => {
   cleanup();
   document.documentElement.removeAttribute("data-theme");
-});
-
-let Link: typeof import("next/link").default;
-
-beforeAll(async () => {
-  vi.stubGlobal("process", { env: {} });
-  Link = (await import("next/link")).default;
-});
-
-afterAll(() => {
-  vi.unstubAllGlobals();
 });
 
 test("renders a div with the default card styling and medium padding", () => {
