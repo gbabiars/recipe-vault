@@ -52,5 +52,10 @@ export const HiddenLabel: Story = {
 };
 
 export const Disabled: Story = {
-  args: { disabled: true, required: true, defaultValue: "Add fresh basil before serving." },
+  args: {
+    disabled: true,
+    required: true,
+    defaultValue: "Add fresh basil before serving.",
+    helpText: "These notes are locked for editing.",
+  },
 };

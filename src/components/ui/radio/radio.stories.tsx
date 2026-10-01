@@ -30,8 +30,20 @@ export const Group: Story = {
 export const Disabled: Story = {
   args: { label: "Visibility" },
   render: () => (
-    <RadioGroup label="Visibility" name="visibility" defaultValue="private" disabled required>
-      <RadioGroupItem value="private" label="Private" />
+    <RadioGroup
+      label="Visibility"
+      name="visibility"
+      defaultValue="private"
+      disabled
+      required
+      helpText="Visibility cannot be changed right now."
+    >
+      <RadioGroupItem
+        value="private"
+        label="Private"
+        helpText="Only you can see this recipe."
+        disabled
+      />
       <RadioGroupItem value="shared" label="Shared" />
     </RadioGroup>
   ),

@@ -50,10 +50,16 @@ test("disables the textarea and styles the field parts", () => {
     </Field>,
   );
 
-  const input = screen.getByRole("textbox", { name: "Recipe title" }) as HTMLTextAreaElement;
+  const input = screen.getByRole("textbox", {
+    name: "Recipe title",
+    description: "Locked for editing.",
+  }) as HTMLTextAreaElement;
+  const description = screen.getByText("Locked for editing.");
+
   expect(input.disabled).toBe(true);
   expect(input.hasAttribute("data-disabled")).toBe(true);
-  expect(screen.getByText("Locked for editing.").hasAttribute("data-disabled")).toBe(true);
+  expect(description.hasAttribute("aria-disabled")).toBe(true);
+  expect(input.getAttribute("aria-describedby")).toBe(description.id);
 });
 
 test("exposes an external invalid state and its error message", () => {

@@ -36,3 +36,19 @@ export const Invalid: Story = {
     </CheckboxGroup>
   ),
 };
+
+export const Disabled: Story = {
+  args: { disabled: true, helpText: "Ingredient selection is locked." },
+  render: (args) => (
+    <CheckboxGroup {...args}>
+      <CheckboxGroupItem
+        value="basil"
+        label="Basil"
+        helpText="Fresh leaves."
+        defaultChecked
+        disabled
+      />
+      <CheckboxGroupItem value="parsley" label="Parsley" disabled />
+    </CheckboxGroup>
+  ),
+};
