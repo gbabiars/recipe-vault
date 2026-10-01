@@ -2,18 +2,13 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import type { ReactElement, ReactNode } from "react";
 import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
 
-const { listMock, websiteImportGateMock } = vi.hoisted(() => ({
+const { listMock } = vi.hoisted(() => ({
   listMock: vi.fn(async () => []),
-  websiteImportGateMock: vi.fn(() => true),
 }));
 
 let RecipesPage: typeof import("./page").default;
 
 vi.mock("@/lib/auth/require-user", () => ({ requireUser: async () => ({ id: "user-1" }) }));
-vi.mock("@statsig/react-bindings", () => ({
-  default: {},
-  useGateValue: websiteImportGateMock,
-}));
 vi.mock("next/form", () => ({
   __esModule: true,
   default: ({
@@ -82,7 +77,7 @@ test("ignores a saved dietary filter and preserves search and repeated tag value
   ).toBeTruthy();
 });
 
-test("gates website import in the recipe menu", async () => {
+test("keeps website import available in the recipe menu", async () => {
   const page = await RecipesPage({ searchParams: Promise.resolve({}) });
   render(page);
 
@@ -93,15 +88,4 @@ test("gates website import in the recipe menu", async () => {
   expect(screen.getByRole("menuitem", { name: "Import from a website" }).getAttribute("href")).toBe(
     "/recipes/import",
   );
-
-  cleanup();
-  websiteImportGateMock.mockReturnValue(false);
-  const disabledPage = await RecipesPage({ searchParams: Promise.resolve({}) });
-  render(disabledPage);
-
-  expect(screen.getByRole("button", { name: "Add a recipe" })).toBeTruthy();
-  expect(screen.getByRole("menuitem", { name: "Create manually" }).getAttribute("href")).toBe(
-    "/recipes/new",
-  );
-  expect(screen.queryByRole("menuitem", { name: "Import from a website" })).toBeNull();
 });

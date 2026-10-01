@@ -7,8 +7,6 @@ import "./preview.css";
 sb.mock(import("../src/features/recipes/actions.ts"), () => ({
   saveRecipeAction: fn(),
 }));
-sb.mock(import("@statsig/react-bindings"), { spy: true });
-
 const preview: Preview = {
   parameters: {
     docs: {
