@@ -13,7 +13,14 @@ const dirname =
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
   optimizeDeps: {
-    include: ["next/form", "@clerk/nextjs/server", "@supabase/supabase-js"],
+    include: [
+      "next/form",
+      "next/navigation",
+      "@clerk/nextjs",
+      "@clerk/nextjs/server",
+      "launchdarkly-react-client-sdk",
+      "@supabase/supabase-js",
+    ],
   },
   resolve: {
     alias: {
