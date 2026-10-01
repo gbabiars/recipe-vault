@@ -1,6 +1,7 @@
 import styles from "./layout.module.css";
 import type { ReactNode } from "react";
 import { AppSidebarClient } from "@/components/app/app-sidebar-client";
+import { ClerkAppSidebarProvider } from "@/components/app/clerk-app-sidebar-provider";
 import { LaunchDarklyProvider } from "@/components/app/launchdarkly-provider";
 import { requireUser } from "@/lib/auth/require-user";
 import { createLaunchDarklyUserConfig } from "@/lib/launchdarkly";
@@ -12,7 +13,9 @@ export default async function PrivateLayout({ children }: { children: ReactNode 
   return (
     <LaunchDarklyProvider config={launchDarklyConfig}>
       <div className={styles.privateLayout}>
-        <AppSidebarClient />
+        <ClerkAppSidebarProvider>
+          <AppSidebarClient />
+        </ClerkAppSidebarProvider>
         <main className={styles.appShell} id="main-content">
           {children}
         </main>
