@@ -177,23 +177,9 @@ release by default; set `SENTRY_RELEASE` during the build to use a different
 identifier, such as the deployed commit SHA. Sentry telemetry remains disabled
 for local development even when the public DSN is configured.
 
-## Feature gates
+## Recipe imports
 
-Set `NEXT_PUBLIC_STATSIG_CLIENT_KEY` before building and `STATSIG_SERVER_KEY`
-in the server environment. The client key is included in the browser bundle;
-the server key must remain private. The previous `STATSG_SECRET_KEY` spelling
-is accepted temporarily for existing deployments.
-
-The private layout bootstraps the browser Statsig client with server-evaluated
-values for the authenticated Clerk user ID. No email address, other Clerk
-profile fields, authentication tokens, or device stable ID are sent. Gate
-consumers can render without waiting for a browser initialization request.
-Account changes refresh values for the new user; while they update, gate
-consumers wait. On network failure, they use that user's cached values or
-closed gates. Feature components use `useGateValue`, including
-`Recipe_website_import`. Targeting and rollout
-rules are managed in the Statsig Console; these client gates do not replace
-authorization checks.
+The recipes menu always offers manual recipe creation and website import.
 
 ## Architecture
 
