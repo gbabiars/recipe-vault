@@ -13,6 +13,7 @@ import {
   Fieldset,
   FieldsetLegend,
 } from "../field";
+import { RequiredIndicator } from "../field/required-indicator";
 import styles from "../choice.module.css";
 
 type BaseCheckboxProps = React.ComponentPropsWithoutRef<typeof BaseCheckbox.Root>;
@@ -92,6 +93,7 @@ export const CheckboxInput = React.forwardRef<HTMLElement, CheckboxInputProps>(
       checkboxStyle,
       name,
       disabled,
+      required,
       ...checkboxProps
     },
     ref,
@@ -110,11 +112,15 @@ export const CheckboxInput = React.forwardRef<HTMLElement, CheckboxInputProps>(
         <FieldLabel className={visuallyHiddenLabel ? "visually-hidden" : undefined}>
           <CheckboxControl
             {...checkboxProps}
+            required={required}
             ref={ref}
             className={checkboxClassName}
             style={checkboxStyle}
           />
-          {label}
+          <span>
+            {label}
+            {required && <RequiredIndicator disabled={disabled} />}
+          </span>
         </FieldLabel>
         {helpText != null && <FieldDescription>{helpText}</FieldDescription>}
         <FieldError match={hasError ? true : undefined}>{hasError ? error : undefined}</FieldError>

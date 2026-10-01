@@ -1,0 +1,8 @@
+.requiredIndicator {
+  margin-inline-start: var(--space-025);
+  color: var(--color-error-text);
+}
+
+.requiredIndicator[data-disabled] {
+  color: var(--color-text-disabled);
+}

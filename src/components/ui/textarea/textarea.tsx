@@ -5,6 +5,7 @@ import { Field as BaseField } from "@base-ui/react/field";
 import { cn } from "cn";
 
 import { Field, FieldDescription, FieldError, FieldLabel } from "../field";
+import { RequiredIndicator } from "../field/required-indicator";
 import styles from "./textarea.module.css";
 
 type ControlProps = React.ComponentPropsWithoutRef<typeof BaseField.Control>;
@@ -38,6 +39,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(fun
     textareaStyle,
     name,
     disabled,
+    required,
     rows = 3,
     ...textareaProps
   },
@@ -56,9 +58,11 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(fun
     >
       <FieldLabel className={visuallyHiddenLabel ? "visually-hidden" : undefined}>
         {label}
+        {required && <RequiredIndicator disabled={disabled} />}
       </FieldLabel>
       <BaseField.Control
         {...({ ...textareaProps, rows } as ControlProps)}
+        required={required}
         ref={ref}
         render={<textarea />}
         className={cn(styles.textarea, textareaClassName)}

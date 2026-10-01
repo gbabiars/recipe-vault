@@ -17,6 +17,7 @@ import {
   Fieldset,
   FieldsetLegend,
 } from "../field";
+import { RequiredIndicator } from "../field/required-indicator";
 import styles from "../choice.module.css";
 
 export type RadioGroupItemProps = Omit<
@@ -81,6 +82,7 @@ export const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(func
     groupStyle,
     name,
     disabled,
+    required,
     children,
     ...groupProps
   },
@@ -94,11 +96,13 @@ export const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(func
     <Fieldset className={className} style={style} disabled={disabled}>
       <FieldsetLegend id={legendId} className={visuallyHiddenLabel ? "visually-hidden" : undefined}>
         {label}
+        {required && <RequiredIndicator disabled={disabled} />}
       </FieldsetLegend>
       <BaseRadioGroup
         {...groupProps}
         name={name}
         disabled={disabled}
+        required={required}
         aria-labelledby={legendId}
         ref={ref}
         className={cn(styles.group, groupClassName)}

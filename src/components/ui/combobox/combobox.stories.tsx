@@ -175,7 +175,7 @@ export const MultipleAsyncCreatable: Story = {
   },
 };
 export const Disabled: Story = {
-  args: { options: choices, disabled: true, defaultValue: "vegan" },
+  args: { options: choices, disabled: true, required: true, defaultValue: "vegan" },
 };
 export const Required: Story = {
   render: (args) => (

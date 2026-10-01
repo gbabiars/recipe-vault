@@ -28,10 +28,42 @@ test("standalone checkbox owns its label, help text, and form value", () => {
   ).toBe(checkbox);
   expect(ref.current).toBe(checkbox);
   expect(inputRef.current).toBeInstanceOf(HTMLInputElement);
+  expect(screen.queryByText("*", { exact: true })).toBeNull();
   fireEvent.click(screen.getByText("Email me updates"));
   expect(new FormData(container.querySelector("form")!).get("updates")).toBe("yes");
   fireEvent.click(checkbox);
   expect(new FormData(container.querySelector("form")!).has("updates")).toBe(false);
+});
+
+test("standalone required checkbox keeps a decorative marker and native required behavior", () => {
+  const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => event.preventDefault());
+  const inputRef = React.createRef<HTMLInputElement>();
+  const { rerender } = render(
+    <form onSubmit={onSubmit}>
+      <CheckboxInput name="agreement" value="yes" label="I agree" required inputRef={inputRef} />
+      <button type="submit">Save</button>
+    </form>,
+  );
+
+  const checkbox = screen.getByRole("checkbox", { name: "I agree" });
+  const marker = screen.getByText("*", { exact: true });
+  expect(inputRef.current?.required).toBe(true);
+  expect(checkbox.getAttribute("data-required")).not.toBeNull();
+  expect(marker.getAttribute("aria-hidden")).toBe("true");
+  expect(checkbox.closest("label")?.querySelector("span[aria-hidden='true']")).toBe(marker);
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  expect(onSubmit).not.toHaveBeenCalled();
+
+  rerender(
+    <CheckboxInput label="I agree" required visuallyHiddenLabel disabled inputRef={inputRef} />,
+  );
+  const disabledMarker = screen.getByText("*", { exact: true });
+  expect(screen.getByRole("checkbox", { name: "I agree" }).hasAttribute("data-disabled")).toBe(
+    true,
+  );
+  expect(disabledMarker.closest("label")?.classList.contains("visually-hidden")).toBe(true);
+  expect(disabledMarker.hasAttribute("data-disabled")).toBe(true);
+  expect(disabledMarker.getAttribute("aria-hidden")).toBe("true");
 });
 
 test("standalone checkbox supports controlled, read-only, disabled, invalid, and mixed states", () => {
@@ -68,7 +100,7 @@ test("standalone checkbox supports controlled, read-only, disabled, invalid, and
   expect(screen.getByRole("checkbox", { name: "Mixed" }).getAttribute("aria-checked")).toBe(
     "mixed",
   );
-  expect(screen.getByText("Mixed").className).toContain("visually-hidden");
+  expect(screen.getByText("Mixed").closest("label")?.className).toContain("visually-hidden");
 });
 
 test("checkbox group labels independently toggled items and submits repeated form values", () => {
@@ -98,6 +130,7 @@ test("checkbox group labels independently toggled items and submits repeated for
   expect(groupRef.current).toBe(group);
   expect(itemRef.current).toBe(screen.getByRole("checkbox", { name: "Basil" }));
   expect(group.closest("fieldset")?.firstElementChild?.textContent).toBe("Ingredients");
+  expect(screen.queryByText("*", { exact: true })).toBeNull();
   expect(
     screen.getByRole("checkbox", {
       name: "Basil",

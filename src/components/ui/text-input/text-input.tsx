@@ -4,6 +4,7 @@ import * as React from "react";
 import { Input as BaseInput } from "@base-ui/react/input";
 import { cn } from "cn";
 import { Field, FieldDescription, FieldError, FieldLabel } from "../field";
+import { RequiredIndicator } from "../field/required-indicator";
 import styles from "./text-input.module.css";
 
 export type TextInputType =
@@ -60,6 +61,7 @@ export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(func
     inputStyle,
     name,
     disabled,
+    required,
     ...inputProps
   },
   ref,
@@ -77,11 +79,13 @@ export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(func
     >
       <FieldLabel className={visuallyHiddenLabel ? "visually-hidden" : undefined}>
         {label}
+        {required && <RequiredIndicator disabled={disabled} />}
       </FieldLabel>
       <BaseInput
         {...inputProps}
         ref={ref}
         type={type}
+        required={required}
         className={cn(styles.input, inputClassName)}
         style={inputStyle}
       />
