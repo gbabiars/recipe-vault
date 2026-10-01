@@ -1,22 +1,12 @@
 import type { SVGProps } from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
+import Link from "next/link";
+import { afterEach, expect, test, vi } from "vitest";
 
 import { Button } from "./button";
 import styles from "./button.module.css";
 
 afterEach(cleanup);
-
-let Link: typeof import("next/link").default;
-
-beforeAll(async () => {
-  vi.stubGlobal("process", { env: {} });
-  Link = (await import("next/link")).default;
-});
-
-afterAll(() => {
-  vi.unstubAllGlobals();
-});
 
 function TestIcon(props: SVGProps<SVGSVGElement>) {
   return <svg {...props} data-testid="button-icon" />;

@@ -1,18 +1,8 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
-
-let SettingsPage: typeof import("./page").default;
-
-beforeAll(async () => {
-  vi.stubGlobal("process", { env: {} });
-  SettingsPage = (await import("./page")).default;
-});
+import { afterEach, expect, test } from "vitest";
+import SettingsPage from "./page";
 
 afterEach(cleanup);
-
-afterAll(() => {
-  vi.unstubAllGlobals();
-});
 
 test("renders settings headings and destination links", () => {
   render(<SettingsPage />);

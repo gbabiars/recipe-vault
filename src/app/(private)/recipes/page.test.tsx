@@ -1,13 +1,12 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import type { ComponentProps } from "react";
 import { userEvent } from "vitest/browser";
-import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
+import RecipesPage from "./page";
 
 const { listMock } = vi.hoisted(() => ({
   listMock: vi.fn(async () => []),
 }));
-
-let RecipesPage: typeof import("./page").default;
 
 vi.mock("@/lib/auth/require-user", () => ({ requireUser: async () => ({ id: "user-1" }) }));
 vi.mock("next/form", () => ({
@@ -22,16 +21,7 @@ vi.mock("@/lib/recipes", () => ({
   getRecipeService: async () => ({ list: listMock }),
 }));
 
-beforeAll(async () => {
-  vi.stubGlobal("process", { env: {} });
-  RecipesPage = (await import("./page")).default;
-});
-
 afterEach(cleanup);
-
-afterAll(() => {
-  vi.unstubAllGlobals();
-});
 
 test("ignores a saved dietary filter and preserves search and repeated tag values", async () => {
   const page = await RecipesPage({
