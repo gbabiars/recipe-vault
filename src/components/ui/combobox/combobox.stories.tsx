@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Leaf, Milk, Wheat } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { Button } from "../button";
@@ -9,6 +10,12 @@ const choices: ComboboxOption[] = [
   { value: "vegan", label: "Vegan" },
   { value: "gluten-free", label: "Gluten-free" },
   { value: "dairy-free", label: "Dairy-free" },
+];
+const choicesWithIcons: ComboboxOption[] = [
+  { value: "vegetarian", label: "Vegetarian", icon: Leaf },
+  { value: "vegan", label: "Vegan", icon: Leaf },
+  { value: "gluten-free", label: "Gluten-free", icon: Wheat },
+  { value: "dairy-free", label: "Dairy-free", icon: Milk },
 ];
 const search = async (query: string, signal: AbortSignal) => {
   await new Promise<void>((resolve, reject) => {
@@ -24,7 +31,25 @@ const search = async (query: string, signal: AbortSignal) => {
   });
   return choices.filter((item) => item.label.toLowerCase().includes(query.toLowerCase()));
 };
-const create = (query: string) => ({ value: query.trim().toLowerCase(), label: query.trim() });
+const searchWithIcons = async (query: string, signal: AbortSignal) => {
+  await new Promise<void>((resolve, reject) => {
+    const timer = window.setTimeout(resolve, 120);
+    signal.addEventListener(
+      "abort",
+      () => {
+        window.clearTimeout(timer);
+        reject(new DOMException("Aborted", "AbortError"));
+      },
+      { once: true },
+    );
+  });
+  return choicesWithIcons.filter((item) => item.label.toLowerCase().includes(query.toLowerCase()));
+};
+const createWithIcon = (query: string) => ({
+  value: query.trim().toLowerCase(),
+  label: query.trim(),
+  icon: Leaf,
+});
 
 const meta = {
   title: "UI/ComboboxField",
@@ -50,7 +75,7 @@ export const SingleLocal: Story = {
   },
 };
 export const SingleLocalCreatable: Story = {
-  args: { options: choices, createOption: create },
+  args: { options: choicesWithIcons, createOption: createWithIcon },
   play: async ({ canvas }) => {
     await userEvent.type(canvas.getByRole("combobox", { name: "Tags" }), "low sodium");
     await userEvent.click(
@@ -66,6 +91,50 @@ export const SingleAsync: Story = {
     await expect(await within(document.body).findByRole("listbox", { name: "Tags" })).toBeVisible();
     await userEvent.click(await within(document.body).findByRole("option", { name: "Vegan" }));
     await expect(canvas.getByRole("combobox", { name: "Tags" })).toHaveValue("Vegan");
+  },
+};
+export const LocalOptionsWithIcons: Story = {
+  args: { options: choicesWithIcons },
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("combobox", { name: "Tags" }));
+    const vegan = await within(document.body).findByRole("option", { name: "Vegan" });
+    const icon = vegan.querySelector("svg");
+    await expect(vegan.firstElementChild).toBe(icon);
+    await expect(icon).toHaveAttribute("aria-hidden", "true");
+    await expect(icon).toHaveAttribute("focusable", "false");
+    const options = within(document.body).getAllByRole("option");
+    for (const option of options) {
+      await expect(option.firstElementChild).toBe(option.querySelector("svg"));
+      await expect(option.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    }
+  },
+};
+export const AsyncOptionsWithIcons: Story = {
+  args: { loadOptions: searchWithIcons },
+  play: async ({ canvas }) => {
+    await userEvent.type(canvas.getByRole("combobox", { name: "Tags" }), "vegan");
+    const vegan = await within(document.body).findByRole("option", { name: "Vegan" });
+    await expect(vegan.firstElementChild).toBe(vegan.querySelector("svg"));
+    await expect(vegan.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+  },
+};
+export const CreatedOptionsWithIcons: Story = {
+  args: { multiple: true, options: [], createOption: createWithIcon },
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole("combobox", { name: "Tags" });
+    await userEvent.type(input, "paleo");
+    const createItem = await within(document.body).findByRole("option", {
+      name: /Create “paleo”/,
+    });
+    await expect(createItem.firstElementChild).toBe(createItem.querySelector("svg"));
+    await userEvent.click(createItem);
+    const chip = canvas.getByRole("button", { name: "Remove paleo" });
+    await expect(chip).toBeVisible();
+    await userEvent.click(input);
+    const created = await within(document.body).findByRole("option", { name: "paleo" });
+    await expect(created.firstElementChild).toBe(created.querySelector("svg"));
+    await expect(created.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    await expect(chip.querySelectorAll("svg")).toHaveLength(1);
   },
 };
 export const BrowseThenSearch: Story = {
@@ -109,7 +178,7 @@ export const BrowseThenSearch: Story = {
   },
 };
 export const SingleAsyncCreatable: Story = {
-  args: { loadOptions: search, createOption: create },
+  args: { loadOptions: searchWithIcons, createOption: createWithIcon },
   play: async ({ canvas }) => {
     await userEvent.type(canvas.getByRole("combobox", { name: "Tags" }), "paleo");
     await userEvent.click(
@@ -131,7 +200,7 @@ export const MultipleLocal: Story = {
   },
 };
 export const MultipleLocalCreatable: Story = {
-  args: { multiple: true, options: choices, createOption: create },
+  args: { multiple: true, options: choicesWithIcons, createOption: createWithIcon },
   play: async ({ canvas }) => {
     await userEvent.type(canvas.getByRole("combobox", { name: "Tags" }), "paleo");
     await userEvent.click(
@@ -161,7 +230,7 @@ export const MultipleAsync: Story = {
   },
 };
 export const MultipleAsyncCreatable: Story = {
-  args: { multiple: true, loadOptions: search, createOption: create },
+  args: { multiple: true, loadOptions: searchWithIcons, createOption: createWithIcon },
   play: async ({ canvas }) => {
     const input = canvas.getByRole("combobox", { name: "Tags" });
     await userEvent.type(input, "paleo");
@@ -226,7 +295,7 @@ export const SearchError: Story = {
   },
 };
 export const InvalidCreation: Story = {
-  args: { options: choices, createOption: () => null },
+  args: { options: choicesWithIcons, createOption: () => null },
   play: async ({ canvas }) => {
     await userEvent.type(canvas.getByRole("combobox", { name: "Tags" }), "unknown");
     await userEvent.click(
@@ -290,7 +359,12 @@ export const FormValues: Story = {
 };
 
 export const DuplicateCreation: Story = {
-  args: { multiple: true, options: choices, createOption: create, defaultValue: ["vegan"] },
+  args: {
+    multiple: true,
+    options: choicesWithIcons,
+    createOption: createWithIcon,
+    defaultValue: ["vegan"],
+  },
   play: async ({ canvas }) => {
     await userEvent.type(canvas.getByRole("combobox", { name: "Tags" }), "VEGAN");
     await expect(

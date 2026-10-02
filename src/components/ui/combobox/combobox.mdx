@@ -7,19 +7,29 @@ import * as Stories from "./combobox.stories";
 
 Choose one or several labeled values from local options or an asynchronous search. Use a fixed choice control when searching is unnecessary.
 
-The field owns its label, help text, error, keyboard interaction, and selected chips. Each option has a stable `value` and display `label`. `options` supplies local choices; `loadOptions(query, signal)` supplies remote choices. A remote loader should respect the abort signal. The field debounces requests and keeps selected labels while results change.
+The field owns its label, help text, error, keyboard interaction, and selected chips. Each option has a stable `value` and display `label`, and can optionally provide an SVG component through `icon`. Icons are decorative and appear in popup option rows; selected values and chips continue to display their text label. `options` supplies local choices; `loadOptions(query, signal)` supplies remote choices. A remote loader should respect the abort signal. The field debounces requests and keeps selected labels while results change.
 
 Remote choices normally load only for nonempty queries. Set `loadOnEmpty` with `loadOptions` to fetch choices on mount and again when the query is cleared. The loader receives an empty string in both cases.
 
 ```tsx
+import { Leaf } from "lucide-react";
+import { ComboboxField } from "recipe-vault";
+
 <ComboboxField
   name="tags"
   label="Tags"
   multiple
-  loadOptions={searchTags}
-  createOption={(query) => ({ value: query.trim().toLowerCase(), label: query.trim() })}
-/>
+  options={[
+    { value: "vegan", label: "Vegan", icon: Leaf },
+    { value: "vegetarian", label: "Vegetarian", icon: Leaf },
+  ]}
+  createOption={(query) => ({ value: query.trim().toLowerCase(), label: query.trim(), icon: Leaf })}
+/>;
 ```
+
+Keep a consistent icon treatment across every visible row in a popup. Give all rows a leading icon or none. Apply this to local options, async results, and options returned by `createOption`. The generated “Create…” row has a built-in plus icon, so when it appears beside existing options, those options should also provide icons.
+
+Async loaders and `createOption` can return the same optional `icon` field. Icons stay in popup rows; selected values and chips remain text-only.
 
 For controlled use, pass `value` and `onValueChange`; otherwise pass `defaultValue`. Single selection uses `string | null`; multiple selection uses `string[]`. The field submits one value under `name` in single mode and repeated values in multiple mode. `createOption` only adds the value to the local selection. It must validate and normalize domain values; persistence belongs to the caller.
 
@@ -27,3 +37,6 @@ Creation is offered for nonempty input without an equivalent known or selected o
 
 <Canvas of={Stories.SingleLocal} />
 <Canvas of={Stories.MultipleAsyncCreatable} />
+<Canvas of={Stories.LocalOptionsWithIcons} />
+<Canvas of={Stories.AsyncOptionsWithIcons} />
+<Canvas of={Stories.CreatedOptionsWithIcons} />

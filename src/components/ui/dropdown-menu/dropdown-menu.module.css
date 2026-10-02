@@ -32,6 +32,12 @@
   text-decoration: none;
 }
 
+.icon {
+  flex: none;
+  width: var(--size-button-icon);
+  height: var(--size-button-icon);
+}
+
 .item:hover {
   color: inherit;
 }
