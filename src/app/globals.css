@@ -81,6 +81,10 @@
   --color-background-surface-disabled: var(--color-neutral-100);
   --color-background-overlay: var(--color-neutral-0);
 
+  --shadow-subtle: 0 1px 2px rgb(0 0 0 / 8%);
+  --shadow-raised: 0 4px 12px rgb(0 0 0 / 12%);
+  --shadow-floating: 0 0 2rem rgb(0 0 0 / 20%);
+
   --color-interaction-neutral-hover: rgb(0 0 0 / 6%);
   --color-interaction-neutral-active: rgb(0 0 0 / 12%);
 
@@ -235,6 +239,10 @@
   --color-background-surface-disabled: var(--color-neutral-900);
   --color-background-overlay: var(--color-neutral-900);
 
+  --shadow-subtle: 0 1px 2px rgb(0 0 0 / 24%), inset 0 0 0 1px rgb(255 255 255 / 4%);
+  --shadow-raised: 0 4px 12px rgb(0 0 0 / 40%), inset 0 0 0 1px rgb(255 255 255 / 6%);
+  --shadow-floating: 0 0 2rem rgb(0 0 0 / 50%), inset 0 0 0 1px rgb(255 255 255 / 8%);
+
   --color-interaction-neutral-hover: rgb(255 255 255 / 6%);
   --color-interaction-neutral-active: rgb(255 255 255 / 12%);
 
@@ -309,6 +317,10 @@
     --color-background-surface-active: var(--color-neutral-700);
     --color-background-surface-disabled: var(--color-neutral-900);
     --color-background-overlay: var(--color-neutral-900);
+
+    --shadow-subtle: 0 1px 2px rgb(0 0 0 / 24%), inset 0 0 0 1px rgb(255 255 255 / 4%);
+    --shadow-raised: 0 4px 12px rgb(0 0 0 / 40%), inset 0 0 0 1px rgb(255 255 255 / 6%);
+    --shadow-floating: 0 0 2rem rgb(0 0 0 / 50%), inset 0 0 0 1px rgb(255 255 255 / 8%);
 
     --color-interaction-neutral-hover: rgb(255 255 255 / 6%);
     --color-interaction-neutral-active: rgb(255 255 255 / 12%);
