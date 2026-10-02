@@ -2,6 +2,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
+
+import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 const inter = Inter({
@@ -19,7 +21,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html className={inter.variable} lang="en">
       <body>
-        <ClerkProvider>{children}</ClerkProvider>
+        <TooltipProvider>
+          <ClerkProvider>{children}</ClerkProvider>
+        </TooltipProvider>
       </body>
     </html>
   );

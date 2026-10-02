@@ -1,0 +1,48 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as Stories from "./tooltip.stories";
+
+<Meta of={Stories} />
+
+# Tooltip
+
+Show a brief supplemental description when a focusable control receives keyboard focus or pointer hover. Keep important instructions visible in the page or in a Popover; a tooltip is supplemental context.
+
+## Composition
+
+Pass one focusable trigger and short, non-interactive content. The trigger component must forward refs and event props to its DOM element. `disabled` suppresses the tooltip and its description association without changing whether the trigger itself is enabled.
+
+```tsx
+import { Trash2 } from "lucide-react";
+import { IconButton, Tooltip, TooltipProvider } from "recipe-vault";
+
+<TooltipProvider>
+  <Tooltip
+    trigger={
+      <IconButton disabled={!canDelete} icon={Trash2} label="Delete recipe" onClick={onDelete} />
+    }
+    content="Permanently removes this recipe."
+    side="bottom"
+    disabled={!showDeleteHint}
+  />
+</TooltipProvider>;
+```
+
+Hover opens after 400 ms. Keyboard focus opens immediately. Moving to a nearby tooltip trigger skips the hover delay. Escape dismisses an open tooltip, and activating the trigger still performs its normal action. The popup can be hovered without closing. Touch users do not get hover tooltips, so do not put essential information here.
+
+Wrap a tree of tooltips in one `TooltipProvider`. It owns the shared 400 ms hover delay and the timing coordination between nearby tooltips. The application layout and Storybook preview already provide it at their roots.
+
+`side` chooses the preferred side of the trigger and defaults to `top`. It accepts `top`, `bottom`, `left`, `right`, `inline-start`, or `inline-end`, matching the positioner side naming used by DropdownMenu. The tooltip stays centered along that side; collision handling may move it to another side when needed. Alignment and offset remain managed by Tooltip.
+
+`content` accepts a React node for inline formatting, but keep it non-interactive. Use Popover for links, buttons, or other actionable content. The content is associated as supplemental description through `aria-describedby`; any description already on the trigger is preserved. The trigger still needs its own accessible name, such as the `label` on IconButton.
+
+The tooltip surface inverts the theme: dark with light text in light mode, and light with dark text in dark mode.
+
+## Stories
+
+<Canvas of={Stories.ButtonDescription} />
+<Canvas of={Stories.ProviderComposition} />
+<Canvas of={Stories.SidePlacement} />
+<Canvas of={Stories.IconButtonDescription} />
+<Canvas of={Stories.RichDescription} />
+<Canvas of={Stories.Disabled} />
+<Canvas of={Stories.NearbyTriggers} />
