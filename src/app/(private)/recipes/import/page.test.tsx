@@ -3,6 +3,7 @@ import { expect, test, vi } from "vitest";
 import ImportRecipePage from "./page";
 
 vi.mock("@/lib/auth/require-user", () => ({ requireUser: async () => ({ id: "user-1" }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 test("shows the import form with a recipes breadcrumb", async () => {
   render(await ImportRecipePage());
