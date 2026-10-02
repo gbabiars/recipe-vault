@@ -21,7 +21,7 @@ export const Default: Story = {
       "/recipes/new",
     );
     await expect(
-      await menu.findByRole("menuitem", { name: "Import from a website" }),
+      await menu.findByRole("menuitem", { name: "Import from website or PDF" }),
     ).toHaveAttribute("href", "/recipes/import");
   },
 };

@@ -8,9 +8,11 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 test("shows the import form with a recipes breadcrumb", async () => {
   render(await ImportRecipePage());
 
-  expect(screen.getByRole("heading", { level: 1, name: "Import from a website" })).toBeTruthy();
+  expect(screen.getByRole("heading", { level: 1, name: "Import a recipe" })).toBeTruthy();
   expect(screen.getByRole("textbox", { name: "Recipe website URL" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Import recipe" })).toBeTruthy();
+  expect(screen.getByLabelText("Recipe PDF")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Import PDF" })).toBeTruthy();
 
   const breadcrumbs = screen.getByRole("navigation", { name: "Breadcrumbs" });
   expect(within(breadcrumbs).getByRole("link", { name: "Recipes" }).getAttribute("href")).toBe(

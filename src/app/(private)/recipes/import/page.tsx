@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
 import { RecipeImportPageForm } from "@/features/recipes/recipe-import-form";
+import { RecipeDocumentImportPageForm } from "@/features/recipes/recipe-document-import-form";
+import { Stack } from "@/components/ui/stack";
 import { requireUser } from "@/lib/auth/require-user";
 
 export default async function ImportRecipePage() {
@@ -10,7 +12,7 @@ export default async function ImportRecipePage() {
   return (
     <PageLayout>
       <PageHeader
-        title="Import from a website"
+        title="Import a recipe"
         overline={
           <Breadcrumbs trailingSeparator>
             <BreadcrumbsItem>
@@ -20,7 +22,10 @@ export default async function ImportRecipePage() {
         }
       />
       <PageContent>
-        <RecipeImportPageForm />
+        <Stack gap="300">
+          <RecipeImportPageForm />
+          <RecipeDocumentImportPageForm />
+        </Stack>
       </PageContent>
     </PageLayout>
   );

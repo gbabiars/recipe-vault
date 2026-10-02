@@ -29,3 +29,11 @@ through AI Gateway and validates it before the API calls `RecipeService.create`.
 The submitted URL remains the recipe's source URL.
 Sites that reject automated HTTP requests return `access_denied` so the form can
 explain that another source or manual entry is needed.
+
+PDF import reads bounded embedded text in memory, then uses the same AI
+extraction and canonical validation as website import. The first complete
+recipe in document order is selected, with no source URL attached.
+PDF.js runs as an external Node package so its worker loads beside the library
+instead of from a Next.js server chunk. Reader failures are classified into
+file format, damaged structure, encryption, and server reader errors without
+returning PDF.js exception text to the client.

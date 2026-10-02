@@ -45,11 +45,9 @@ export const Error: Story = {
     const input = canvas.getByRole("textbox", { name: "Recipe website URL" });
     await userEvent.type(input, "https://example.com/recipes/soup");
     await userEvent.click(canvas.getByRole("button", { name: "Import recipe" }));
-    await expect(
-      await canvas.findByText(
-        "This website blocked automated access. Try another source or create the recipe manually.",
-      ),
-    ).toBeVisible();
+    await expect(await canvas.findByRole("alert")).toHaveTextContent(
+      "This website blocked automated access. Try another source or create the recipe manually.",
+    );
     await expect(input).toHaveValue("https://example.com/recipes/soup");
   },
 };

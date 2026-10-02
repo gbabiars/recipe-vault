@@ -50,7 +50,7 @@ test("ignores a saved dietary filter and preserves search and repeated tag value
   ).toBeTruthy();
 });
 
-test("keeps website import available in the recipe menu", async () => {
+test("keeps website and PDF import available in the recipe menu", async () => {
   const page = await RecipesPage({ searchParams: Promise.resolve({}) });
   render(page);
 
@@ -63,9 +63,9 @@ test("keeps website import available in the recipe menu", async () => {
   expect(screen.getByRole("menuitem", { name: "Create manually" }).getAttribute("href")).toBe(
     "/recipes/new",
   );
-  expect(screen.getByRole("menuitem", { name: "Import from a website" }).getAttribute("href")).toBe(
-    "/recipes/import",
-  );
+  expect(
+    screen.getByRole("menuitem", { name: "Import from website or PDF" }).getAttribute("href"),
+  ).toBe("/recipes/import");
 
   await userEvent.keyboard("{Escape}");
 

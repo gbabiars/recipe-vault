@@ -187,7 +187,11 @@ for local development even when the public DSN is configured.
 
 ## Recipe imports
 
-The recipes menu always offers manual recipe creation and website import.
+The recipes menu offers manual creation and imports from a website or PDF. PDF
+imports accept one file up to 3 MB with embedded text, at most 20 pages and
+50,000 extracted characters. When a document has multiple recipes, the first
+complete recipe in document order is imported. Scanned image PDFs and encrypted
+PDFs are not supported. Documents are processed in memory and are not stored.
 
 ## Architecture
 

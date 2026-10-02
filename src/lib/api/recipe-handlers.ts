@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { recipeCreateInputSchema, recipeUpdateInputSchema } from "@/lib/validation/recipe";
 import type { RecipeService } from "@/lib/recipes/recipe-service";
-import { importRecipeInput } from "@/lib/recipes/import-recipe";
+import { extractRecipeInput, importRecipeInput } from "@/lib/recipes/import-recipe";
+import { DocumentReadError, MAX_PDF_BYTES, readDocumentText } from "@/lib/recipes/read-document";
 import { SourceReadError, validateSourceUrl } from "@/lib/recipes/read-source";
 import type { RecipeCreateInput } from "@/lib/validation/recipe";
 import type { RateLimiter } from "./rate-limit";
@@ -13,7 +14,49 @@ type ApiDependencies = {
   getService: () => Promise<RecipeService>;
   limiter?: RateLimiter;
   importInput?: (url: string) => Promise<RecipeCreateInput>;
+  readDocument?: (bytes: Uint8Array, signal: AbortSignal) => Promise<string>;
+  extractDocument?: (text: string, signal: AbortSignal) => Promise<RecipeCreateInput>;
 };
+
+const MAX_MULTIPART_BYTES = 3_200_000;
+
+async function readLimitedBody(request: Request, signal: AbortSignal): Promise<Uint8Array> {
+  const declaredLength = Number(request.headers.get("content-length"));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_MULTIPART_BYTES)
+    throw new DocumentReadError("too_large");
+  if (!request.body) throw new DocumentReadError("invalid_upload");
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let length = 0;
+  try {
+    for (;;) {
+      const { done, value } = await new Promise<ReadableStreamReadResult<Uint8Array>>(
+        (resolve, reject) => {
+          if (signal.aborted) return reject(new DocumentReadError("upload_timeout"));
+          const onAbort = () => reject(new DocumentReadError("upload_timeout"));
+          signal.addEventListener("abort", onAbort, { once: true });
+          reader
+            .read()
+            .then(resolve, reject)
+            .finally(() => signal.removeEventListener("abort", onAbort));
+        },
+      );
+      if (done) break;
+      length += value.byteLength;
+      if (length > MAX_MULTIPART_BYTES) throw new DocumentReadError("too_large");
+      chunks.push(value);
+    }
+  } finally {
+    void reader.cancel().catch(() => undefined);
+  }
+  const bytes = new Uint8Array(length);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+}
 
 const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).max(10_000).default(1),
@@ -77,6 +120,98 @@ export function createRecipeApi(deps: ApiDependencies) {
   }
 
   return {
+    async importDocument(request: Request) {
+      const current = await context(request, true);
+      if ("error" in current) return current.error;
+      if (!request.headers.get("content-type")?.toLowerCase().startsWith("multipart/form-data;"))
+        return responseError(422, "invalid_request", "Choose one PDF file.", current.id);
+
+      const deadline = AbortSignal.timeout(50_000);
+      try {
+        const uploadSignal = AbortSignal.any([deadline, AbortSignal.timeout(5_000)]);
+        const bytes = await readLimitedBody(request, uploadSignal);
+        const multipart = new Request(request.url, {
+          method: "POST",
+          headers: { "content-type": request.headers.get("content-type")! },
+          body: bytes.buffer as ArrayBuffer,
+        });
+        let form: FormData;
+        try {
+          form = await multipart.formData();
+        } catch {
+          return responseError(
+            422,
+            "invalid_request",
+            "The upload could not be read. Select one PDF and try again.",
+            current.id,
+          );
+        }
+        const entries = [...form.entries()];
+        if (entries.length !== 1 || entries[0][0] !== "file" || !(entries[0][1] instanceof File))
+          return responseError(422, "invalid_request", "Choose one PDF file.", current.id);
+        const file = entries[0][1];
+        if (file.size > MAX_PDF_BYTES) throw new DocumentReadError("too_large");
+        const fileBytes = new Uint8Array(await file.arrayBuffer());
+        const parseSignal = AbortSignal.any([deadline, AbortSignal.timeout(10_000)]);
+        const text = await (deps.readDocument ?? readDocumentText)(fileBytes, parseSignal);
+        if (deadline.aborted) throw new DocumentReadError("parse_timeout");
+        const extractionSignal = AbortSignal.any([deadline, AbortSignal.timeout(30_000)]);
+        const recipeInput = await (
+          deps.extractDocument ?? ((value, signal) => extractRecipeInput(value, undefined, signal))
+        )(text, extractionSignal);
+        if (deadline.aborted || extractionSignal.aborted)
+          throw new SourceReadError("extraction_failed");
+        const recipe = await current.service.create(
+          current.user.id,
+          recipeCreateInputSchema.parse(recipeInput),
+          audit(request, current.id),
+        );
+        return Response.json(
+          { data: { id: recipe.id }, meta: { requestId: current.id } },
+          { status: 201, headers: { "cache-control": "private, no-store" } },
+        );
+      } catch (error) {
+        if (error instanceof DocumentReadError) {
+          const messages: Record<string, string> = {
+            invalid_upload: "The upload was empty. Select one PDF and try again.",
+            not_pdf: "This file does not have a PDF header. Export it as a PDF and try again.",
+            damaged_pdf: "The PDF structure is damaged or incomplete. Re-export it and try again.",
+            encrypted_pdf: "Password-protected PDFs cannot be imported.",
+            too_large: "Choose a PDF smaller than 3 MB.",
+            too_many_pages: "Choose a PDF with 20 pages or fewer.",
+            too_much_text: "This PDF contains too much text to import.",
+            no_text: "This PDF has no readable text. Scanned images are not supported.",
+            upload_timeout: "The PDF upload took too long. Please try again.",
+            parse_timeout: "The PDF took too long to read. Please try another file.",
+            parser_unavailable:
+              "The server could not start its PDF reader. Please try again later.",
+            parse_failed: "The PDF reader could not decode this file. Re-export it and try again.",
+          };
+          if (error.message === "parser_unavailable")
+            logApiEvent({
+              level: "error",
+              requestId: current.id,
+              event: "document_parser_unavailable",
+            });
+          return responseError(
+            error.message === "parser_unavailable" ? 503 : 422,
+            error.message,
+            messages[error.message],
+            current.id,
+          );
+        }
+        if (error instanceof SourceReadError || error instanceof z.ZodError)
+          return responseError(
+            422,
+            error instanceof SourceReadError ? error.message : "no_recipe",
+            error instanceof SourceReadError && error.message === "extraction_failed"
+              ? "The recipe could not be extracted. Please try again."
+              : "No complete recipe was found.",
+            current.id,
+          );
+        return unexpected(current.id);
+      }
+    },
     async importRecipe(request: Request) {
       const current = await context(request, true);
       if ("error" in current) return current.error;
