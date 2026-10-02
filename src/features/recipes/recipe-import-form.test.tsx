@@ -37,7 +37,9 @@ test("shows a safe error and preserves the URL", async () => {
   const input = screen.getByRole("textbox", { name: "Recipe website URL" });
   fireEvent.change(input, { target: { value: "https://example.com/soup" } });
   fireEvent.click(screen.getByRole("button", { name: "Import recipe" }));
-  expect(await screen.findByText("No complete recipe was found.")).toBeVisible();
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "Could not import recipe. No complete recipe was found.",
+  );
   expect(input).toHaveValue("https://example.com/soup");
 });
 

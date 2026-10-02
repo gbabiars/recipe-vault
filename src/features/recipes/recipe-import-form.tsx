@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Stack } from "@/components/ui/stack";
 import { TextInput } from "@/components/ui/text-input";
+import { Text } from "@/components/ui/text";
 import { importRecipeFromApi, RecipeImportError } from "./import-recipe-from-api";
 
 export type RecipeImporter = (url: string) => Promise<{ id: string }>;
@@ -40,6 +40,7 @@ export function RecipeImportForm({ importRecipe }: { importRecipe: RecipeImporte
     <Card>
       <form onSubmit={submit}>
         <Stack gap="200">
+          <h2>Import from a website</h2>
           <TextInput
             name="url"
             label="Recipe website URL"
@@ -50,7 +51,9 @@ export function RecipeImportForm({ importRecipe }: { importRecipe: RecipeImporte
           />
           {error && (
             <div role="alert">
-              <Alert title="Could not import recipe" description={error} variant="danger" />
+              <Text as="p" appearance="error">
+                <strong>Could not import recipe.</strong> {error}
+              </Text>
             </div>
           )}
           <div>

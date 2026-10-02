@@ -18,7 +18,7 @@ export function RecipesHeaderActions() {
           Create manually
         </DropdownMenuLinkItem>
         <DropdownMenuLinkItem render={<Link href="/recipes/import" />}>
-          Import from a website
+          Import from website or PDF
         </DropdownMenuLinkItem>
       </DropdownMenuPopup>
     </DropdownMenu>

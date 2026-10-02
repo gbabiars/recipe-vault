@@ -3,6 +3,7 @@ import { withSentryConfig } from "@sentry/nextjs/config";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  serverExternalPackages: ["pdfjs-dist"],
 };
 
 export default withSentryConfig(nextConfig, {
