@@ -1,79 +1,61 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { getRouter } from "@storybook/nextjs-vite/navigation.mock";
 import { expect, fn, userEvent } from "storybook/test";
-import {
-  RecipeImportForm,
-  RecipeImportPageForm,
-  type RecipeImportAction,
-  type RecipeImportFormState,
-} from "./recipe-import-form";
+import { RecipeImportForm, type RecipeImporter } from "./recipe-import-form";
+import { RecipeImportError } from "./import-recipe-from-api";
 
-const noOpAction: RecipeImportAction = async () => ({ errors: {} });
-const fieldErrorAction: RecipeImportAction = async () => ({
-  errors: { url: "Enter a recipe website URL we can import." },
-});
-const formErrorAction: RecipeImportAction = async () => ({
-  errors: {},
-  message: "We could not import this recipe.",
-});
-
-const pendingActionControl: {
-  finish: (state: RecipeImportFormState) => void;
-} = { finish: () => undefined };
-const pendingAction: RecipeImportAction = () =>
+const success: RecipeImporter = async () => ({ id: "new-recipe" });
+const pendingControl: { finish: (result: { id: string }) => void } = { finish: () => undefined };
+const pending: RecipeImporter = () =>
   new Promise((resolve) => {
-    pendingActionControl.finish = resolve;
+    pendingControl.finish = resolve;
   });
 
 const meta = {
   title: "Recipes/RecipeImportForm",
   component: RecipeImportForm,
-  parameters: { layout: "padded" },
-  args: { importAction: noOpAction },
+  parameters: { layout: "padded", nextjs: { appDirectory: true } },
+  args: { importRecipe: success },
 } satisfies Meta<typeof RecipeImportForm>;
-
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  args: { importAction: fn(noOpAction) },
+export const Success: Story = {
+  args: { importRecipe: fn(success) },
   play: async ({ canvas, args }) => {
-    const url = "https://example.com/recipes/soup";
-    await userEvent.type(canvas.getByRole("textbox", { name: "Recipe website URL" }), url);
-    await userEvent.click(canvas.getByRole("button", { name: "Import recipe" }));
-    await expect(args.importAction).toHaveBeenCalled();
-  },
-};
-
-export const FieldErrorAfterFailedSubmission: Story = {
-  args: { importAction: fieldErrorAction },
-  play: async ({ canvas }) => {
-    const url = "https://example.com/recipes/soup";
-    const input = canvas.getByRole("textbox", { name: "Recipe website URL" });
-    await userEvent.type(input, url);
-    await userEvent.click(canvas.getByRole("button", { name: "Import recipe" }));
-    await expect(
-      await canvas.findByText("Enter a recipe website URL we can import."),
-    ).toBeVisible();
-    await expect(input).toHaveValue(url);
-  },
-};
-
-export const FormError: Story = {
-  args: { importAction: formErrorAction },
-  play: async ({ canvas }) => {
     await userEvent.type(
       canvas.getByRole("textbox", { name: "Recipe website URL" }),
       "https://example.com/recipes/soup",
     );
     await userEvent.click(canvas.getByRole("button", { name: "Import recipe" }));
-    await expect(await canvas.findByRole("alert")).toHaveTextContent(
-      "We could not import this recipe.",
-    );
+    await expect(args.importRecipe).toHaveBeenCalledWith("https://example.com/recipes/soup");
+    await expect(getRouter().push).toHaveBeenCalledWith("/recipes/new-recipe");
+  },
+};
+
+export const Error: Story = {
+  args: {
+    importRecipe: async () => {
+      throw new RecipeImportError(
+        "This website blocked automated access. Try another source or create the recipe manually.",
+      );
+    },
+  },
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole("textbox", { name: "Recipe website URL" });
+    await userEvent.type(input, "https://example.com/recipes/soup");
+    await userEvent.click(canvas.getByRole("button", { name: "Import recipe" }));
+    await expect(
+      await canvas.findByText(
+        "This website blocked automated access. Try another source or create the recipe manually.",
+      ),
+    ).toBeVisible();
+    await expect(input).toHaveValue("https://example.com/recipes/soup");
   },
 };
 
 export const Pending: Story = {
-  args: { importAction: pendingAction },
+  args: { importRecipe: pending },
   play: async ({ canvas }) => {
     await userEvent.type(
       canvas.getByRole("textbox", { name: "Recipe website URL" }),
@@ -81,21 +63,6 @@ export const Pending: Story = {
     );
     await userEvent.click(canvas.getByRole("button", { name: "Import recipe" }));
     await expect(canvas.getByRole("button", { name: "Importing…" })).toBeDisabled();
-    pendingActionControl.finish({ errors: {} });
-    await expect(await canvas.findByRole("button", { name: "Import recipe" })).toBeEnabled();
-  },
-};
-
-export const ImportPagePlaceholder: Story = {
-  render: () => <RecipeImportPageForm />,
-  play: async ({ canvas }) => {
-    await userEvent.type(
-      canvas.getByRole("textbox", { name: "Recipe website URL" }),
-      "https://example.com/recipes/soup",
-    );
-    await userEvent.click(canvas.getByRole("button", { name: "Import recipe" }));
-    await expect(await canvas.findByRole("alert")).toHaveTextContent(
-      "Website import isn’t available yet.",
-    );
+    pendingControl.finish({ id: "new-recipe" });
   },
 };

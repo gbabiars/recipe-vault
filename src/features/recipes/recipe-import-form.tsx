@@ -1,35 +1,44 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Stack } from "@/components/ui/stack";
-import { Text } from "@/components/ui/text";
 import { TextInput } from "@/components/ui/text-input";
+import { importRecipeFromApi, RecipeImportError } from "./import-recipe-from-api";
 
-export type RecipeImportFormState = {
-  errors: Record<string, string>;
-  message?: string;
-};
+export type RecipeImporter = (url: string) => Promise<{ id: string }>;
 
-export type RecipeImportAction = (
-  state: RecipeImportFormState,
-  formData: FormData,
-) => Promise<RecipeImportFormState>;
-
-const initialState: RecipeImportFormState = { errors: {} };
-const unavailableImportAction: RecipeImportAction = async () => ({
-  errors: {},
-  message: "Website import isn’t available yet.",
-});
-
-export function RecipeImportForm({ importAction }: { importAction: RecipeImportAction }) {
-  const [state, action, pending] = useActionState(importAction, initialState);
+export function RecipeImportForm({ importRecipe }: { importRecipe: RecipeImporter }) {
+  const router = useRouter();
   const [url, setUrl] = useState("");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string>();
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (pending) return;
+    setPending(true);
+    setError(undefined);
+    try {
+      const { id } = await importRecipe(url);
+      router.push(`/recipes/${encodeURIComponent(id)}`);
+    } catch (failure) {
+      setError(
+        failure instanceof RecipeImportError
+          ? failure.message
+          : "We could not import this recipe. Please try again.",
+      );
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
     <Card>
-      <form action={action}>
+      <form onSubmit={submit}>
         <Stack gap="200">
           <TextInput
             name="url"
@@ -38,12 +47,11 @@ export function RecipeImportForm({ importAction }: { importAction: RecipeImportA
             required
             value={url}
             onValueChange={setUrl}
-            error={state.errors.url}
           />
-          {state.message && (
-            <Text as="p" appearance="error" role="alert">
-              {state.message}
-            </Text>
+          {error && (
+            <div role="alert">
+              <Alert title="Could not import recipe" description={error} variant="danger" />
+            </div>
           )}
           <div>
             <Button
@@ -60,5 +68,5 @@ export function RecipeImportForm({ importAction }: { importAction: RecipeImportA
 }
 
 export function RecipeImportPageForm() {
-  return <RecipeImportForm importAction={unavailableImportAction} />;
+  return <RecipeImportForm importRecipe={importRecipeFromApi} />;
 }

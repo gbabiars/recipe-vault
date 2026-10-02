@@ -1,75 +1,60 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import {
-  RecipeImportForm,
-  type RecipeImportAction,
-  type RecipeImportFormState,
-} from "./recipe-import-form";
+import { RecipeImportForm, type RecipeImporter } from "./recipe-import-form";
+import { RecipeImportError } from "./import-recipe-from-api";
 
-test("requires a valid website URL using native URL validation", () => {
-  const importAction = vi.fn<RecipeImportAction>(async () => ({ errors: {} }));
-  render(<RecipeImportForm importAction={importAction} />);
+const push = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
+test("requires a valid website URL before submitting", () => {
+  const importRecipe = vi.fn<RecipeImporter>();
+  render(<RecipeImportForm importRecipe={importRecipe} />);
   const input = screen.getByRole("textbox", { name: "Recipe website URL" }) as HTMLInputElement;
   expect(input.type).toBe("url");
   expect(input.required).toBe(true);
-  expect(input.checkValidity()).toBe(false);
-
   fireEvent.change(input, { target: { value: "not a URL" } });
-  expect(input.checkValidity()).toBe(false);
   fireEvent.click(screen.getByRole("button", { name: "Import recipe" }));
-  expect(importAction).not.toHaveBeenCalled();
+  expect(importRecipe).not.toHaveBeenCalled();
 });
 
-test("renders field errors and preserves the entered URL after a failed submission", async () => {
-  const importAction = vi.fn<RecipeImportAction>(async () => ({
-    errors: { url: "Enter a recipe website URL we can import." },
-  }));
-  render(<RecipeImportForm importAction={importAction} />);
-
-  const input = screen.getByRole("textbox", { name: "Recipe website URL" });
-  const url = "https://example.com/recipes/soup";
-  fireEvent.change(input, { target: { value: url } });
-  fireEvent.click(screen.getByRole("button", { name: "Import recipe" }));
-
-  expect(await screen.findByText("Enter a recipe website URL we can import.")).toBeTruthy();
-  expect(input).toHaveValue(url);
-  expect(importAction).toHaveBeenCalledWith(expect.anything(), expect.any(FormData));
-  expect((importAction.mock.calls[0][1] as FormData).get("url")).toBe(url);
-});
-
-test("renders form-level errors", async () => {
-  const importAction = vi.fn<RecipeImportAction>(async (): Promise<RecipeImportFormState> => ({
-    errors: {},
-    message: "We could not import this recipe.",
-  }));
-  render(<RecipeImportForm importAction={importAction} />);
-
+test("imports and opens the created recipe", async () => {
+  push.mockReset();
+  const importRecipe = vi.fn<RecipeImporter>().mockResolvedValue({ id: "new recipe" });
+  render(<RecipeImportForm importRecipe={importRecipe} />);
   fireEvent.change(screen.getByRole("textbox", { name: "Recipe website URL" }), {
-    target: { value: "https://example.com/recipes/soup" },
+    target: { value: "https://example.com/soup" },
   });
   fireEvent.click(screen.getByRole("button", { name: "Import recipe" }));
-
-  expect(await screen.findByRole("alert")).toHaveTextContent("We could not import this recipe.");
+  await waitFor(() => expect(push).toHaveBeenCalledWith("/recipes/new%20recipe"));
+  expect(importRecipe).toHaveBeenCalledWith("https://example.com/soup");
 });
 
-test("shows a disabled pending button while the action is unresolved", async () => {
-  let finishAction: ((state: RecipeImportFormState) => void) | undefined;
-  const importAction = vi.fn<RecipeImportAction>(
+test("shows a safe error and preserves the URL", async () => {
+  const importRecipe = vi
+    .fn<RecipeImporter>()
+    .mockRejectedValue(new RecipeImportError("No complete recipe was found."));
+  render(<RecipeImportForm importRecipe={importRecipe} />);
+  const input = screen.getByRole("textbox", { name: "Recipe website URL" });
+  fireEvent.change(input, { target: { value: "https://example.com/soup" } });
+  fireEvent.click(screen.getByRole("button", { name: "Import recipe" }));
+  expect(await screen.findByText("No complete recipe was found.")).toBeVisible();
+  expect(input).toHaveValue("https://example.com/soup");
+});
+
+test("disables submission while import is pending", async () => {
+  let finish!: (result: { id: string }) => void;
+  const importRecipe = vi.fn<RecipeImporter>(
     () =>
       new Promise((resolve) => {
-        finishAction = resolve;
+        finish = resolve;
       }),
   );
-  render(<RecipeImportForm importAction={importAction} />);
-
+  render(<RecipeImportForm importRecipe={importRecipe} />);
   fireEvent.change(screen.getByRole("textbox", { name: "Recipe website URL" }), {
-    target: { value: "https://example.com/recipes/soup" },
+    target: { value: "https://example.com/soup" },
   });
   fireEvent.click(screen.getByRole("button", { name: "Import recipe" }));
-
-  const pendingButton = screen.getByRole("button", { name: "Importing…" });
-  expect(pendingButton).toBeDisabled();
-  finishAction?.({ errors: {} });
+  expect(screen.getByRole("button", { name: "Importing…" })).toBeDisabled();
+  finish({ id: "new" });
   await waitFor(() => expect(screen.getByRole("button", { name: "Import recipe" })).toBeEnabled());
 });

@@ -8,3 +8,7 @@ owns the shared private shell; its navigation lives in `src/components/app`.
 Ingredient forms collect one optional free-text amount alongside the ingredient
 name and notes. Edit forms retain free-text amounts such as fractions, ranges,
 and phrases such as `to taste`.
+
+The website import form posts to `/api/v1/recipes/import`, keeps the entered URL
+when import fails, and opens the created recipe on success. The API returns only
+safe error codes and messages to the form.

@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { recipeCreateInputSchema, recipeUpdateInputSchema } from "@/lib/validation/recipe";
 import type { RecipeService } from "@/lib/recipes/recipe-service";
+import { importRecipeInput } from "@/lib/recipes/import-recipe";
+import { SourceReadError, validateSourceUrl } from "@/lib/recipes/read-source";
+import type { RecipeCreateInput } from "@/lib/validation/recipe";
 import type { RateLimiter } from "./rate-limit";
 import { defaultRateLimiter, recipeReadLimit, recipeWriteLimit } from "./rate-limit";
 import { logApiEvent, requestId } from "./observability";
@@ -9,6 +12,7 @@ type ApiDependencies = {
   getUser: () => Promise<{ id: string } | null>;
   getService: () => Promise<RecipeService>;
   limiter?: RateLimiter;
+  importInput?: (url: string) => Promise<RecipeCreateInput>;
 };
 
 const listQuerySchema = z.object({
@@ -73,6 +77,54 @@ export function createRecipeApi(deps: ApiDependencies) {
   }
 
   return {
+    async importRecipe(request: Request) {
+      const current = await context(request, true);
+      if ("error" in current) return current.error;
+      let input: unknown;
+      try {
+        input = await body(request);
+      } catch {
+        return responseError(400, "invalid_json", "Request body must be valid JSON.", current.id);
+      }
+      const parsed = z.object({ url: z.string() }).strict().safeParse(input);
+      if (!parsed.success)
+        return responseError(422, "invalid_request", "Enter a valid website URL.", current.id);
+      try {
+        validateSourceUrl(parsed.data.url);
+      } catch {
+        return responseError(422, "invalid_request", "Enter a valid website URL.", current.id);
+      }
+      try {
+        const recipeInput = await (deps.importInput ?? importRecipeInput)(parsed.data.url);
+        const recipe = await current.service.create(
+          current.user.id,
+          recipeCreateInputSchema.parse(recipeInput),
+          audit(request, current.id),
+        );
+        return Response.json(
+          { data: { id: recipe.id }, meta: { requestId: current.id } },
+          { status: 201, headers: { "cache-control": "private, no-store" } },
+        );
+      } catch (error) {
+        if (error instanceof SourceReadError) {
+          const code = error.message;
+          const message =
+            code === "blocked_destination"
+              ? "This website address cannot be imported."
+              : code === "access_denied"
+                ? "This website blocked automated access. Try another source or create the recipe manually."
+                : code === "no_recipe"
+                  ? "No complete recipe was found."
+                  : code === "extraction_failed"
+                    ? "The recipe could not be extracted. Please try again."
+                    : "The page could not be reached.";
+          return responseError(422, code, message, current.id);
+        }
+        if (error instanceof z.ZodError)
+          return responseError(422, "no_recipe", "No complete recipe was found.", current.id);
+        return unexpected(current.id);
+      }
+    },
     async listTags(request: Request) {
       const current = await context(request, false);
       if ("error" in current) return current.error;

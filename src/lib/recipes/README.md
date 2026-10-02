@@ -22,3 +22,10 @@ tag still has zero recipe associations at deletion time.
 `OwnerBoundTagService.merge(sourceTagId, targetTagId)` consolidates only the two
 explicitly selected IDs under the same verified owner; it never performs name
 matching.
+
+Website import uses `readSource(url)` to fetch bounded HTTP HTML after checking each
+DNS destination and redirect. `importRecipeInput(url)` extracts a canonical recipe
+through AI Gateway and validates it before the API calls `RecipeService.create`.
+The submitted URL remains the recipe's source URL.
+Sites that reject automated HTTP requests return `access_denied` so the form can
+explain that another source or manual entry is needed.
