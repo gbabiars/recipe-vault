@@ -1,5 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
+import { Archive, BookOpen, Copy, Pencil } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 
@@ -28,8 +29,12 @@ export const ActionOnly: Story = {
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button label="Recipe actions" />} />
       <DropdownMenuPopup>
-        <DropdownMenuItem onClick={onEdit}>Edit</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => undefined}>Duplicate</DropdownMenuItem>
+        <DropdownMenuItem icon={Pencil} onClick={onEdit}>
+          Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem icon={Copy} onClick={() => undefined}>
+          Duplicate
+        </DropdownMenuItem>
       </DropdownMenuPopup>
     </DropdownMenu>
   ),
@@ -39,6 +44,10 @@ export const ActionOnly: Story = {
     await userEvent.click(trigger);
     await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "true"));
     const edit = await within(document.body).findByRole("menuitem", { name: "Edit" });
+    const icon = edit.querySelector("svg");
+    await expect(edit.firstElementChild).toBe(icon);
+    await expect(icon).toHaveAttribute("aria-hidden", "true");
+    await expect(icon).toHaveAttribute("focusable", "false");
     await userEvent.click(edit);
     await expect(onEdit).toHaveBeenCalledTimes(1);
     await expect(within(document.body).queryByRole("menu")).not.toBeInTheDocument();
@@ -50,16 +59,31 @@ export const MixedActionsAndLinks: Story = {
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button label="Recipe actions" />} />
       <DropdownMenuPopup>
-        <DropdownMenuItem onClick={() => undefined}>Edit recipe</DropdownMenuItem>
-        <DropdownMenuLinkItem render={<Link href="#recipe-details" />}>
+        <DropdownMenuItem icon={Pencil} onClick={() => undefined}>
+          Edit recipe
+        </DropdownMenuItem>
+        <DropdownMenuLinkItem icon={BookOpen} render={<Link href="#recipe-details" />}>
           View details
         </DropdownMenuLinkItem>
+        <DropdownMenuItem icon={Copy} onClick={() => undefined}>
+          Duplicate recipe
+        </DropdownMenuItem>
       </DropdownMenuPopup>
     </DropdownMenu>
   ),
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Recipe actions" }));
+    const edit = await within(document.body).findByRole("menuitem", { name: "Edit recipe" });
     const link = await within(document.body).findByRole("menuitem", { name: "View details" });
+    const duplicate = await within(document.body).findByRole("menuitem", {
+      name: "Duplicate recipe",
+    });
+    await expect(edit.firstElementChild).toBe(edit.querySelector("svg"));
+    await expect(edit.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    await expect(link.firstElementChild).toBe(link.querySelector("svg"));
+    await expect(link.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    await expect(duplicate.firstElementChild).toBe(duplicate.querySelector("svg"));
+    await expect(duplicate.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
     await expect(link).toHaveAttribute("href", "#recipe-details");
     await userEvent.click(link);
     await expect(within(document.body).queryByRole("menu")).not.toBeInTheDocument();
@@ -71,8 +95,10 @@ export const DisabledAction: Story = {
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button label="Recipe actions" />} />
       <DropdownMenuPopup>
-        <DropdownMenuItem onClick={() => undefined}>Edit</DropdownMenuItem>
-        <DropdownMenuItem disabled onClick={onArchive}>
+        <DropdownMenuItem icon={Pencil} onClick={() => undefined}>
+          Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled icon={Archive} onClick={onArchive}>
           Archive
         </DropdownMenuItem>
       </DropdownMenuPopup>
@@ -81,8 +107,12 @@ export const DisabledAction: Story = {
   play: async ({ canvas }) => {
     onArchive.mockClear();
     await userEvent.click(canvas.getByRole("button", { name: "Recipe actions" }));
+    const edit = await within(document.body).findByRole("menuitem", { name: "Edit" });
     const archive = await within(document.body).findByRole("menuitem", { name: "Archive" });
+    await expect(edit.firstElementChild).toBe(edit.querySelector("svg"));
+    await expect(edit.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
     await expect(archive).toHaveAttribute("aria-disabled", "true");
+    await expect(archive.firstElementChild).toBe(archive.querySelector("svg"));
     await userEvent.click(archive);
     await expect(onArchive).not.toHaveBeenCalled();
     await expect(within(document.body).getByRole("menu")).toBeVisible();

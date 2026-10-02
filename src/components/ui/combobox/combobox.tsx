@@ -8,7 +8,12 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "../field";
 import { RequiredIndicator } from "../field/required-indicator";
 import styles from "./combobox.module.css";
 
-export type ComboboxOption = { value: string; label: string };
+export type ComboboxOption = {
+  value: string;
+  label: string;
+  /** Decorative leading icon shown in the option list; the label remains accessible text. */
+  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+};
 
 type CommonProps = {
   name: string;
@@ -278,17 +283,27 @@ export function ComboboxField(props: ComboboxFieldProps) {
             >
               {status && <Combobox.Status className={styles.status}>{status}</Combobox.Status>}
               <Combobox.List aria-labelledby={labelId} className={styles.list}>
-                {(item: ComboboxOption) => (
-                  <Combobox.Item key={item.value} value={item} className={styles.item}>
-                    {item.value.startsWith(CREATE_VALUE) && <Plus aria-hidden="true" size={16} />}
-                    {item.label}
-                    {!item.value.startsWith(CREATE_VALUE) && (
-                      <Combobox.ItemIndicator className={styles.itemIndicator}>
-                        <Check aria-hidden="true" size={16} />
-                      </Combobox.ItemIndicator>
-                    )}
-                  </Combobox.Item>
-                )}
+                {(item: ComboboxOption) => {
+                  const isCreateItem = item.value.startsWith(CREATE_VALUE);
+                  const Icon = item.icon;
+                  return (
+                    <Combobox.Item key={item.value} value={item} className={styles.item}>
+                      {isCreateItem ? (
+                        <Plus aria-hidden="true" size={16} />
+                      ) : (
+                        Icon && (
+                          <Icon className={styles.itemIcon} aria-hidden="true" focusable={false} />
+                        )
+                      )}
+                      {item.label}
+                      {!isCreateItem && (
+                        <Combobox.ItemIndicator className={styles.itemIndicator}>
+                          <Check aria-hidden="true" size={16} />
+                        </Combobox.ItemIndicator>
+                      )}
+                    </Combobox.Item>
+                  );
+                }}
               </Combobox.List>
             </Combobox.Popup>
           </Combobox.Positioner>

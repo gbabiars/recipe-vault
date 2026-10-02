@@ -12,19 +12,36 @@ Show a short list of secondary actions and navigation links from a caller-suppli
 DropdownMenu owns open state and composes the menu trigger with a popup. DropdownMenuPopup includes the portal and positioner; it fits its contents and defaults to side="bottom" and align="start". Both values can be set on the popup.
 
 ```tsx
+import { Archive, BookOpen, Pencil } from "lucide-react";
+import Link from "next/link";
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuLinkItem,
+  DropdownMenuPopup,
+  DropdownMenuTrigger,
+} from "recipe-vault";
+
 <DropdownMenu open={open} onOpenChange={setOpen}>
   <DropdownMenuTrigger render={<Button label="Actions" />} />
   <DropdownMenuPopup>
-    <DropdownMenuItem onClick={onEdit}>Edit</DropdownMenuItem>
-    <DropdownMenuItem disabled onClick={onArchive}>
+    <DropdownMenuItem icon={Pencil} onClick={onEdit}>
+      Edit
+    </DropdownMenuItem>
+    <DropdownMenuItem disabled icon={Archive} onClick={onArchive}>
       Archive
     </DropdownMenuItem>
-    <DropdownMenuLinkItem render={<Link href="/recipes" />}>Browse recipes</DropdownMenuLinkItem>
+    <DropdownMenuLinkItem icon={BookOpen} render={<Link href="/recipes" />}>
+      Browse recipes
+    </DropdownMenuLinkItem>
   </DropdownMenuPopup>
-</DropdownMenu>
+</DropdownMenu>;
 ```
 
-DropdownMenuItem represents an action and accepts the Base UI item props, including onClick and disabled. DropdownMenuLinkItem represents navigation and accepts either an href or a render element such as Next.js Link. Both close the menu when activated.
+DropdownMenuItem represents an action and accepts the Base UI item props, including onClick and disabled. DropdownMenuLinkItem represents navigation and accepts either an href or a render element such as Next.js Link. Both accept an optional SVG component through `icon`, render it as a decorative leading visual, and close the menu when activated. Keep visible item text descriptive; it remains the accessible name.
+
+Use a consistent icon treatment within each dropdown: either every menu item has a leading icon or none do. This applies across actions, links, and disabled rows.
 
 The trigger stays in its active button style while the menu is open.
 
