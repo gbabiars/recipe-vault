@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createRecipeApi } from "../src/lib/api/recipe-handlers";
-import { RecipeService } from "../src/lib/recipes/recipe-service";
-import type { RateLimiter } from "../src/lib/api/rate-limit";
+import { createRecipeApi } from "./recipe-handlers";
+import { RecipeService } from "../recipes/recipe-service";
+import type { RateLimiter } from "./rate-limit";
 
 const input = {
   title: "Pasta",

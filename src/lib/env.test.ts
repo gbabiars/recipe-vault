@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { validatePublicSupabaseConfig } from "../src/lib/env";
+import { validatePublicSupabaseConfig } from "./env";
 
 test("returns public Supabase configuration when required values are present", () => {
   const config = validatePublicSupabaseConfig({

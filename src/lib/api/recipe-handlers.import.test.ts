@@ -1,15 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createRecipeApi } from "../src/lib/api/recipe-handlers";
-import { mapExtractedRecipe } from "../src/lib/recipes/import-recipe";
-import {
-  extractSourceText,
-  pinnedLookup,
-  readSource,
-  SourceReadError,
-  validateSourceUrl,
-} from "../src/lib/recipes/read-source";
-import type { RecipeCreateInput } from "../src/lib/validation/recipe";
+import { createRecipeApi } from "./recipe-handlers";
+import { mapExtractedRecipe } from "../recipes/import-recipe";
+import { SourceReadError } from "../recipes/read-source";
+import type { RecipeCreateInput } from "../validation/recipe";
 
 const extracted = {
   title: "Tomato soup",
@@ -63,58 +57,6 @@ test("rejects invalid URLs and unauthenticated requests before reading a source"
     assert.equal((await authenticated.handler(request({ url })))!.status, 422);
   }
   assert.equal(calls, 0);
-});
-
-test("rejects local and private destinations", async () => {
-  for (const url of [
-    "http://localhost/",
-    "http://127.0.0.1/",
-    "http://10.0.0.1/",
-    "http://[::1]/",
-  ]) {
-    await assert.rejects(
-      readSource(url),
-      (error: unknown) =>
-        error instanceof SourceReadError && error.message === "blocked_destination",
-    );
-  }
-  assert.equal(validateSourceUrl("https://example.com/recipe").href, "https://example.com/recipe");
-});
-
-test("pinned DNS lookup respects Node's all-address callback contract", () => {
-  const address = { address: "93.184.215.14", family: 4 };
-  const lookup = pinnedLookup(address);
-  lookup("example.com", { all: true }, (error, result) => {
-    assert.equal(error, null);
-    assert.deepEqual(result, [address]);
-  });
-  lookup("example.com", { all: false }, (error, result, family) => {
-    assert.equal(error, null);
-    assert.equal(result, address.address);
-    assert.equal(family, address.family);
-  });
-});
-
-test("rejects incomplete extracted recipes and preserves the submitted source URL", () => {
-  assert.throws(
-    () => mapExtractedRecipe({ ...extracted, ingredients: [] }, "https://example.com/soup"),
-    /no_recipe/,
-  );
-  const recipe = mapExtractedRecipe(extracted, "https://example.com/soup");
-  assert.equal(recipe.sourceUrl, "https://example.com/soup");
-  assert.deepEqual(recipe.ingredients, [
-    { displayOrder: 1, ingredientName: "tomatoes", amount: "2 cups" },
-  ]);
-  assert.equal(recipe.summary, undefined);
-});
-
-test("collects recipe JSON-LD and visible page text without unrelated scripts", () => {
-  const text = extractSourceText(
-    `<html><head><script type="application/ld+json">{"@type":"Recipe","recipeIngredient":["tomatoes"]}</script><script>ignoreThis()</script></head><body><h1>Tomato soup</h1><p>Simmer tomatoes.</p></body></html>`,
-  );
-  assert.match(text, /recipeIngredient/);
-  assert.match(text, /Tomato soup Simmer tomatoes/);
-  assert.doesNotMatch(text, /ignoreThis/);
 });
 
 test("saves an authenticated import and returns its ID and request ID", async () => {

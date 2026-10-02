@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-const globalsCss = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
+const globalsCss = readFileSync(new URL("./globals.css", import.meta.url), "utf8");
 
 const primitiveScales = {
   neutral: {
