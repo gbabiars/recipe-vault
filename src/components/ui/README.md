@@ -10,6 +10,7 @@ The exported TypeScript types remain the authority for exact prop signatures.
 | Communicate a status or provide context    | `Alert`                                                                                                | [Alert](alert/alert.mdx), [stories](alert/alert.stories.tsx)                                                                                                         | Stories only                                                           |
 | Represent a person                         | `Avatar`                                                                                               | [Avatar](avatar/avatar.mdx), [stories](avatar/avatar.stories.tsx)                                                                                                    | Stories only                                                           |
 | Trigger an action or navigation            | `Button`, `IconButton`                                                                                 | [Button](button/button.mdx), [IconButton](button/icon-button.mdx), [Button stories](button/button.stories.tsx), [IconButton stories](button/icon-button.stories.tsx) | Button: recipe actions and create/edit links; IconButton: stories only |
+| Show supplemental context for a control    | `Tooltip`, `TooltipProvider`                                                                           | [Tooltip](tooltip/tooltip.mdx), [stories](tooltip/tooltip.stories.tsx)                                                                                               | Stories only                                                           |
 | Offer secondary actions or navigation      | `DropdownMenu`, `DropdownMenuTrigger`, `DropdownMenuPopup`, `DropdownMenuItem`, `DropdownMenuLinkItem` | [Dropdown menu](dropdown-menu/dropdown-menu.mdx), [stories](dropdown-menu/dropdown-menu.stories.tsx)                                                                 | Stories only                                                           |
 | Show a page's place in a hierarchy         | `Breadcrumbs`, `BreadcrumbsItem`                                                                       | [Breadcrumbs](breadcrumbs/breadcrumbs.mdx), [stories](breadcrumbs/breadcrumbs.stories.tsx)                                                                           | Stories only; ready for `PageHeader.overline`                          |
 | Group content or offer a whole-card action | `Card`                                                                                                 | [Card](card/card.mdx), [stories](card/card.stories.tsx)                                                                                                              | Recipe lists and details, settings                                     |
@@ -43,6 +44,9 @@ to CSS tokens.
   and `IconButton` for compact icon-only actions or destinations with a clear
   accessible name. Add `href` to render a link. See [Button](button/button.mdx)
   and [IconButton](button/icon-button.mdx).
+- **Supplemental context:** Use `Tooltip` for brief, non-interactive
+  descriptions on focusable controls. Keep important instructions visible or
+  use a Popover for interactive content. See [Tooltip](tooltip/tooltip.mdx).
 - **Secondary actions and navigation:** Use `DropdownMenu` when several
   secondary actions or destinations belong under one trigger. See
   [Dropdown menu](dropdown-menu/dropdown-menu.mdx).

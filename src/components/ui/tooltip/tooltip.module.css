@@ -1,0 +1,19 @@
+.positioner {
+  z-index: 50;
+}
+
+.popup {
+  box-sizing: border-box;
+  max-width: min(24rem, calc(100vw - var(--space-400)));
+  border-radius: var(--radius-050);
+  padding: var(--space-050) var(--space-100);
+  background: var(--color-background-tooltip);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-raised);
+  font-size: var(--font-size-text-small);
+  line-height: var(--line-height-text-small);
+}
+
+.popup[data-closed] {
+  visibility: hidden;
+}
