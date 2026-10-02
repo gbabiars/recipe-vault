@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { recipeCreateInputSchema, recipeUpdateInputSchema } from "../src/lib/validation/recipe";
+import { recipeCreateInputSchema, recipeUpdateInputSchema } from "./recipe";
 
 const validRecipe = {
   title: "Lemon Pasta",
@@ -84,4 +84,15 @@ test("rejects retired dietary fields in create and update commands", () => {
     false,
   );
   assert.equal(recipeUpdateInputSchema.safeParse({ dietaryFlags: ["vegan"] }).success, false);
+});
+
+const input = recipeCreateInputSchema.parse({
+  title: "Soup",
+  tags: [" Dinner  Party ", "dinner party", "Week  Night"],
+  ingredients: [{ displayOrder: 1, amount: "1 cup", ingredientName: "water" }],
+  steps: [{ stepOrder: 1, instruction: "Boil." }],
+});
+
+test("recipe tag names collapse case, outer whitespace, and repeated spaces", () => {
+  assert.deepEqual(input.tags, ["dinner party", "week night"]);
 });

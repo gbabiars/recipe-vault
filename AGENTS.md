@@ -19,8 +19,9 @@ foundation deployable without adding product behavior that has not been requeste
 - Always run `pnpm format` after making changes, before running checks or
   handing off work. The pre-commit hook formats staged files as a safeguard,
   but it does not replace this required formatting step.
-- Add or update focused tests when changing observable behavior. Colocate
-  component tests with their components; put other tests in `tests/`.
+- Add or update focused tests when changing observable behavior. Colocate each
+  test file with the module it exercises; use `.test.tsx` for component tests
+  and `.test.ts` for unit tests.
 - Test UI interactions with the real components in Vitest's Playwright-backed
   `components` browser project. Do not mock a UI component whose rendering or
   interaction is under test; mock unrelated server or service boundaries.

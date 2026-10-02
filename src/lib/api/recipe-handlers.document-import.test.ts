@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createRecipeApi } from "../src/lib/api/recipe-handlers";
-import { mapExtractedRecipe } from "../src/lib/recipes/import-recipe";
-import { DocumentReadError, MAX_PDF_BYTES } from "../src/lib/recipes/read-document";
-import type { RecipeCreateInput } from "../src/lib/validation/recipe";
+import { createRecipeApi } from "./recipe-handlers";
+import { mapExtractedRecipe } from "../recipes/import-recipe";
+import { DocumentReadError, MAX_PDF_BYTES } from "../recipes/read-document";
+import type { RecipeCreateInput } from "../validation/recipe";
 
 const pdfBytes = new TextEncoder().encode("%PDF-1.7 mock");
 const extracted = {

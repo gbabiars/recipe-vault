@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 import test from "node:test";
-import { createLaunchDarklyUserConfig } from "../src/lib/launchdarkly";
+import { createLaunchDarklyUserConfig } from "./launchdarkly";
 
 test("creates a secure LaunchDarkly user context from the Clerk ID", () => {
   const config = createLaunchDarklyUserConfig("user_ada", {

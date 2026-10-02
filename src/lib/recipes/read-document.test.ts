@@ -5,7 +5,7 @@ import {
   DocumentReadError,
   MAX_PDF_BYTES,
   readDocumentText,
-} from "../src/lib/recipes/read-document";
+} from "./read-document";
 
 function pdf(pages: string[]): Uint8Array {
   const objects: string[] = [];

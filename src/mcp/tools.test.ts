@@ -1,9 +1,181 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { TagRepository } from "../src/lib/db/tag-repository";
-import { OwnerBoundTagService, TagService } from "../src/lib/recipes/tag-service";
-import { createTagMcpTools } from "../src/mcp/tools";
-import type { RateLimiter } from "../src/lib/api/rate-limit";
+import { createRecipeMcpTools, createTagMcpTools } from "./tools";
+import type { RateLimiter } from "../lib/api/rate-limit";
+
+const recipe = {
+  title: "Owner Pasta",
+  tags: ["dinner"],
+  ingredients: [{ displayOrder: 1, amount: "1 box", ingredientName: "pasta" }],
+  steps: [{ stepOrder: 1, instruction: "Cook." }],
+};
+
+function resultText(result: { content: Array<{ text: string }> }) {
+  return JSON.parse(result.content[0].text) as Record<string, unknown>;
+}
+
+function setup(ownerId = "owner-a", limiter?: RateLimiter) {
+  const rows = new Map<
+    string,
+    typeof recipe & {
+      id: string;
+      ownerId: string;
+      notes?: string;
+      summary?: string;
+      prepTimeMinutes?: number;
+      cookTimeMinutes?: number;
+      totalTimeMinutes?: number;
+      servings?: number;
+      sourceUrl?: string;
+      createdAt?: string;
+      updatedAt?: string;
+    }
+  >();
+  const audit: unknown[] = [];
+  const service = {
+    async listPage() {
+      return {
+        items: [...rows.values()].filter((row) => row.ownerId === ownerId),
+        total: rows.size,
+      };
+    },
+    async get(recipeId: string) {
+      const found = rows.get(recipeId);
+      return found?.ownerId === ownerId ? found : null;
+    },
+    async create(input: typeof recipe, metadata: unknown) {
+      const created = { ...input, id: `recipe-${rows.size + 1}`, ownerId };
+      rows.set(created.id, created);
+      audit.push({ id: ownerId, metadata });
+      return created;
+    },
+  };
+  return {
+    tools: createRecipeMcpTools({
+      userId: ownerId,
+      service: service as never,
+      requestId: "request-1",
+      limiter,
+    }),
+    rows,
+    audit,
+  };
+}
+
+test("MCP search returns concise cards for the authenticated owner only", async () => {
+  const { tools, rows } = setup();
+  rows.set("mine", { ...recipe, id: "mine", ownerId: "owner-a", notes: "private" });
+  rows.set("other", { ...recipe, id: "other", ownerId: "owner-b", notes: "not visible" });
+  const body = resultText(await tools.search_recipes({}));
+  assert.deepEqual(body.recipes, [{ id: "mine", title: "Owner Pasta", tags: ["dinner"] }]);
+});
+
+test("MCP rejects retired dietary search and save inputs", async () => {
+  const { tools } = setup();
+  assert.equal((await tools.search_recipes({ dietaryFlags: ["vegan"] })).isError, true);
+  assert.equal((await tools.save_recipe({ ...recipe, dietaryFlags: ["vegan"] })).isError, true);
+});
+
+test("MCP get does not enumerate another owner's recipe", async () => {
+  const { tools, rows } = setup();
+  rows.set("00000000-0000-4000-8000-000000000002", {
+    ...recipe,
+    id: "00000000-0000-4000-8000-000000000002",
+    ownerId: "owner-b",
+  });
+  const body = resultText(
+    await tools.get_recipe({ recipeId: "00000000-0000-4000-8000-000000000002" }),
+  );
+  assert.deepEqual(body, { error: "Recipe not found." });
+  assert.equal("structuredContent" in body, false);
+});
+
+test("MCP get keeps its JSON fallback and returns a display-only recipe projection", async () => {
+  const { tools, rows } = setup();
+  const recipeId = "00000000-0000-4000-8000-000000000003";
+  rows.set(recipeId, {
+    ...recipe,
+    id: recipeId,
+    ownerId: "owner-a",
+    summary: "Fast and savory.",
+    prepTimeMinutes: 5,
+    cookTimeMinutes: 10,
+    totalTimeMinutes: 15,
+    servings: 2,
+    notes: "Use a hot pan.\nRest before serving.",
+    sourceUrl: "https://example.test/burger",
+    createdAt: "2026-09-01T12:00:00.000Z",
+    updatedAt: "2026-09-02T12:00:00.000Z",
+  });
+
+  const result = await tools.get_recipe({ recipeId });
+  const fallback = resultText(result);
+  const structuredContent = (result as { structuredContent?: Record<string, unknown> })
+    .structuredContent;
+
+  assert.deepEqual(fallback, { recipe: rows.get(recipeId) });
+  assert.deepEqual(structuredContent, {
+    recipe: {
+      title: "Owner Pasta",
+      summary: "Fast and savory.",
+      prepTimeMinutes: 5,
+      cookTimeMinutes: 10,
+      totalTimeMinutes: 15,
+      servings: 2,
+      tags: ["dinner"],
+      ingredients: [{ amount: "1 box", ingredientName: "pasta" }],
+      steps: [{ instruction: "Cook." }],
+      notes: "Use a hot pan.\nRest before serving.",
+      sourceUrl: "https://example.test/burger",
+    },
+  });
+  assert.equal(JSON.stringify(structuredContent).includes("ownerId"), false);
+  assert.equal(JSON.stringify(structuredContent).includes("createdAt"), false);
+  assert.equal(JSON.stringify(structuredContent).includes("updatedAt"), false);
+});
+
+test("MCP rejects malformed recipe IDs without querying or exposing recipe existence", async () => {
+  const { tools, rows } = setup();
+  rows.set("00000000-0000-4000-8000-000000000002", {
+    ...recipe,
+    id: "00000000-0000-4000-8000-000000000002",
+    ownerId: "owner-a",
+  });
+  const result = await tools.get_recipe({ recipeId: "not-a-uuid" });
+  assert.equal(result.isError, true);
+  assert.deepEqual(resultText(result), { error: "Recipe not found." });
+  assert.equal("structuredContent" in result, false);
+  assert.equal(rows.size, 1);
+});
+
+test("MCP save validates first, derives owner, and records a safe audit event", async () => {
+  const { tools, rows, audit } = setup();
+  const invalid = await tools.save_recipe({ ...recipe, ownerId: "attacker" });
+  assert.equal(invalid.isError, true);
+  assert.equal(rows.size, 0);
+  const legacyIngredients = await tools.save_recipe({
+    ...recipe,
+    ingredients: [{ displayOrder: 1, quantity: 1, unit: "box", ingredientName: "pasta" }],
+  });
+  assert.equal(legacyIngredients.isError, true);
+  assert.equal(rows.size, 0);
+  const saved = resultText(await tools.save_recipe(recipe));
+  assert.deepEqual(saved, { recipeId: "recipe-1", message: "Recipe saved." });
+  assert.equal(rows.get("recipe-1")?.ownerId, "owner-a");
+  assert.deepEqual(audit, [
+    { id: "owner-a", metadata: { requestId: "request-1", method: "MCP save_recipe" } },
+  ]);
+});
+
+test("MCP tool rate limits are deterministic", async () => {
+  const limiter: RateLimiter = { check: () => ({ allowed: false, retryAfterSeconds: 1 }) };
+  const { tools } = setup("owner-a", limiter);
+  assert.equal((await tools.search_recipes({})).isError, true);
+  const get = await tools.get_recipe({ recipeId: "00000000-0000-4000-8000-000000000003" });
+  assert.equal(get.isError, true);
+  assert.equal("structuredContent" in get, false);
+  assert.equal((await tools.save_recipe(recipe)).isError, true);
+});
 
 const firstTag = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -15,124 +187,6 @@ const secondTag = {
   name: "lunch",
   usageCount: 0,
 };
-
-function resultText(result: { content: Array<{ text: string }> }) {
-  return JSON.parse(result.content[0].text) as Record<string, unknown>;
-}
-
-test("tag repository passes an explicit owner and maps the RPC lookahead page", async () => {
-  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
-  const repository = new TagRepository({
-    rpc: async (name: string, args: Record<string, unknown>) => {
-      calls.push({ name, args });
-      return {
-        data: [
-          { id: firstTag.id, name: firstTag.name, usage_count: "4" },
-          { id: secondTag.id, name: secondTag.name, usage_count: 0 },
-        ],
-        error: null,
-      };
-    },
-  } as never);
-  const page = await repository.list("owner-a", {
-    usage: "all",
-    sort: "name_asc",
-    limit: 1,
-  });
-
-  assert.deepEqual(page, { tags: [firstTag], hasMore: true });
-  assert.equal(calls[0].name, "recipe_vault_list_tag_inventory");
-  assert.equal(calls[0].args.target_owner_id, "owner-a");
-  assert.equal(calls[0].args.target_limit, 2);
-});
-
-test("tag repository passes owner and stable ID to the guarded delete RPC", async () => {
-  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
-  const repository = new TagRepository({
-    rpc: async (name: string, args: Record<string, unknown>) => {
-      calls.push({ name, args });
-      return { data: false, error: null };
-    },
-  } as never);
-
-  assert.equal(await repository.deleteUnused("owner-a", secondTag.id), false);
-  assert.deepEqual(calls, [
-    {
-      name: "recipe_vault_delete_unused_tag",
-      args: { target_owner_id: "owner-a", target_tag_id: secondTag.id },
-    },
-  ]);
-});
-
-test("tag repository passes both explicitly selected IDs and owner to merge RPC", async () => {
-  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
-  const repository = new TagRepository({
-    rpc: async (name: string, args: Record<string, unknown>) => {
-      calls.push({ name, args });
-      return { data: true, error: null };
-    },
-  } as never);
-
-  assert.equal(await repository.merge("owner-a", firstTag.id, secondTag.id), true);
-  assert.deepEqual(calls, [
-    {
-      name: "recipe_vault_merge_tags",
-      args: {
-        target_owner_id: "owner-a",
-        source_tag_id: firstTag.id,
-        target_tag_id: secondTag.id,
-      },
-    },
-  ]);
-});
-
-test("owner-bound tag service supplies its verified owner to the repository", async () => {
-  let requestedOwner: string | undefined;
-  const repository = new TagRepository({
-    rpc: async (_name: string, args: { target_owner_id: string }) => {
-      requestedOwner = args.target_owner_id;
-      return { data: [], error: null };
-    },
-  } as never);
-  const service = new OwnerBoundTagService("verified-owner", new TagService(repository));
-
-  await service.list({ usage: "unused", sort: "usage_asc", limit: 25 });
-  assert.equal(requestedOwner, "verified-owner");
-});
-
-test("owner-bound tag service never accepts an owner from delete input", async () => {
-  const calls: Array<Record<string, unknown>> = [];
-  const repository = new TagRepository({
-    rpc: async (_name: string, args: Record<string, unknown>) => {
-      calls.push(args);
-      return { data: true, error: null };
-    },
-  } as never);
-  const service = new OwnerBoundTagService("verified-owner", new TagService(repository));
-
-  assert.equal(await service.deleteUnused(secondTag.id), true);
-  assert.deepEqual(calls, [{ target_owner_id: "verified-owner", target_tag_id: secondTag.id }]);
-});
-
-test("owner-bound tag service binds both merge IDs to its verified owner", async () => {
-  const calls: Array<Record<string, unknown>> = [];
-  const repository = new TagRepository({
-    rpc: async (_name: string, args: Record<string, unknown>) => {
-      calls.push(args);
-      return { data: true, error: null };
-    },
-  } as never);
-  const service = new OwnerBoundTagService("verified-owner", new TagService(repository));
-
-  assert.equal(await service.merge(firstTag.id, secondTag.id), true);
-  assert.deepEqual(calls, [
-    {
-      target_owner_id: "verified-owner",
-      source_tag_id: firstTag.id,
-      target_tag_id: secondTag.id,
-    },
-  ]);
-});
 
 test("MCP list_tags defaults to the full alphabetic inventory and returns only tag fields", async () => {
   const calls: unknown[] = [];
