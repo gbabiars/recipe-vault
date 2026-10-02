@@ -30,7 +30,22 @@ breakpoints.
       <td>
         <code>--color-background-&#42;</code>
       </td>
-      <td>Canvas, cards, overlays, and disabled surfaces use solid backgrounds.</td>
+      <td>
+        Canvas and component fills. Cards are content surfaces; dropdown and combobox popups and the
+        mobile drawer are floating surfaces. Control, chip, status, and interaction fills keep their
+        existing roles.
+      </td>
+    </tr>
+    <tr>
+      <td>Elevation</td>
+      <td>
+        <code>--shadow-subtle</code>, <code>--shadow-raised</code>, <code>--shadow-floating</code>
+      </td>
+      <td>
+        <code>subtle</code> is reserved for future card elevation; cards stay flat for now. Dropdown
+        and combobox popups use <code>raised</code>. The mobile drawer and future modal surfaces use{" "}
+        <code>floating</code>.
+      </td>
     </tr>
     <tr>
       <td>Text and borders</td>

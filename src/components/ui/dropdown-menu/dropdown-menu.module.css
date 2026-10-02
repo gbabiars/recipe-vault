@@ -13,7 +13,7 @@
   padding: var(--space-050);
   background: var(--color-background-overlay);
   color: var(--color-text-primary);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+  box-shadow: var(--shadow-raised);
 }
 
 .popup[data-closed] {

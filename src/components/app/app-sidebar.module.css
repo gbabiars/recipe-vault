@@ -156,7 +156,7 @@
   padding: var(--space-200);
   overflow-y: auto;
   background: var(--color-background-surface);
-  box-shadow: 0 0 2rem rgb(0 0 0 / 20%);
+  box-shadow: var(--shadow-floating);
 }
 
 .drawerHeader {
