@@ -15,8 +15,9 @@ Show a page's place in a hierarchy and let people visit ancestor pages. Use in
 Place `BreadcrumbsItem` children in order. By default, end with one plain-text
 `current` item so the trail includes the current page. When a nearby heading
 already names the current page, set `trailingSeparator` and supply only ancestor
-items; the trail then ends with `/`. Put a native anchor or Next.js `Link` in each
-ancestor item. The trail wraps at narrow widths. Ancestor links use the link
+items; the trail then ends with `/`. Give each ancestor item an `href`; it uses
+the app's configured link renderer, or a native anchor without a provider. The
+trail wraps at narrow widths. Ancestor links use the link
 color; the current item and separators use the quieter secondary text color.
 
 ## Accessibility

@@ -49,9 +49,9 @@ to CSS tokens.
   and `IconButton` for compact icon-only actions or destinations with a clear
   accessible name. Add `href` to render a link through the app's configured
   renderer. `LinkRendererProvider` sets that renderer for Button, IconButton,
-  Card, and DropdownMenuLinkItem; each retains `render` for an individual
-  override. Without a provider, links use native anchors. See [Button](button/button.mdx)
-  and [IconButton](button/icon-button.mdx).
+  Card, DropdownMenuLinkItem, and BreadcrumbsItem. The action components retain
+  `render` for an individual override. Without a provider, links use native
+  anchors. See [Button](button/button.mdx) and [IconButton](button/icon-button.mdx).
 
   Configure the provider in the app root with an anchor-compatible link element,
   such as `<LinkRendererProvider link={<Link href="/" />}>`. The link's `href` is

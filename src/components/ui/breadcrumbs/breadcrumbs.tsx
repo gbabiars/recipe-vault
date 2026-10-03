@@ -1,14 +1,20 @@
-import type { HTMLAttributes, LiHTMLAttributes, ReactElement } from "react";
+"use client";
+
+import * as React from "react";
 import { cn } from "cn";
 
+import { useLinkRenderer } from "../link-renderer";
 import styles from "./breadcrumbs.module.css";
 
-type BreadcrumbsProps = HTMLAttributes<HTMLElement> & {
+type BreadcrumbsProps = React.HTMLAttributes<HTMLElement> & {
   trailingSeparator?: boolean;
 };
 
-type BreadcrumbsItemProps = Omit<LiHTMLAttributes<HTMLLIElement>, "children"> &
-  ({ current: true; children: string | number } | { current?: false; children: ReactElement });
+type BreadcrumbsItemProps = Omit<React.LiHTMLAttributes<HTMLLIElement>, "children"> &
+  (
+    | { current: true; href?: never; children: string | number }
+    | { current?: false; href: string; children: React.ReactNode }
+  );
 
 export function Breadcrumbs({
   children,
@@ -27,13 +33,20 @@ export function Breadcrumbs({
 
 export function BreadcrumbsItem({
   current = false,
+  href,
   children,
   className,
   ...props
 }: BreadcrumbsItemProps) {
+  const link = useLinkRenderer();
+
   return (
     <li className={cn(styles.item, className)} {...props}>
-      {current ? <span aria-current="page">{children}</span> : children}
+      {current ? (
+        <span aria-current="page">{children}</span>
+      ) : (
+        React.cloneElement(link, { href, children })
+      )}
     </li>
   );
 }
