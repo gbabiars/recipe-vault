@@ -13,6 +13,7 @@ export type TagListOptions = {
   sort: TagSortOrder;
   limit: number;
   after?: TagCursorPosition;
+  before?: TagCursorPosition;
 };
 export type TagInventoryItem = {
   id: string;
@@ -43,6 +44,9 @@ export class TagRepository {
       after_name: options.after?.name ?? null,
       after_tag_id: options.after?.id ?? null,
       target_limit: options.limit + 1,
+      before_usage_count: options.before?.usageCount ?? null,
+      before_name: options.before?.name ?? null,
+      before_tag_id: options.before?.id ?? null,
     });
     if (error || !Array.isArray(data)) throw new Error("Could not load tags.");
 

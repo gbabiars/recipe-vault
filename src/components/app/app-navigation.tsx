@@ -21,6 +21,7 @@ type AppNavigationProps = {
 
 export function AppNavigation({ pathname, userName, onSignOut, onSelect }: AppNavigationProps) {
   const recipesActive = pathname === "/recipes" || pathname.startsWith("/recipes/");
+  const tagsActive = pathname === "/tags" || pathname.startsWith("/tags/");
   const settingsActive = pathname === "/settings" || pathname.startsWith("/user-profile");
   const accountMenuTriggerClassName = settingsActive
     ? `${styles.accountMenuTrigger} ${styles.active}`
@@ -37,6 +38,9 @@ export function AppNavigation({ pathname, userName, onSignOut, onSelect }: AppNa
           onClick={onSelect}
         >
           Recipes
+        </AppNavLink>
+        <AppNavLink href="/tags" active={tagsActive} current={tagsActive} onClick={onSelect}>
+          Tags
         </AppNavLink>
       </nav>
       <div className={styles.footer}>
