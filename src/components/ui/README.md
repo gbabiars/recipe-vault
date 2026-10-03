@@ -19,6 +19,7 @@ The exported TypeScript types remain the authority for exact prop signatures.
 | Search and choose labeled values           | `ComboboxField`                                                                                        | [Combobox](combobox/combobox.mdx), [stories](combobox/combobox.stories.tsx)                                                                                          | Reusable form field; no recipe form use yet                            |
 | Compose a custom form field                | `Field`, `FieldLabel`, `FieldDescription`, `FieldError`, `FieldItem`, `Fieldset`, `FieldsetLegend`     | [Field](field/field.mdx), [stories](field/field.stories.tsx)                                                                                                         | Used by choice and text controls internally                            |
 | Lay out columns                            | `Grid`, `GridItem`                                                                                     | [Grid](grid/grid.mdx), [stories](grid/grid.stories.tsx)                                                                                                              | Stories only; recipe list currently uses feature styling               |
+| Show a simple list of titled rows          | `List`, `ListItem`                                                                                     | [List](list/list.mdx), [stories](list/list.stories.tsx)                                                                                                              | Stories only                                                           |
 | Introduce a section                        | `Heading`                                                                                              | [Heading](heading/heading.mdx), [stories](heading/heading.stories.tsx)                                                                                               | Recipe cards and forms, settings                                       |
 | Lay out a row                              | `Inline`                                                                                               | [Inline](inline/inline.mdx), [stories](inline/inline.stories.tsx)                                                                                                    | Recipe metadata and delete actions                                     |
 | Compose a private page                     | `PageLayout`, `PageHeader`, `PageContent`                                                              | [Page layout](page-layout/page-layout.mdx), [stories](page-layout/page-layout.stories.tsx)                                                                           | Private recipe, settings, and profile pages                            |
@@ -49,7 +50,7 @@ to CSS tokens.
   and `IconButton` for compact icon-only actions or destinations with a clear
   accessible name. Add `href` to render a link through the app's configured
   renderer. `LinkRendererProvider` sets that renderer for Button, IconButton,
-  Card, DropdownMenuLinkItem, and BreadcrumbsItem. The action components retain
+  Card, ListItem, DropdownMenuLinkItem, and BreadcrumbsItem. The action components retain
   `render` for an individual override. Without a provider, links use native
   anchors. See [Button](button/button.mdx) and [IconButton](button/icon-button.mdx).
 
@@ -64,9 +65,10 @@ to CSS tokens.
 - **Secondary actions and navigation:** Use `DropdownMenu` when several
   secondary actions or destinations belong under one trigger. See
   [Dropdown menu](dropdown-menu/dropdown-menu.mdx).
-- **Card and list:** `Card` can be a list item with a primary link; arrange its
-  title, summary, metadata, and chips with `Stack` and `Inline`. See
-  [card](card/card.mdx) and the existing
+- **Card and list:** Use `List` and `ListItem` for simple titled rows. `Card` can
+  be a list item when it needs richer content; arrange its title, summary,
+  metadata, and chips with `Stack` and `Inline`. See [list](list/list.mdx),
+  [card](card/card.mdx), and the existing
   [recipe list card story](../../features/recipes/recipe-list-card.stories.tsx).
 
 ## Open questions
