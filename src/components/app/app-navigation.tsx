@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
+import { BookOpen, ChevronDown, Tags } from "lucide-react";
 import { Avatar } from "../ui/avatar";
 import {
   DropdownMenu,
@@ -40,13 +40,20 @@ export function AppNavigation({
       <nav className={styles.nav} aria-label="Primary">
         <AppNavLink
           href="/recipes"
+          icon={BookOpen}
           active={recipesActive}
           current={recipesActive}
           onClick={onSelect}
         >
           Recipes
         </AppNavLink>
-        <AppNavLink href="/tags" active={tagsActive} current={tagsActive} onClick={onSelect}>
+        <AppNavLink
+          href="/tags"
+          icon={Tags}
+          active={tagsActive}
+          current={tagsActive}
+          onClick={onSelect}
+        >
           Tags
         </AppNavLink>
       </nav>
