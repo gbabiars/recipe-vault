@@ -179,6 +179,25 @@ test("defines the same semantic token API for light and dark themes", () => {
   assert.match(globalsCss, /:root:not\(\[data-theme="light"\]\)/);
 });
 
+test("defines composite typography tokens from the existing typography primitives", () => {
+  const styles = [
+    ...Array.from({ length: 6 }, (_, index) => `heading-${index + 1}`),
+    "text-small",
+    "text-medium",
+    "text-large",
+  ];
+
+  for (const style of styles) {
+    const match = globalsCss.match(new RegExp(`--font-${style}: ([^;]+);`));
+
+    assert.ok(match, `Expected --font-${style} to be defined`);
+    assert.match(match[1], new RegExp(`var\\(--font-weight-${style}\\)`));
+    assert.match(match[1], new RegExp(`var\\(--font-size-${style}\\)`));
+    assert.match(match[1], new RegExp(`var\\(--line-height-${style}\\)`));
+    assert.match(match[1], /var\(--font-family-sans(?:,|\))/);
+  }
+});
+
 test("neutral button state colors stay transparent in every theme", () => {
   const lightTheme = globalsCss.slice(0, globalsCss.indexOf(':root[data-theme="dark"]'));
   const explicitDarkTheme = globalsCss.slice(
