@@ -1,0 +1,52 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./list.stories";
+
+<Meta of={Stories} />
+
+# List and ListItem
+
+## Purpose and choice
+
+Use List for a simple collection of titled rows. Use Card when an item needs its
+own surface or more complex composition.
+
+## Composition
+
+List renders a `ul` and ListItem renders an `li`. Dividers appear only between
+adjacent items; there is no outer border. Choose one icon treatment for the whole
+list: pass `icon` to every ListItem or to none. Icons use the existing SVG
+component type and are decorative.
+
+```tsx
+<List>
+  <ListItem
+    icon={BookOpen}
+    title="Tomato soup"
+    description={
+      <>
+        A family recipe · <a href="/tags/quick">Quick meals</a>
+      </>
+    }
+    href="/recipes/tomato-soup"
+  />
+  <ListItem icon={BookOpen} title="Roast vegetables" href="/recipes/roast-vegetables" />
+</List>
+```
+
+The title uses large text and the optional description uses medium text. A
+ListItem without `href` is static. With `href`, its visible title is the link
+through `LinkRendererProvider`, or a native anchor without a provider. Clicking
+unused row space activates that title link, including modifier and middle clicks.
+Description links and controls remain independent.
+
+## Content and accessibility
+
+Give every item a short, readable title. Linked titles provide the link's
+accessible name, so title content must be non-interactive. Keep any extra links
+or controls in the description. The title link follows the browser tab order;
+its focus visibly highlights the row.
+
+## Stories
+
+<Canvas of={Stories.WithIcons} />
+<Canvas of={Stories.WithoutIcons} />
