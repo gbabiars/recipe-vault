@@ -23,4 +23,8 @@ test("mobile navigation marks the tags destination as current", () => {
 
   expect(tags).toHaveAttribute("href", "/tags");
   expect(tags).toHaveAttribute("aria-current", "page");
+  const icon = tags.querySelector("svg");
+  expect(tags.firstElementChild).toBe(icon);
+  expect(icon).toHaveAttribute("aria-hidden", "true");
+  expect(icon).toHaveAttribute("focusable", "false");
 });

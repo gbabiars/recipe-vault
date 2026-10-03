@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { BookOpen } from "lucide-react";
 import { expect, test, vi } from "vitest";
 import { AppBrand } from "./app-brand";
 import { AppNavLink } from "./app-nav-link";
@@ -12,7 +13,7 @@ test("brand links to recipes and nav links expose active and current states sepa
       <AppNavLink href="/settings" active>
         Settings
       </AppNavLink>
-      <AppNavLink href="/recipes" active current>
+      <AppNavLink href="/recipes" icon={BookOpen} active current>
         Recipes
       </AppNavLink>
     </>,
@@ -24,6 +25,11 @@ test("brand links to recipes and nav links expose active and current states sepa
   );
   expect(screen.getByRole("link", { name: "Settings" }).hasAttribute("aria-current")).toBe(false);
   expect(screen.getByRole("link", { name: "Recipes" }).getAttribute("aria-current")).toBe("page");
+  const recipes = screen.getByRole("link", { name: "Recipes" });
+  const icon = recipes.querySelector("svg");
+  expect(recipes.firstElementChild).toBe(icon);
+  expect(icon).toHaveAttribute("aria-hidden", "true");
+  expect(icon).toHaveAttribute("focusable", "false");
 });
 
 test.each([
@@ -73,6 +79,13 @@ test("sidebar places Settings in the account menu instead of primary navigation"
   ]);
   expect(screen.queryByRole("link", { name: "Settings", hidden: true })).toBeNull();
   expect(screen.getByRole("link", { name: "Tags", hidden: true })).toHaveAttribute("href", "/tags");
+  for (const label of ["Recipes", "Tags"]) {
+    const link = screen.getByRole("link", { name: label, hidden: true });
+    const icon = link.querySelector("svg");
+    expect(link.firstElementChild).toBe(icon);
+    expect(icon).toHaveAttribute("aria-hidden", "true");
+    expect(icon).toHaveAttribute("focusable", "false");
+  }
 
   const accountMenu = screen.getByRole("button", { name: "Ada Lovelace", hidden: true });
   expect(accountMenu.firstElementChild?.textContent).toBe("AL");
