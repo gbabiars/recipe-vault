@@ -15,6 +15,7 @@
     "node_modules/**",
     "coverage/**",
     "storybook-static/**",
+    "src/mcp/generated/**",
     ".agents/**"
   ],
   "rules": {
