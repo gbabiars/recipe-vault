@@ -7,6 +7,13 @@ values ('user_tags_owner', 'Backfill fixture', array['  Dinner  ', 'dinner', 'We
 do $verify$
 declare rid uuid; tid uuid; unused_id uuid; before_count integer;
 begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'tags'
+      and column_name = 'description' and is_nullable = 'YES'
+  ) then
+    raise exception 'nullable tag description column is missing';
+  end if;
   if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'recipes' and column_name = 'dietary_flags') then
     raise exception 'retired dietary_flags column still exists';
   end if;
@@ -16,6 +23,12 @@ begin
   end if;
   if (select count(*) from public.recipe_tags where recipe_id = rid) <> 3 then
     raise exception 'backfill lost associations or duplicated a canonical tag';
+  end if;
+  if not exists (
+    select 1 from public.tags
+    where owner_id = 'user_tags_owner' and name = 'dinner' and description is null
+  ) then
+    raise exception 'recipe-generated tag without a description was not preserved';
   end if;
   if (select count(*) from public.tags where owner_id = 'user_tags_owner' and name = 'dinner') <> 1 then
     raise exception 'exact duplicates did not resolve to one tag';

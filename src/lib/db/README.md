@@ -29,13 +29,17 @@ alphabetical order for the existing HTTP endpoint. An empty search lists the
 first 25; nonempty search matches a literal substring case-insensitively. The
 caller's JWT and RLS still enforce ownership.
 
-`tag-repository.ts` owns aggregate tag inventory reads for MCP. Its
+`tag-repository.ts` owns aggregate tag inventory reads for the application and MCP. Its
 `TagRepository.list(ownerId, options)` calls the stable
 `recipe_vault_list_tag_inventory` RPC, which counts distinct associated recipes
 and applies owner, search, usage, sort, and keyset cursor predicates in one
-query. The RPC is `SECURITY INVOKER`, has an empty search path, and can be
-executed only by `service_role`. Every call supplies the owner ID bound by the
-verified MCP adapter; no model-controlled identity reaches the database.
+query. It also returns the optional nullable free-text tag description; a
+database `NULL` maps to an omitted `description` property. The RPC is
+`SECURITY INVOKER`, has an empty search path, and can be executed by
+`authenticated` and `service_role`. An
+authenticated request uses its session JWT, so the existing owner RLS policies
+filter both tags and associations. The verified MCP adapter still supplies its
+bound owner ID while using its server-only `service_role` client.
 
 `TagRepository.deleteUnused(ownerId, tagId)` calls the restricted
 `recipe_vault_delete_unused_tag` RPC. It locks the owned tag row before

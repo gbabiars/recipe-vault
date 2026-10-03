@@ -13,8 +13,9 @@ same tag rule to legacy array writes and existing data during backfill.
 Recipe listing filters by canonical tag name. `RecipeService.listTags(ownerId,
 search)` exposes the bounded owned tag catalog to the authenticated API.
 
-`TagService.list(ownerId, options)` provides exact usage counts, filters,
-deterministic sorting, and keyset pagination for MCP tag inventory. The MCP
+`TagService.list(ownerId, options)` provides exact usage counts, optional tag
+descriptions, filters, deterministic sorting, and keyset pagination for tag
+inventory. Descriptions are omitted when the database value is `NULL`. The MCP
 adapter receives only `OwnerBoundTagService`, whose `list(options)` call derives
 the owner from verified authentication. `OwnerBoundTagService.deleteUnused(tagId)`
 uses that same bound owner and refuses deletion unless the database confirms the
@@ -22,6 +23,18 @@ tag still has zero recipe associations at deletion time.
 `OwnerBoundTagService.merge(sourceTagId, targetTagId)` consolidates only the two
 explicitly selected IDs under the same verified owner; it never performs name
 matching.
+
+An authenticated application consumer can read descriptions through the same
+inventory service:
+
+```ts
+const page = await tagService.list(user.id, {
+  usage: "all",
+  sort: "name_asc",
+  limit: 25,
+});
+const description = page.tags[0]?.description;
+```
 
 Website import uses `readSource(url)` to fetch bounded HTTP HTML after checking each
 DNS destination and redirect. `importRecipeInput(url)` extracts a canonical recipe

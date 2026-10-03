@@ -9,6 +9,9 @@ values
   ('tag_inventory_other', 'Other owner inventory recipe', array['dinner']);
 insert into public.tags (owner_id, name)
 values ('tag_inventory_owner', 'unused');
+update public.tags
+set description = 'Tags for relaxed weeknight meals.'
+where owner_id = 'tag_inventory_owner' and name = 'dinner';
 
 do $verify$
 declare
@@ -153,15 +156,34 @@ $verify$;
 
 reset role;
 set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"tag_inventory_owner","role":"authenticated"}', true);
 do $verify$
+declare
+  owner_tag_count integer;
 begin
-  begin
-    perform * from public.recipe_vault_list_tag_inventory(
+  select count(*) into owner_tag_count
+  from public.recipe_vault_list_tag_inventory(
+    'tag_inventory_owner', null, 'all', 'name_asc', null, null, null, 10
+  );
+  if owner_tag_count <> 4 then
+    raise exception 'authenticated inventory did not return every caller-owned tag';
+  end if;
+  if not exists (select 1 from public.recipe_vault_list_tag_inventory(
       'tag_inventory_owner', null, 'all', 'name_asc', null, null, null, 10
-    );
-    raise exception 'authenticated could execute the service-role inventory RPC';
-  exception when insufficient_privilege then null;
-  end;
+    ) where name = 'dinner' and usage_count = 3
+      and description = 'Tags for relaxed weeknight meals.') then
+    raise exception 'authenticated inventory did not return the description and exact count';
+  end if;
+  if not exists (select 1 from public.recipe_vault_list_tag_inventory(
+      'tag_inventory_owner', null, 'all', 'name_asc', null, null, null, 10
+    ) where name = 'unused' and usage_count = 0 and description is null) then
+    raise exception 'authenticated inventory omitted a zero-count tag with a NULL description';
+  end if;
+  if exists (select 1 from public.recipe_vault_list_tag_inventory(
+      'tag_inventory_other', null, 'all', 'name_asc', null, null, null, 10
+    )) then
+    raise exception 'authenticated inventory returned another owner''s tags';
+  end if;
 end;
 $verify$;
 
