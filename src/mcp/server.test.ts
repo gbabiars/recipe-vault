@@ -259,6 +259,7 @@ test("list_tags transport binds the verified owner and returns exact counts", as
               id: "00000000-0000-4000-8000-000000000004",
               name: "dinner",
               usage_count: 3,
+              description: "Tags for relaxed weeknight meals.",
             },
           ],
           error: null,

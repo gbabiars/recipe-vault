@@ -14,10 +14,20 @@ export type TagListOptions = {
   limit: number;
   after?: TagCursorPosition;
 };
-export type TagInventoryItem = { id: string; name: string; usageCount: number };
+export type TagInventoryItem = {
+  id: string;
+  name: string;
+  usageCount: number;
+  description?: string;
+};
 export type TagInventoryPage = { tags: TagInventoryItem[]; hasMore: boolean };
 
-type DatabaseTagInventory = { id: string; name: string; usage_count: number | string };
+type DatabaseTagInventory = {
+  id: string;
+  name: string;
+  usage_count: number | string;
+  description: string | null;
+};
 
 /** Owns aggregate tag queries, including the explicit owner filter in the RPC. */
 export class TagRepository {
@@ -41,7 +51,12 @@ export class TagRepository {
       const usageCount = Number(row.usage_count);
       if (!Number.isSafeInteger(usageCount) || usageCount < 0)
         throw new Error("Could not load tags.");
-      return { id: row.id, name: row.name, usageCount };
+      return {
+        id: row.id,
+        name: row.name,
+        usageCount,
+        ...(row.description == null ? {} : { description: row.description }),
+      };
     });
 
     return { tags, hasMore: rows.length > options.limit };

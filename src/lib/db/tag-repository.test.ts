@@ -20,8 +20,19 @@ test("tag repository passes an explicit owner and maps the RPC lookahead page", 
       calls.push({ name, args });
       return {
         data: [
-          { id: firstTag.id, name: firstTag.name, usage_count: "4" },
-          { id: secondTag.id, name: secondTag.name, usage_count: 0 },
+          {
+            id: firstTag.id,
+            name: firstTag.name,
+            usage_count: "4",
+            description: "Tags for relaxed weeknight meals.",
+          },
+          { id: secondTag.id, name: secondTag.name, usage_count: 0, description: null },
+          {
+            id: "00000000-0000-4000-8000-000000000003",
+            name: "snack",
+            usage_count: 1,
+            description: null,
+          },
         ],
         error: null,
       };
@@ -30,13 +41,16 @@ test("tag repository passes an explicit owner and maps the RPC lookahead page", 
   const page = await repository.list("owner-a", {
     usage: "all",
     sort: "name_asc",
-    limit: 1,
+    limit: 2,
   });
 
-  assert.deepEqual(page, { tags: [firstTag], hasMore: true });
+  assert.deepEqual(page, {
+    tags: [{ ...firstTag, description: "Tags for relaxed weeknight meals." }, secondTag],
+    hasMore: true,
+  });
   assert.equal(calls[0].name, "recipe_vault_list_tag_inventory");
   assert.equal(calls[0].args.target_owner_id, "owner-a");
-  assert.equal(calls[0].args.target_limit, 2);
+  assert.equal(calls[0].args.target_limit, 3);
 });
 
 test("tag repository passes owner and stable ID to the guarded delete RPC", async () => {

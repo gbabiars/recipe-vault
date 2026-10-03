@@ -255,12 +255,13 @@ const secondTag = {
 
 test("MCP list_tags defaults to the full alphabetic inventory and returns only tag fields", async () => {
   const calls: unknown[] = [];
+  const describedTag = { ...firstTag, description: "Tags for relaxed weeknight meals." };
   const tools = createTagMcpTools({
     userId: "owner-a",
     service: {
       async list(options: unknown) {
         calls.push(options);
-        return { tags: [firstTag], hasMore: false };
+        return { tags: [describedTag], hasMore: false };
       },
     } as never,
   });
@@ -279,6 +280,7 @@ test("MCP list_tags defaults to the full alphabetic inventory and returns only t
 
 test("MCP list_tags supports literal-search options and live keyset pagination", async () => {
   const calls: Array<Record<string, unknown>> = [];
+  const describedFirstTag = { ...firstTag, description: "Tags for relaxed weeknight meals." };
   const tools = createTagMcpTools({
     userId: "owner-a",
     service: {
@@ -286,7 +288,7 @@ test("MCP list_tags supports literal-search options and live keyset pagination",
         calls.push(options);
         return options.after
           ? { tags: [secondTag], hasMore: false }
-          : { tags: [firstTag], hasMore: true };
+          : { tags: [describedFirstTag], hasMore: true };
       },
     } as never,
   });
@@ -306,6 +308,7 @@ test("MCP list_tags supports literal-search options and live keyset pagination",
   assert.equal(payload.version, 1);
   assert.match(payload.fingerprint, /^[a-f0-9]{64}$/u);
   assert.equal(JSON.stringify(payload).includes("owner-a"), false);
+  assert.equal(payload.description, undefined);
 
   const secondPage = resultText(
     await tools.list_tags({

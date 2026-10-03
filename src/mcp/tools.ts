@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { Recipe } from "@/lib/db/recipe-repository";
+import type { TagInventoryItem } from "@/lib/db/tag-repository";
 import type { OwnerBoundTagService } from "@/lib/recipes/tag-service";
 import type { OwnerBoundRecipeService } from "@/lib/recipes/recipe-service";
 import { recipeCreateInputSchema, recipeIngredientInputSchema } from "@/lib/validation/recipe";
@@ -186,7 +187,7 @@ function decodeTagCursor(
 
 function encodeTagCursor(
   fingerprint: string,
-  tag: { usageCount: number; name: string; id: string },
+  tag: Pick<TagInventoryItem, "usageCount" | "name" | "id">,
 ) {
   return Buffer.from(JSON.stringify({ version: 1, fingerprint, ...tag }), "utf8").toString(
     "base64url",
@@ -218,9 +219,15 @@ export function createTagMcpTools(context: McpTagToolContext) {
         });
         const lastTag = page.tags.at(-1);
         const nextCursor =
-          page.hasMore && lastTag ? encodeTagCursor(fingerprint, lastTag) : undefined;
+          page.hasMore && lastTag
+            ? encodeTagCursor(fingerprint, {
+                id: lastTag.id,
+                name: lastTag.name,
+                usageCount: lastTag.usageCount,
+              })
+            : undefined;
         return text({
-          tags: page.tags,
+          tags: page.tags.map(({ id, name, usageCount }) => ({ id, name, usageCount })),
           ...(nextCursor ? { nextCursor } : {}),
         });
       } catch {
