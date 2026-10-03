@@ -14,3 +14,13 @@ test("mobile account menu closes the drawer when signing out", async () => {
   await waitFor(() => expect(dialog).not.toBeVisible());
   expect(onSignOut).toHaveBeenCalledOnce();
 });
+
+test("mobile navigation marks the tags destination as current", () => {
+  render(<AppMobileNavigation pathname="/tags" userName="Ada Lovelace" onSignOut={() => {}} />);
+
+  fireEvent.click(screen.getByRole("button", { name: "Open menu", hidden: true }));
+  const tags = screen.getByRole("link", { name: "Tags", hidden: true });
+
+  expect(tags).toHaveAttribute("href", "/tags");
+  expect(tags).toHaveAttribute("aria-current", "page");
+});

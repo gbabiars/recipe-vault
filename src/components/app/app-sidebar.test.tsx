@@ -27,26 +27,29 @@ test("brand links to recipes and nav links expose active and current states sepa
 });
 
 test.each([
-  ["/recipes", true, false],
-  ["/recipes/example", true, false],
-  ["/settings", false, true],
-  ["/user-profile", false, true],
-  ["/user-profile/security", false, true],
-  ["/", false, false],
-  ["/recipes-archive", false, false],
-] as const)("sidebar states on %s", (pathname, recipesActive, settingsAreaActive) => {
+  ["/recipes", true, false, false],
+  ["/recipes/example", true, false, false],
+  ["/tags", false, false, true],
+  ["/tags/example", false, false, true],
+  ["/settings", false, true, false],
+  ["/user-profile", false, true, false],
+  ["/user-profile/security", false, true, false],
+  ["/", false, false, false],
+  ["/recipes-archive", false, false, false],
+] as const)("sidebar states on %s", (pathname, recipesActive, settingsAreaActive, tagsActive) => {
   render(<AppSidebar pathname={pathname} userName="Ada Lovelace" onSignOut={() => {}} />);
 
   const navigation = screen.getByRole("navigation", { name: "Primary", hidden: true });
   const links = Array.from(navigation.querySelectorAll("a"));
+  const activeLinks = recipesActive ? ["Recipes"] : tagsActive ? ["Tags"] : [];
   expect(
     links.filter((link) => link.classList.contains(styles.active)).map((link) => link.textContent),
-  ).toEqual(recipesActive ? ["Recipes"] : []);
+  ).toEqual(activeLinks);
   expect(
     links
       .filter((link) => link.getAttribute("aria-current") === "page")
       .map((link) => link.textContent),
-  ).toEqual(recipesActive ? ["Recipes"] : []);
+  ).toEqual(activeLinks);
   expect(
     screen
       .getByRole("button", { name: "Ada Lovelace", hidden: true })
@@ -66,8 +69,10 @@ test("sidebar places Settings in the account menu instead of primary navigation"
   );
   expect(Array.from(navigation.querySelectorAll("a"), (link) => link.textContent)).toEqual([
     "Recipes",
+    "Tags",
   ]);
   expect(screen.queryByRole("link", { name: "Settings", hidden: true })).toBeNull();
+  expect(screen.getByRole("link", { name: "Tags", hidden: true })).toHaveAttribute("href", "/tags");
 
   const accountMenu = screen.getByRole("button", { name: "Ada Lovelace", hidden: true });
   expect(accountMenu.firstElementChild?.textContent).toBe("AL");

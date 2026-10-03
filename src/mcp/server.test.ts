@@ -297,6 +297,9 @@ test("list_tags transport binds the verified owner and returns exact counts", as
         after_name: null,
         after_tag_id: null,
         target_limit: 51,
+        before_usage_count: null,
+        before_name: null,
+        before_tag_id: null,
       },
     },
   ]);

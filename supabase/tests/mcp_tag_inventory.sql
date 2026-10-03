@@ -9,6 +9,9 @@ values
   ('tag_inventory_other', 'Other owner inventory recipe', array['dinner']);
 insert into public.tags (owner_id, name)
 values ('tag_inventory_owner', 'unused');
+insert into public.tags (owner_id, name)
+select 'tag_inventory_page_owner', 'page tag ' || lpad(page_number::text, 3, '0')
+from generate_series(1, 53) as pages(page_number);
 update public.tags
 set description = 'Tags for relaxed weeknight meals.'
 where owner_id = 'tag_inventory_owner' and name = 'dinner';
@@ -18,6 +21,12 @@ declare
   cursor_row record;
   first_page text[];
   second_page text[];
+  third_page text[];
+  previous_page text[];
+  previous_first_page text[];
+  expected_page text[];
+  expected_second_page text[];
+  expected_all_pages text[];
   all_names text[];
 begin
   select array_agg(name order by name collate "C", id) into all_names
@@ -114,6 +123,99 @@ begin
   );
   if second_page <> array['supper', 'dinner'] then
     raise exception 'usage ascending keyset pagination skipped or duplicated rows: %', second_page;
+  end if;
+
+  select array_agg(page_rows.name order by page_rows.ord) into first_page
+  from (
+    select page.name, page.ord
+    from public.recipe_vault_list_tag_inventory(
+      'tag_inventory_page_owner', null, 'all', 'name_asc', null, null, null,
+      26, null, null, null
+    ) with ordinality as page(id, name, usage_count, description, ord)
+    order by page.ord
+    limit 25
+  ) as page_rows;
+  select page.usage_count, page.name, page.id into cursor_row
+  from public.recipe_vault_list_tag_inventory(
+    'tag_inventory_page_owner', null, 'all', 'name_asc', null, null, null,
+    26, null, null, null
+  ) with ordinality as page(id, name, usage_count, description, ord)
+  where page.ord = 25;
+  select array_agg(page_rows.name order by page_rows.ord) into second_page
+  from (
+    select page.name, page.ord
+    from public.recipe_vault_list_tag_inventory(
+      'tag_inventory_page_owner', null, 'all', 'name_asc',
+      cursor_row.usage_count, cursor_row.name, cursor_row.id,
+      26, null, null, null
+    ) with ordinality as page(id, name, usage_count, description, ord)
+    order by page.ord
+    limit 25
+  ) as page_rows;
+  select page.usage_count, page.name, page.id into cursor_row
+  from public.recipe_vault_list_tag_inventory(
+    'tag_inventory_page_owner', null, 'all', 'name_asc',
+    cursor_row.usage_count, cursor_row.name, cursor_row.id,
+    26, null, null, null
+  ) with ordinality as page(id, name, usage_count, description, ord)
+  where page.ord = 25;
+  select array_agg(page_rows.name order by page_rows.ord) into third_page
+  from (
+    select page.name, page.ord
+    from public.recipe_vault_list_tag_inventory(
+      'tag_inventory_page_owner', null, 'all', 'name_asc',
+      cursor_row.usage_count, cursor_row.name, cursor_row.id,
+      26, null, null, null
+    ) with ordinality as page(id, name, usage_count, description, ord)
+    order by page.ord
+    limit 25
+  ) as page_rows;
+  select 0::bigint as usage_count, tag.name, tag.id into cursor_row
+  from public.tags as tag
+  where tag.owner_id = 'tag_inventory_page_owner' and tag.name = 'page tag 051';
+  select array_agg(page_rows.name order by page_rows.ord) into previous_page
+  from (
+    select page.name, page.ord
+    from public.recipe_vault_list_tag_inventory(
+      'tag_inventory_page_owner', null, 'all', 'name_asc', null, null, null,
+      26, cursor_row.usage_count, cursor_row.name, cursor_row.id
+    ) with ordinality as page(id, name, usage_count, description, ord)
+    order by page.ord
+    limit 25
+  ) as page_rows;
+  select 0::bigint as usage_count, tag.name, tag.id into cursor_row
+  from public.tags as tag
+  where tag.owner_id = 'tag_inventory_page_owner' and tag.name = 'page tag 026';
+  select array_agg(page_rows.name order by page_rows.ord) into previous_first_page
+  from (
+    select page.name, page.ord
+    from public.recipe_vault_list_tag_inventory(
+      'tag_inventory_page_owner', null, 'all', 'name_asc', null, null, null,
+      26, cursor_row.usage_count, cursor_row.name, cursor_row.id
+    ) with ordinality as page(id, name, usage_count, description, ord)
+    order by page.ord
+    limit 25
+  ) as page_rows;
+
+  select array_agg('page tag ' || lpad(page_number::text, 3, '0') order by page_number)
+  into expected_page
+  from generate_series(1, 25) as pages(page_number);
+  select array_agg('page tag ' || lpad(page_number::text, 3, '0') order by page_number)
+  into expected_second_page
+  from generate_series(26, 50) as pages(page_number);
+  select array_agg('page tag ' || lpad(page_number::text, 3, '0') order by page_number)
+  into expected_all_pages
+  from generate_series(1, 53) as pages(page_number);
+  if first_page <> expected_page
+    or second_page <> expected_second_page
+    or third_page <> array['page tag 051', 'page tag 052', 'page tag 053']
+    or previous_page <> expected_second_page
+    or previous_first_page <> expected_page
+    or array_cat(array_cat(first_page, second_page), third_page) <> expected_all_pages
+    or cardinality(array_cat(array_cat(first_page, second_page), third_page)) <>
+       (select count(distinct item)
+        from unnest(array_cat(array_cat(first_page, second_page), third_page)) as page_names(item)) then
+    raise exception 'forward or reverse name pagination skipped or duplicated rows';
   end if;
 
   if exists (select 1 from public.recipe_vault_list_tag_inventory(

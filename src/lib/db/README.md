@@ -33,7 +33,10 @@ caller's JWT and RLS still enforce ownership.
 `TagRepository.list(ownerId, options)` calls the stable
 `recipe_vault_list_tag_inventory` RPC, which counts distinct associated recipes
 and applies owner, search, usage, sort, and keyset cursor predicates in one
-query. It also returns the optional nullable free-text tag description; a
+query. It supports `after` and `before` cursors; the reverse query selects the
+nearest preceding page and returns its rows in normal sort order, with the
+lookahead row last so `hasMore` remains directional. It also returns the
+optional nullable free-text tag description; a
 database `NULL` maps to an omitted `description` property. The RPC is
 `SECURITY INVOKER`, has an empty search path, and can be executed by
 `authenticated` and `service_role`. An

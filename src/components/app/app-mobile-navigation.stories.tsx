@@ -74,6 +74,18 @@ export const Profile: Story = {
   },
 };
 
+export const Tags: Story = {
+  args: { pathname: "/tags" },
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Open menu" }));
+    const dialog = within(document.body).getByRole("dialog", { name: "Menu" });
+    await expect(within(dialog).getByRole("link", { name: "Tags" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  },
+};
+
 export const SignOut: Story = {
   args: { onSignOut: fn() },
   play: async ({ canvas, args }) => {

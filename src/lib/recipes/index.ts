@@ -8,6 +8,11 @@ export async function getRecipeService() {
   return new RecipeService(new RecipeRepository(await getServerSupabaseClient()));
 }
 
+/** Creates an application tag service using the authenticated session client. */
+export async function getTagService() {
+  return new TagService(new TagRepository(await getServerSupabaseClient()));
+}
+
 /** Creates the only service-role data path, bound to a verified MCP owner. */
 export function getOwnerBoundMcpRecipeService(ownerId: string) {
   return new OwnerBoundRecipeService(
