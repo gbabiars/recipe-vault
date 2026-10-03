@@ -14,7 +14,7 @@ clear accessible name.
 - **Variants:** `default` is a neutral action, `primary` emphasizes an action, `subtle` reduces visual weight, and `danger` signals a destructive action. Sizes are `small`, `medium`, and `large`.
 - **Width:** The button fits its content by default. Set `fullWidth` to fill the width of its parent.
 - **Label:** Provide a required `label` string. Button renders it as visible text and the default accessible name. Without `href`, it triggers an action. In a form, set `type="submit"`; outside a form, the default is `type="button"`. With `href`, it renders a native anchor for navigation. Use `Inline` to arrange related actions.
-- **Next.js navigation:** Pass `href` directly for a native anchor, or compose Next.js `Link` through `render`. In client components, the callback receives anchor props, including `href`, styles, handlers, and the forwarded ref. In a server component, pass a `Link` element to `render` and keep its `href` equal to the Button's `href`.
+- **Link rendering:** `href` uses the app's configured link renderer, or a native anchor when no provider is present. Use `render` to override an individual link. In client components, its callback receives anchor props, including `href`, styles, handlers, and the forwarded ref. Server components can pass a link element to `render` and keep its `href` equal to the Button's `href`.
 - **Leading icon:** Pass an SVG component with `icon`; it is sized and marked decorative internally. Keep the visible label so it remains the accessible name.
 - **Caller accessibility:** Make the label describe the action, and reflect pending or unavailable states with `disabled` when appropriate. Explain a destructive action in its surrounding UI.
 
@@ -25,19 +25,11 @@ import { Plus } from "lucide-react";
 ```
 
 ```tsx
-import Link from "next/link";
-
-<Button
-  label="Create recipe"
-  href="/recipes/new"
-  render={(anchorProps) => <Link {...anchorProps} prefetch={false} />}
-/>;
+<Button label="Create recipe" href="/recipes/new" />
 ```
 
 ```tsx
-import Link from "next/link";
-
-<Button label="Create recipe" href="/recipes/new" render={<Link href="/recipes/new" />} />;
+<Button label="Download recipes" href="/export" render={<a href="/export" download />} />
 ```
 
 ## Story

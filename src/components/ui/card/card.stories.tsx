@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import Link from "next/link";
 import type * as React from "react";
 
 import { Card, type CardPadding, type CardRender, type CardVariant } from "./card";
@@ -7,6 +6,7 @@ import { Card, type CardPadding, type CardRender, type CardVariant } from "./car
 type CardStoryArgs = {
   as?: "section";
   children?: React.ReactNode;
+  href?: string;
   label?: string;
   padding?: CardPadding;
   render?: CardRender;
@@ -76,7 +76,7 @@ export const NextLink: Story = {
   args: {
     children: "Tomato soup with basil and grilled cheese croutons",
     label: "View Tomato Soup",
-    render: <Link href="/recipes/tomato-soup" />,
+    href: "/recipes/tomato-soup",
   },
 };
 

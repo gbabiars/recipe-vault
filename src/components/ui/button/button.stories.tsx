@@ -45,12 +45,18 @@ export const Submit: Story = {
 };
 
 export const NativeLink: Story = {
-  render: () => <Button label="Create recipe" href="/recipes/new" />,
+  render: () => (
+    <Button
+      label="Read recipe guide"
+      href="https://example.com/recipes"
+      render={<a href="https://example.com/recipes" />}
+    />
+  ),
   play: async ({ canvas }) => {
-    const link = canvas.getByRole("link", { name: "Create recipe" });
+    const link = canvas.getByRole("link", { name: "Read recipe guide" });
 
-    expect(link.getAttribute("href")).toBe("/recipes/new");
-    expect(canvas.queryByRole("button", { name: "Create recipe" })).toBeNull();
+    expect(link.getAttribute("href")).toBe("https://example.com/recipes");
+    expect(canvas.queryByRole("button", { name: "Read recipe guide" })).toBeNull();
     expect(link.hasAttribute("type")).toBe(false);
     expect(link.hasAttribute("disabled")).toBe(false);
   },
@@ -58,23 +64,7 @@ export const NativeLink: Story = {
 
 export const NextLink: Story = {
   args: { onClick: fn() },
-  render: (args) => (
-    <Button
-      label="Create recipe"
-      href="/recipes/new"
-      onClick={args.onClick}
-      render={(anchorProps) => (
-        <Link
-          {...anchorProps}
-          prefetch={false}
-          onClick={(event) => {
-            anchorProps.onClick?.(event);
-            event.preventDefault();
-          }}
-        />
-      )}
-    />
-  ),
+  render: (args) => <Button label="Create recipe" href="/recipes/new" onClick={args.onClick} />,
   play: async ({ args, canvas }) => {
     const link = canvas.getByRole("link", { name: "Create recipe" });
 

@@ -1,12 +1,20 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import Link from "next/link";
+import * as React from "react";
 import { userEvent } from "vitest/browser";
 import { afterEach, expect, test, vi } from "vitest";
 
 import "../../../app/globals.css";
 
 import { Card } from "./card";
+import { LinkRendererProvider, type LinkRendererProps } from "../link-renderer";
 import styles from "./card.module.css";
+
+const RouterLink = React.forwardRef<HTMLAnchorElement, LinkRendererProps>(
+  function RouterLink(props, ref) {
+    return <a {...props} ref={ref} data-router="test" />;
+  },
+);
 
 afterEach(() => {
   document.documentElement.removeAttribute("data-theme");
@@ -103,6 +111,47 @@ test("renders one named native anchor inside a non-interactive card", () => {
   expect(card.tagName).toBe("DIV");
   expect(card.getAttribute("role")).toBeNull();
   expect(card.getAttribute("tabindex")).toBeNull();
+});
+
+test("renders an href through the configured link renderer", () => {
+  render(
+    <LinkRendererProvider link={<RouterLink href="/" />}>
+      <Card as="li" label="View Tomato Soup" href="/recipes/tomato-soup">
+        Tomato Soup
+      </Card>
+    </LinkRendererProvider>,
+  );
+
+  const link = screen.getByRole("link", { name: "View Tomato Soup" });
+  expect(link.getAttribute("href")).toBe("/recipes/tomato-soup");
+  expect(link.getAttribute("data-router")).toBe("test");
+  expect(link.closest("li")?.getAttribute("data-interactive")).toBe("");
+});
+
+test("renders a native anchor for href without a provider", () => {
+  render(
+    <Card label="View Tomato Soup" href="/recipes/tomato-soup">
+      Tomato Soup
+    </Card>,
+  );
+
+  const link = screen.getByRole("link", { name: "View Tomato Soup" });
+  expect(link).toBeInstanceOf(HTMLAnchorElement);
+  expect(link.getAttribute("href")).toBe("/recipes/tomato-soup");
+});
+
+test("an explicit render overrides the configured link renderer", () => {
+  render(
+    <LinkRendererProvider link={<RouterLink href="/" />}>
+      <Card label="Download Tomato Soup" render={<a href="/export" download />}>
+        Tomato Soup
+      </Card>
+    </LinkRendererProvider>,
+  );
+
+  const link = screen.getByRole("link", { name: "Download Tomato Soup" });
+  expect(link.getAttribute("data-router")).toBeNull();
+  expect(link.hasAttribute("download")).toBe(true);
 });
 
 test("supports the subtle variant on an interactive card", () => {

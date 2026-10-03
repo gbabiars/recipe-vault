@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
 import { Heading } from "@/components/ui/heading";
@@ -11,7 +10,7 @@ export default function SettingsPage() {
       <PageHeader title="Settings" />
       <PageContent>
         <Stack gap="200">
-          <Card as="section" label="Profile" render={<Link href="/user-profile" />}>
+          <Card as="section" label="Profile" href="/user-profile">
             <Heading as="h2" level={5}>
               Profile
             </Heading>

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,10 +13,8 @@ export function RecipesHeaderActions() {
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button label="Add a recipe" />} />
       <DropdownMenuPopup align="end">
-        <DropdownMenuLinkItem render={<Link href="/recipes/new" />}>
-          Create manually
-        </DropdownMenuLinkItem>
-        <DropdownMenuLinkItem render={<Link href="/recipes/import" />}>
+        <DropdownMenuLinkItem href="/recipes/new">Create manually</DropdownMenuLinkItem>
+        <DropdownMenuLinkItem href="/recipes/import">
           Import from website or PDF
         </DropdownMenuLinkItem>
       </DropdownMenuPopup>

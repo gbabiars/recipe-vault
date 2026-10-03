@@ -32,13 +32,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           </Breadcrumbs>
         }
         description={recipe.summary}
-        actions={
-          <Button
-            label="Edit recipe"
-            href={`/recipes/${recipe.id}/edit`}
-            render={<Link href={`/recipes/${recipe.id}/edit`} />}
-          />
-        }
+        actions={<Button label="Edit recipe" href={`/recipes/${recipe.id}/edit`} />}
       />
       <PageContent>
         <Stack gap="200">

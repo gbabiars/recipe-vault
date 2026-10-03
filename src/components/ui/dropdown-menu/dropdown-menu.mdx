@@ -13,7 +13,6 @@ DropdownMenu owns open state and composes the menu trigger with a popup. Dropdow
 
 ```tsx
 import { Archive, BookOpen, Pencil } from "lucide-react";
-import Link from "next/link";
 import {
   Button,
   DropdownMenu,
@@ -32,14 +31,14 @@ import {
     <DropdownMenuItem disabled icon={Archive} onClick={onArchive}>
       Archive
     </DropdownMenuItem>
-    <DropdownMenuLinkItem icon={BookOpen} render={<Link href="/recipes" />}>
+    <DropdownMenuLinkItem icon={BookOpen} href="/recipes">
       Browse recipes
     </DropdownMenuLinkItem>
   </DropdownMenuPopup>
 </DropdownMenu>;
 ```
 
-DropdownMenuItem represents an action and accepts the Base UI item props, including onClick and disabled. DropdownMenuLinkItem represents navigation and accepts either an href or a render element such as Next.js Link. Both accept an optional SVG component through `icon`, render it as a decorative leading visual, and close the menu when activated. Keep visible item text descriptive; it remains the accessible name.
+DropdownMenuItem represents an action and accepts the Base UI item props, including onClick and disabled. DropdownMenuLinkItem represents navigation; `href` uses the app's configured link renderer, or a native anchor without a provider. `render` overrides an individual link. Both accept an optional SVG component through `icon`, render it as a decorative leading visual, and close the menu when activated. Keep visible item text descriptive; it remains the accessible name.
 
 Use a consistent icon treatment within each dropdown: either every menu item has a leading icon or none do. This applies across actions, links, and disabled rows.
 

@@ -46,7 +46,7 @@ export function TagCatalog({ tags, previousHref, nextHref, error = false }: TagC
         {tags.map((tag) => {
           const recipeHref = `/recipes?tag=${encodeURIComponent(tag.name)}`;
           return (
-            <Card as="li" key={tag.id} label={tag.name} render={<Link href={recipeHref} />}>
+            <Card as="li" key={tag.id} label={tag.name} href={recipeHref}>
               <Stack gap="150">
                 <Stack gap="050">
                   <Heading as="h2" level={5}>
@@ -73,22 +73,8 @@ export function TagCatalog({ tags, previousHref, nextHref, error = false }: TagC
       {(previousHref || nextHref) && (
         <nav aria-label="Tag pages">
           <Inline gap="100">
-            {previousHref && (
-              <Button
-                label="Previous"
-                href={previousHref}
-                variant="subtle"
-                render={<Link href={previousHref} />}
-              />
-            )}
-            {nextHref && (
-              <Button
-                label="Next"
-                href={nextHref}
-                variant="subtle"
-                render={<Link href={nextHref} />}
-              />
-            )}
+            {previousHref && <Button label="Previous" href={previousHref} variant="subtle" />}
+            {nextHref && <Button label="Next" href={nextHref} variant="subtle" />}
           </Inline>
         </nav>
       )}

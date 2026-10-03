@@ -11,7 +11,7 @@ Groups related content on a surface. Use Chip for one compact tag and a plain se
 
 ## Variants and composition
 
-variant is default or subtle; padding is small, medium, large, or none. Use as for section or li semantics. A whole-card primary link or button needs render and label. Stack, Inline, Heading, and Text can structure its contents.
+variant is default or subtle; padding is small, medium, large, or none. Use as for section or li semantics. A whole-card primary link needs `href` and `label`; it uses the app's configured link renderer, or a native anchor without a provider. Use `render` with `label` for a primary button or an individual link override. Stack, Inline, Heading, and Text can structure its contents.
 
 ## Content and accessibility
 
