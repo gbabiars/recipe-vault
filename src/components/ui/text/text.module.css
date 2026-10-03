@@ -1,19 +1,13 @@
 .text[data-size="small"] {
-  font-size: var(--font-size-text-small);
-  line-height: var(--line-height-text-small);
-  font-weight: var(--font-weight-text-small);
+  font: var(--font-text-small);
 }
 
 .text[data-size="medium"] {
-  font-size: var(--font-size-text-medium);
-  line-height: var(--line-height-text-medium);
-  font-weight: var(--font-weight-text-medium);
+  font: var(--font-text-medium);
 }
 
 .text[data-size="large"] {
-  font-size: var(--font-size-text-large);
-  line-height: var(--line-height-text-large);
-  font-weight: var(--font-weight-text-large);
+  font: var(--font-text-large);
 }
 
 .text[data-appearance="primary"] {

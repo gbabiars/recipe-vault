@@ -189,6 +189,25 @@
   --line-height-heading-6: 1.375rem;
   --font-weight-heading-6: var(--font-weight-semibold);
 
+  --font-heading-1: var(--font-weight-heading-1) var(--font-size-heading-1) /
+    var(--line-height-heading-1) var(--font-family-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-heading-2: var(--font-weight-heading-2) var(--font-size-heading-2) /
+    var(--line-height-heading-2) var(--font-family-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-heading-3: var(--font-weight-heading-3) var(--font-size-heading-3) /
+    var(--line-height-heading-3) var(--font-family-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-heading-4: var(--font-weight-heading-4) var(--font-size-heading-4) /
+    var(--line-height-heading-4) var(--font-family-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-heading-5: var(--font-weight-heading-5) var(--font-size-heading-5) /
+    var(--line-height-heading-5) var(--font-family-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-heading-6: var(--font-weight-heading-6) var(--font-size-heading-6) /
+    var(--line-height-heading-6) var(--font-family-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-text-small: var(--font-weight-text-small) var(--font-size-text-small) /
+    var(--line-height-text-small) var(--font-family-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-text-medium: var(--font-weight-text-medium) var(--font-size-text-medium) /
+    var(--line-height-text-medium) var(--font-family-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-text-large: var(--font-weight-text-large) var(--font-size-text-large) /
+    var(--line-height-text-large) var(--font-family-sans, ui-sans-serif, system-ui, sans-serif);
+
   --space-0: 0rem;
   --space-025: 0.125rem;
   --space-050: 0.25rem;
