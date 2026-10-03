@@ -14,7 +14,13 @@ export function ClerkAppSidebarProvider({ children }: { children: ReactNode }) {
     <AppSidebarStateProvider
       value={{
         pathname,
-        user: user ? { fullName: user.fullName, username: user.username } : null,
+        user: user
+          ? {
+              fullName: user.fullName,
+              username: user.username,
+              userImageUrl: user.imageUrl,
+            }
+          : null,
         onSignOut: () => signOut({ redirectUrl: "/sign-in" }),
       }}
     >

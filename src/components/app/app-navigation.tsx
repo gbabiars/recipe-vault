@@ -15,11 +15,18 @@ import styles from "./app-sidebar.module.css";
 type AppNavigationProps = {
   pathname: string;
   userName: string;
+  userImageUrl?: string | null;
   onSignOut: () => void | Promise<void>;
   onSelect?: () => void;
 };
 
-export function AppNavigation({ pathname, userName, onSignOut, onSelect }: AppNavigationProps) {
+export function AppNavigation({
+  pathname,
+  userName,
+  userImageUrl,
+  onSignOut,
+  onSelect,
+}: AppNavigationProps) {
   const recipesActive = pathname === "/recipes" || pathname.startsWith("/recipes/");
   const tagsActive = pathname === "/tags" || pathname.startsWith("/tags/");
   const settingsActive = pathname === "/settings" || pathname.startsWith("/user-profile");
@@ -48,7 +55,7 @@ export function AppNavigation({ pathname, userName, onSignOut, onSelect }: AppNa
           <DropdownMenuTrigger
             render={
               <button type="button" className={accountMenuTriggerClassName}>
-                <Avatar name={userName} size="small" aria-hidden="true" />
+                <Avatar name={userName} imageUrl={userImageUrl} size="small" aria-hidden="true" />
                 <span className={styles.accountName}>{userName}</span>
                 <ChevronDown aria-hidden="true" size={16} />
               </button>

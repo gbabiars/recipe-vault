@@ -10,6 +10,7 @@ import styles from "./avatar.module.css";
 export type AvatarSize = "small" | "medium" | "large";
 
 export type AvatarProps = Omit<React.ComponentPropsWithoutRef<"span">, "children"> & {
+  imageUrl?: string | null;
   name: string;
   size?: AvatarSize;
 };
@@ -39,6 +40,7 @@ export const Avatar = React.forwardRef<HTMLSpanElement, AvatarProps>(function Av
     "aria-label": ariaLabel,
     "aria-labelledby": ariaLabelledBy,
     className,
+    imageUrl,
     name,
     role,
     size = "medium",
@@ -51,6 +53,7 @@ export const Avatar = React.forwardRef<HTMLSpanElement, AvatarProps>(function Av
   const hasAccessibleName = Boolean(accessibleLabel.trim() || ariaLabelledBy?.trim());
   const initials = getInitials(name);
   const fallbackIconSize = size === "small" ? 14 : size === "large" ? 22 : 18;
+  const normalizedImageUrl = imageUrl?.trim();
 
   return (
     <BaseAvatar.Root
@@ -68,6 +71,9 @@ export const Avatar = React.forwardRef<HTMLSpanElement, AvatarProps>(function Av
         />
       )}
     >
+      {normalizedImageUrl ? (
+        <BaseAvatar.Image className={styles.image} keepMounted src={normalizedImageUrl} />
+      ) : null}
       <BaseAvatar.Fallback className={styles.initials}>
         {initials || <User aria-hidden="true" size={fallbackIconSize} />}
       </BaseAvatar.Fallback>

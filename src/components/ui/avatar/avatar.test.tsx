@@ -1,9 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { expect, test } from "vitest";
 
 import "../../../app/globals.css";
 
 import { Avatar } from "./avatar";
+import { avatarImageFixtureUrl } from "./avatar-image-fixture";
 import styles from "./avatar.module.css";
 
 test("renders uppercase first and last initials with the full name as its accessible name", () => {
@@ -25,6 +26,41 @@ test.each([
   render(<Avatar name={name} />);
 
   expect(screen.getByRole("img").textContent).toBe(initials);
+});
+
+test("renders the provided image and preserves the accessible name", async () => {
+  render(<Avatar name="Ada Lovelace" imageUrl={avatarImageFixtureUrl} />);
+
+  const avatar = screen.getByRole("img", { name: "Ada Lovelace" });
+  const image = avatar.querySelector("img");
+
+  expect(image).toHaveAttribute("src", avatarImageFixtureUrl);
+  expect(window.getComputedStyle(image!).objectFit).toBe("cover");
+  await waitFor(() => expect(image).not.toHaveAttribute("data-loading"));
+  expect(screen.getByRole("img", { name: "Ada Lovelace" })).toBe(avatar);
+});
+
+test("uses name-derived initials when the image URL is blank", () => {
+  render(<Avatar name="Ada Lovelace" imageUrl="  " />);
+
+  const avatar = screen.getByRole("img", { name: "Ada Lovelace" });
+
+  expect(avatar.textContent).toBe("AL");
+  expect(avatar.querySelector("img")).toBeNull();
+});
+
+test("keeps name-derived initials visible when the image fails to load", async () => {
+  render(<Avatar name="Ada Lovelace" imageUrl="data:image/png;base64,not-an-image" />);
+
+  const avatar = screen.getByRole("img", { name: "Ada Lovelace" });
+  const image = avatar.querySelector("img");
+
+  expect(image).not.toBeNull();
+  fireEvent.error(image!);
+  await waitFor(() => expect(image).toHaveAttribute("data-error"));
+  expect(avatar.textContent).toBe("AL");
+  expect(window.getComputedStyle(image!).visibility).toBe("hidden");
+  expect(screen.getByRole("img", { name: "Ada Lovelace" })).toBe(avatar);
 });
 
 test("renders a blank name as a decorative avatar without letters", () => {

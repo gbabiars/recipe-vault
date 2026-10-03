@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { avatarImageFixtureUrl as profileImageFixtureUrl } from "../ui/avatar/avatar-image-fixture";
 import { AppSidebar } from "./app-sidebar";
 
 const meta = {
@@ -18,3 +19,6 @@ export const RecipeDetail: Story = { args: { pathname: "/recipes/example" } };
 export const Tags: Story = { args: { pathname: "/tags" } };
 export const Settings: Story = { args: { pathname: "/settings" } };
 export const Profile: Story = { args: { pathname: "/user-profile" } };
+export const ProfileWithImage: Story = {
+  args: { pathname: "/user-profile", userImageUrl: profileImageFixtureUrl },
+};
