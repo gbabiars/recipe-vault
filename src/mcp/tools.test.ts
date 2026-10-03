@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createRecipeMcpTools, createTagMcpTools } from "./tools";
+import { createRecipeMcpTools, createTagMcpTools, mcpSearchRecipesOutputSchema } from "./tools";
 import type { RateLimiter } from "../lib/api/rate-limit";
 
 const recipe = {
@@ -12,6 +12,10 @@ const recipe = {
 
 function resultText(result: { content: Array<{ text: string }> }) {
   return JSON.parse(result.content[0].text) as Record<string, unknown>;
+}
+
+function resultStructuredContent(result: unknown) {
+  return (result as { structuredContent?: unknown }).structuredContent;
 }
 
 function setup(ownerId = "owner-a", limiter?: RateLimiter) {
@@ -64,10 +68,71 @@ function setup(ownerId = "owner-a", limiter?: RateLimiter) {
 
 test("MCP search returns concise cards for the authenticated owner only", async () => {
   const { tools, rows } = setup();
-  rows.set("mine", { ...recipe, id: "mine", ownerId: "owner-a", notes: "private" });
+  const mineId = "00000000-0000-4000-8000-000000000301";
+  rows.set(mineId, { ...recipe, id: mineId, ownerId: "owner-a", notes: "private" });
   rows.set("other", { ...recipe, id: "other", ownerId: "owner-b", notes: "not visible" });
-  const body = resultText(await tools.search_recipes({}));
-  assert.deepEqual(body.recipes, [{ id: "mine", title: "Owner Pasta", tags: ["dinner"] }]);
+  const result = await tools.search_recipes({});
+  const expected = { recipes: [{ id: mineId, title: "Owner Pasta", tags: ["dinner"] }] };
+  assert.deepEqual(resultText(result), expected);
+  assert.deepEqual(resultStructuredContent(result), expected);
+  assert.deepEqual(mcpSearchRecipesOutputSchema.parse(resultStructuredContent(result)), expected);
+  assert.equal(JSON.stringify(resultStructuredContent(result)).includes("ownerId"), false);
+  assert.equal(JSON.stringify(resultStructuredContent(result)).includes("notes"), false);
+  assert.equal(JSON.stringify(resultStructuredContent(result)).includes("not visible"), false);
+});
+
+test("MCP search includes safe optional fields in text and structured content", async () => {
+  const { tools, rows } = setup();
+  const id = "00000000-0000-4000-8000-000000000302";
+  rows.set(id, {
+    ...recipe,
+    id,
+    ownerId: "owner-a",
+    summary: "Fresh tomato and basil.",
+    prepTimeMinutes: 10,
+    cookTimeMinutes: 20,
+    totalTimeMinutes: 30,
+    servings: 4,
+    notes: "Private kitchen note.",
+    sourceUrl: "https://example.test/recipe",
+    createdAt: "2026-10-01T12:00:00.000Z",
+    updatedAt: "2026-10-02T12:00:00.000Z",
+  });
+
+  const result = await tools.search_recipes({ query: "tomato", limit: 10 });
+  const expected = {
+    recipes: [
+      {
+        id,
+        title: "Owner Pasta",
+        summary: "Fresh tomato and basil.",
+        prepTimeMinutes: 10,
+        cookTimeMinutes: 20,
+        totalTimeMinutes: 30,
+        servings: 4,
+        tags: ["dinner"],
+      },
+    ],
+  };
+
+  assert.deepEqual(resultText(result), expected);
+  assert.deepEqual(resultStructuredContent(result), expected);
+  assert.equal(JSON.stringify(resultStructuredContent(result)).includes("ownerId"), false);
+  assert.equal(JSON.stringify(resultStructuredContent(result)).includes("createdAt"), false);
+  assert.equal(JSON.stringify(resultStructuredContent(result)).includes("updatedAt"), false);
+  assert.equal(
+    JSON.stringify(resultStructuredContent(result)).includes("Private kitchen note"),
+    false,
+  );
+  assert.equal(JSON.stringify(resultStructuredContent(result)).includes("example.test"), false);
+});
+
+test("MCP search returns empty structured content for the no-results view", async () => {
+  const { tools } = setup();
+  const result = await tools.search_recipes({ query: "no match" });
+
+  assert.deepEqual(resultText(result), { recipes: [] });
+  assert.deepEqual(resultStructuredContent(result), { recipes: [] });
 });
 
 test("MCP rejects retired dietary search and save inputs", async () => {

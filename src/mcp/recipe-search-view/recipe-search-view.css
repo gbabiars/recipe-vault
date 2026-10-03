@@ -1,0 +1,19 @@
+:root {
+  color-scheme: light;
+  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--color-background-canvas);
+  color: var(--color-text-primary);
+}
+
+.recipe-search-view {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--width-content);
+  margin-inline: auto;
+  padding: var(--space-300);
+}

@@ -4,6 +4,7 @@ import { handleMcpRequest } from "./server";
 
 const resourceServer = "https://recipes.example.test/mcp";
 const recipeViewUri = "ui://recipe-vault/recipe-view.html";
+const searchResultsViewUri = "ui://recipe-vault/search-results.html";
 
 test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools", async () => {
   const userId = "00000000-0000-4000-8000-000000000001";
@@ -73,6 +74,9 @@ test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools"
   const getRecipe = listedTools.result.tools.find(
     (tool: { name: string }) => tool.name === "get_recipe",
   );
+  const searchRecipes = listedTools.result.tools.find(
+    (tool: { name: string }) => tool.name === "search_recipes",
+  );
   const listTags = listedTools.result.tools.find(
     (tool: { name: string }) => tool.name === "list_tags",
   );
@@ -126,8 +130,35 @@ test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools"
     ui: { resourceUri: recipeViewUri, visibility: ["model"] },
     "ui/resourceUri": recipeViewUri,
   });
+  assert.equal(searchRecipes.title, "Search recipes");
+  assert.match(searchRecipes.description, /Use get_recipe with a returned ID/u);
+  assert.deepEqual(searchRecipes.annotations, { readOnlyHint: true });
+  assert.deepEqual(Object.keys(searchRecipes.inputSchema.properties).sort(), [
+    "limit",
+    "query",
+    "tags",
+  ]);
+  assert.deepEqual(Object.keys(searchRecipes.outputSchema.properties), ["recipes"]);
+  assert.deepEqual(
+    Object.keys(searchRecipes.outputSchema.properties.recipes.items.properties).sort(),
+    [
+      "cookTimeMinutes",
+      "id",
+      "prepTimeMinutes",
+      "servings",
+      "summary",
+      "tags",
+      "title",
+      "totalTimeMinutes",
+    ],
+  );
+  assert.equal("ownerId" in searchRecipes.outputSchema.properties.recipes.items.properties, false);
+  assert.deepEqual(searchRecipes._meta, {
+    ui: { resourceUri: searchResultsViewUri, visibility: ["model"] },
+    "ui/resourceUri": searchResultsViewUri,
+  });
   for (const tool of listedTools.result.tools.filter(
-    (tool: { name: string }) => tool.name !== "get_recipe",
+    (tool: { name: string }) => tool.name !== "get_recipe" && tool.name !== "search_recipes",
   )) {
     assert.equal(tool._meta, undefined);
   }
@@ -150,6 +181,12 @@ test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools"
     {
       uri: recipeViewUri,
       name: "Recipe view",
+      mimeType: "text/html;profile=mcp-app",
+      _meta: { ui: { prefersBorder: true } },
+    },
+    {
+      uri: searchResultsViewUri,
+      name: "Search results",
       mimeType: "text/html;profile=mcp-app",
       _meta: { ui: { prefersBorder: true } },
     },
@@ -180,6 +217,33 @@ test("stateless Streamable HTTP initializes and exposes only Recipe Vault tools"
   assert.match(readResource.result.contents[0].text, /^<!doctype html>/iu);
   assert.equal(readResource.result.contents[0].text.includes('src="/assets/'), false);
   assert.equal(readResource.result.contents[0].text.includes('href="/assets/'), false);
+
+  const searchResource = await handleMcpRequest(
+    {} as never,
+    userId,
+    new Request(resourceServer, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+        "mcp-protocol-version": "2025-11-25",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 6,
+        method: "resources/read",
+        params: { uri: searchResultsViewUri },
+      }),
+    }),
+  );
+  const readSearchResource = await searchResource.json();
+  assert.equal(readSearchResource.result.contents[0].uri, searchResultsViewUri);
+  assert.equal(readSearchResource.result.contents[0].mimeType, "text/html;profile=mcp-app");
+  assert.equal(readSearchResource.result.contents[0]._meta.ui.prefersBorder, true);
+  assert.match(readSearchResource.result.contents[0].text, /^<!doctype html>/iu);
+  assert.match(readSearchResource.result.contents[0].text, /Recipe Vault search results/iu);
+  assert.equal(readSearchResource.result.contents[0].text.includes('src="/assets/'), false);
+  assert.equal(readSearchResource.result.contents[0].text.includes('href="/assets/'), false);
 });
 
 test("list_tags transport binds the verified owner and returns exact counts", async () => {

@@ -55,18 +55,32 @@ association triggers maintain each affected recipe's compatibility projection;
 recipe fields and ingredients are not changed. Similar names are not matched,
 and tags are not renamed.
 
-`get_recipe` is display-only MCP Apps-enhanced. Models should first call
+`search_recipes` retains its JSON text response and also returns a structured
+`recipes` array with IDs, titles, optional summaries and timing, servings, and
+tags. For example, an agent can search for matches and then open one full recipe:
+
+```ts
+const { recipes } = await search_recipes({ query: "tomato", limit: 10 });
+if (recipes[0]) await get_recipe({ recipeId: recipes[0].id });
+```
+
+Its static `ui://recipe-vault/search-results.html` resource renders those
+results as read-only cards in MCP Apps-capable hosts. The display includes
+available summary, timing, serving count, and tags; IDs stay in the structured
+payload for the model and are not shown. Empty searches open a no-results state.
+The bundled view uses Recipe Vault's shared card, heading, text, stack, and tag
+components, follows the host's light or dark theme, and uses a supplied host font
+when available with a system sans-serif fallback. Other hosts retain the text
+response. The renderer receives a display projection only: never owner, audit,
+or authentication data, and it does not initiate tool calls.
+
+`get_recipe` remains display-only MCP Apps-enhanced. Models should first call
 `search_recipes`, then pass one returned ID to `get_recipe`; its static
 `ui://recipe-vault/recipe-view.html` resource renders the full read-only recipe
-in MCP Apps-capable hosts using Recipe Vault's shared page, card, text, and tag
-components. The bundled view imports the app token stylesheet, follows the
-host's light or dark theme, and uses a supplied host font when available with a
-system sans-serif fallback. It applies host font information selectively so
-host color and typography scale variables do not replace Recipe Vault tokens.
-The tool retains its existing JSON text response for other hosts and ambiguous
-or empty searches remain text-only clarification flows. The renderer receives
-a display projection only: never owner, audit, or authentication data. It does
-not add scopes, browser access, database access, or app-initiated tool calls.
+in MCP Apps-capable hosts. The view follows the same theme and font behavior.
+The tool retains its existing JSON text response for other hosts. Its renderer
+also receives a display projection only and does not add scopes, browser access,
+database access, or app-initiated tool calls.
 
 `save_recipe` follows the shared ingredient contract. For example:
 
