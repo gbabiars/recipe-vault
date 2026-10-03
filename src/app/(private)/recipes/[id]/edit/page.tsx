@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
@@ -17,12 +16,8 @@ export default async function EditRecipePage({ params }: { params: Promise<{ id:
         title="Edit recipe"
         overline={
           <Breadcrumbs trailingSeparator>
-            <BreadcrumbsItem>
-              <Link href="/recipes">Recipes</Link>
-            </BreadcrumbsItem>
-            <BreadcrumbsItem>
-              <Link href={`/recipes/${recipe.id}`}>{recipe.title}</Link>
-            </BreadcrumbsItem>
+            <BreadcrumbsItem href="/recipes">Recipes</BreadcrumbsItem>
+            <BreadcrumbsItem href={`/recipes/${recipe.id}`}>{recipe.title}</BreadcrumbsItem>
           </Breadcrumbs>
         }
       />

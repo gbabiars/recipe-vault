@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
 import { RecipeImportPageForm } from "@/features/recipes/recipe-import-form";
@@ -15,9 +14,7 @@ export default async function ImportRecipePage() {
         title="Import a recipe"
         overline={
           <Breadcrumbs trailingSeparator>
-            <BreadcrumbsItem>
-              <Link href="/recipes">Recipes</Link>
-            </BreadcrumbsItem>
+            <BreadcrumbsItem href="/recipes">Recipes</BreadcrumbsItem>
           </Breadcrumbs>
         }
       />

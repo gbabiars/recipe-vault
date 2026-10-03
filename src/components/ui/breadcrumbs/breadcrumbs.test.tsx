@@ -1,16 +1,23 @@
+import * as React from "react";
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 
 import "../../../app/globals.css";
 
+import { LinkRendererProvider, type LinkRendererProps } from "../link-renderer";
 import { Breadcrumbs, BreadcrumbsItem } from "./breadcrumbs";
+
+const RouterLink = React.forwardRef<HTMLAnchorElement, LinkRendererProps>(function RouterLink(
+  { href, ...props },
+  ref,
+) {
+  return <a {...props} href={href} data-router-link="" ref={ref} />;
+});
 
 test("renders a labeled navigation landmark with an ordered list and current page", () => {
   render(
     <Breadcrumbs>
-      <BreadcrumbsItem>
-        <a href="https://example.com/recipes">Recipes</a>
-      </BreadcrumbsItem>
+      <BreadcrumbsItem href="https://example.com/recipes">Recipes</BreadcrumbsItem>
       <BreadcrumbsItem current>Tomato soup</BreadcrumbsItem>
     </Breadcrumbs>,
   );
@@ -31,12 +38,8 @@ test("renders a labeled navigation landmark with an ordered list and current pag
 test("generates quiet separators only between items", () => {
   render(
     <Breadcrumbs>
-      <BreadcrumbsItem>
-        <a href="https://example.com/recipes">Recipes</a>
-      </BreadcrumbsItem>
-      <BreadcrumbsItem>
-        <a href="https://example.com/recipes/soups">Soups</a>
-      </BreadcrumbsItem>
+      <BreadcrumbsItem href="https://example.com/recipes">Recipes</BreadcrumbsItem>
+      <BreadcrumbsItem href="https://example.com/recipes/soups">Soups</BreadcrumbsItem>
       <BreadcrumbsItem current>Tomato soup</BreadcrumbsItem>
     </Breadcrumbs>,
   );
@@ -54,12 +57,8 @@ test("generates quiet separators only between items", () => {
 test("adds a trailing slash after ancestor links when the heading names the current page", () => {
   render(
     <Breadcrumbs trailingSeparator>
-      <BreadcrumbsItem>
-        <a href="https://example.com/recipes">Recipes</a>
-      </BreadcrumbsItem>
-      <BreadcrumbsItem>
-        <a href="https://example.com/recipes/soups">Soups</a>
-      </BreadcrumbsItem>
+      <BreadcrumbsItem href="https://example.com/recipes">Recipes</BreadcrumbsItem>
+      <BreadcrumbsItem href="https://example.com/recipes/soups">Soups</BreadcrumbsItem>
     </Breadcrumbs>,
   );
 
@@ -74,4 +73,20 @@ test("adds a trailing slash after ancestor links when the heading names the curr
   expect(getComputedStyle(items[0], "::after").content).toBe("none");
   expect(getComputedStyle(items[1], "::before").content).toContain("/");
   expect(getComputedStyle(items[1], "::after").content).toContain("/");
+});
+
+test("uses the configured link renderer for ancestor items", () => {
+  render(
+    <LinkRendererProvider link={<RouterLink href="/" />}>
+      <Breadcrumbs>
+        <BreadcrumbsItem href="/recipes">Recipes</BreadcrumbsItem>
+        <BreadcrumbsItem current>Tomato soup</BreadcrumbsItem>
+      </Breadcrumbs>
+    </LinkRendererProvider>,
+  );
+
+  const link = screen.getByRole("link", { name: "Recipes" });
+  expect(link.getAttribute("href")).toBe("/recipes");
+  expect(link.hasAttribute("data-router-link")).toBe(true);
+  expect(screen.queryByRole("link", { name: "Tomato soup" })).toBeNull();
 });

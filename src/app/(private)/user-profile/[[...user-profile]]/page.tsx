@@ -1,5 +1,4 @@
 import { UserProfile } from "@clerk/nextjs";
-import Link from "next/link";
 import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs";
 import { Card } from "@/components/ui/card";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
@@ -15,9 +14,7 @@ export default async function UserProfilePage() {
         title="Profile"
         overline={
           <Breadcrumbs trailingSeparator>
-            <BreadcrumbsItem>
-              <Link href="/settings">Settings</Link>
-            </BreadcrumbsItem>
+            <BreadcrumbsItem href="/settings">Settings</BreadcrumbsItem>
           </Breadcrumbs>
         }
       />

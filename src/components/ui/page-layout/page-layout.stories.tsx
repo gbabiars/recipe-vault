@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import Link from "next/link";
 
 import { Breadcrumbs, BreadcrumbsItem } from "../breadcrumbs";
 import { Button } from "../button";
@@ -33,9 +32,7 @@ export const WithSlots: Story = {
         title="Tomato soup"
         overline={
           <Breadcrumbs trailingSeparator>
-            <BreadcrumbsItem>
-              <Link href="/recipes">Recipes</Link>
-            </BreadcrumbsItem>
+            <BreadcrumbsItem href="/recipes">Recipes</BreadcrumbsItem>
           </Breadcrumbs>
         }
         description="Fresh basil soup"

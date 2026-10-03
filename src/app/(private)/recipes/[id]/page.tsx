@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -26,9 +25,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
         title={recipe.title}
         overline={
           <Breadcrumbs trailingSeparator>
-            <BreadcrumbsItem>
-              <Link href="/recipes">Recipes</Link>
-            </BreadcrumbsItem>
+            <BreadcrumbsItem href="/recipes">Recipes</BreadcrumbsItem>
           </Breadcrumbs>
         }
         description={recipe.summary}
