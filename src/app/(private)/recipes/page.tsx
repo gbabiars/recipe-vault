@@ -1,5 +1,4 @@
 import styles from "./page.module.css";
-import Link from "next/link";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -73,11 +72,7 @@ async function RecipeResults({ q, tags }: { q?: string; tags: string[] }) {
                 : "Start your private collection with your first recipe."}
             </Text>
             <div>
-              <Button
-                label="Create a recipe"
-                href="/recipes/new"
-                render={<Link href="/recipes/new" />}
-              />
+              <Button label="Create a recipe" href="/recipes/new" />
             </div>
           </Stack>
         </Card>

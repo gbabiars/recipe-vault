@@ -1,8 +1,10 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { LinkRendererProvider } from "@/components/ui/link-renderer";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
@@ -21,9 +23,11 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html className={inter.variable} lang="en">
       <body>
-        <TooltipProvider>
-          <ClerkProvider>{children}</ClerkProvider>
-        </TooltipProvider>
+        <LinkRendererProvider link={<Link href="/" />}>
+          <TooltipProvider>
+            <ClerkProvider>{children}</ClerkProvider>
+          </TooltipProvider>
+        </LinkRendererProvider>
       </body>
     </html>
   );

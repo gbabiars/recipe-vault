@@ -1,14 +1,21 @@
-import type { SVGProps } from "react";
+import * as React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import Link from "next/link";
 import { expect, test, vi } from "vitest";
 
 import { Button } from "./button";
+import { LinkRendererProvider, type LinkRendererProps } from "../link-renderer";
 import styles from "./button.module.css";
 
-function TestIcon(props: SVGProps<SVGSVGElement>) {
+function TestIcon(props: React.SVGProps<SVGSVGElement>) {
   return <svg {...props} data-testid="button-icon" />;
 }
+
+const RouterLink = React.forwardRef<HTMLAnchorElement, LinkRendererProps>(
+  function RouterLink(props, ref) {
+    return <a {...props} ref={ref} data-router="test" />;
+  },
+);
 
 test("renders a medium default button and handles clicks", () => {
   const handleClick = vi.fn();
@@ -43,6 +50,34 @@ test("renders href mode as an anchor with link semantics", () => {
   expect(link.hasAttribute("type")).toBe(false);
   expect(link.hasAttribute("disabled")).toBe(false);
   expect(screen.queryByRole("button", { name: "Create recipe" })).toBeNull();
+});
+
+test("uses the configured link renderer and forwards anchor props and ref", () => {
+  const ref = { current: null as HTMLAnchorElement | null };
+
+  render(
+    <LinkRendererProvider link={<RouterLink href="/" />}>
+      <Button ref={ref} label="Create recipe" href="/recipes/new" target="_blank" />
+    </LinkRendererProvider>,
+  );
+
+  const link = screen.getByRole("link", { name: "Create recipe" });
+  expect(link.getAttribute("data-router")).toBe("test");
+  expect(link.getAttribute("href")).toBe("/recipes/new");
+  expect(link.getAttribute("target")).toBe("_blank");
+  expect(ref.current).toBe(link);
+});
+
+test("an explicit render overrides the configured link renderer", () => {
+  render(
+    <LinkRendererProvider link={<RouterLink href="/" />}>
+      <Button label="Download" href="/export" render={<a href="/export" download />} />
+    </LinkRendererProvider>,
+  );
+
+  const link = screen.getByRole("link", { name: "Download" });
+  expect(link.getAttribute("data-router")).toBeNull();
+  expect(link.hasAttribute("download")).toBe(true);
 });
 
 test("forwards anchor props, styles, handlers, and refs through Next.js Link", () => {

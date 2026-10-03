@@ -4,6 +4,7 @@ import * as React from "react";
 import { Menu } from "@base-ui/react/menu";
 import { cn } from "cn";
 
+import { useLinkRenderer } from "../link-renderer";
 import styles from "./dropdown-menu.module.css";
 
 export type DropdownMenuProps = React.ComponentPropsWithoutRef<typeof Menu.Root>;
@@ -69,10 +70,14 @@ export type DropdownMenuLinkItemProps = Omit<BaseLinkItemProps, "className" | "c
 };
 
 export const DropdownMenuLinkItem = React.forwardRef<Element, DropdownMenuLinkItemProps>(
-  function DropdownMenuLinkItem({ className, icon: Icon, children, ...props }, ref) {
+  function DropdownMenuLinkItem({ className, icon: Icon, children, href, render, ...props }, ref) {
+    const link = useLinkRenderer();
+
     return (
       <Menu.LinkItem
         {...props}
+        href={href}
+        render={render ?? (href === undefined ? undefined : React.cloneElement(link, { href }))}
         ref={ref}
         closeOnClick
         className={mergeClassName(styles.item, className)}

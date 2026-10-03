@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRender } from "@base-ui/react/use-render";
 import { cn } from "cn";
 
+import { useLinkRenderer } from "../link-renderer";
 import styles from "./card.module.css";
 
 export type CardPadding = "small" | "medium" | "large" | "none";
@@ -24,12 +25,7 @@ type InteractiveCardElement =
   | "textarea"
   | "video";
 type NonInteractiveCardElement = Exclude<CardElement, InteractiveCardElement>;
-type NextLink = typeof import("next/link").default;
-
-export type CardRender =
-  | React.ReactElement<React.AnchorHTMLAttributes<HTMLAnchorElement>, "a">
-  | React.ReactElement<React.ButtonHTMLAttributes<HTMLButtonElement>, "button">
-  | React.ReactElement<React.ComponentPropsWithoutRef<NextLink>, NextLink>;
+export type CardRender = React.ReactElement;
 
 type CardBaseProps<T extends CardElement> = {
   as?: T;
@@ -38,16 +34,20 @@ type CardBaseProps<T extends CardElement> = {
 };
 
 type StaticCardProps<T extends CardElement> = CardBaseProps<T> & {
+  href?: never;
   label?: never;
   render?: never;
-} & Omit<React.ComponentPropsWithoutRef<T>, "as" | "label" | "padding" | "render" | "variant">;
+} & Omit<
+    React.ComponentPropsWithoutRef<T>,
+    "as" | "href" | "label" | "padding" | "render" | "variant"
+  >;
 
-type InteractiveCardProps<T extends NonInteractiveCardElement> = CardBaseProps<T> & {
+type InteractiveCardBaseProps<T extends NonInteractiveCardElement> = CardBaseProps<T> & {
   label: string;
-  render: CardRender;
 } & Omit<
     React.ComponentPropsWithoutRef<T>,
     | "as"
+    | "href"
     | "label"
     | "onAuxClick"
     | "onClick"
@@ -57,6 +57,9 @@ type InteractiveCardProps<T extends NonInteractiveCardElement> = CardBaseProps<T
     | "tabIndex"
     | "variant"
   >;
+
+type InteractiveCardProps<T extends NonInteractiveCardElement> = InteractiveCardBaseProps<T> &
+  ({ href: string; render?: never } | { href?: never; render: CardRender });
 
 export type CardProps<T extends CardElement = "div"> =
   | StaticCardProps<T>
@@ -75,6 +78,7 @@ type CardImplementationProps = {
   as?: CardElement;
   children?: React.ReactNode;
   className?: string;
+  href?: string;
   label?: string;
   padding?: CardPadding;
   render?: CardRender;
@@ -146,7 +150,7 @@ const InteractiveCard = React.forwardRef<HTMLElement, CardImplementationProps>(
     }
 
     if (!isSupportedRender(render)) {
-      throw new Error("Card render must be an anchor, button, or Next.js Link.");
+      throw new Error("Card render must be an anchor, button, or link component.");
     }
 
     if (as !== undefined && interactiveCardElements.has(as as InteractiveCardElement)) {
@@ -218,6 +222,7 @@ const CardImpl = (
   {
     as,
     className,
+    href,
     padding = "medium",
     render,
     variant = "default",
@@ -226,8 +231,11 @@ const CardImpl = (
   ref: React.ForwardedRef<HTMLElement>,
 ) => {
   const Component = (as ?? "div") as React.ElementType;
+  const link = useLinkRenderer();
+  const primaryRender =
+    render ?? (href === undefined ? undefined : React.cloneElement(link, { href }));
 
-  if (render !== undefined) {
+  if (primaryRender !== undefined) {
     return (
       <InteractiveCard
         {...props}
@@ -235,7 +243,7 @@ const CardImpl = (
         className={className}
         padding={padding}
         ref={ref}
-        render={render}
+        render={primaryRender}
         variant={variant}
       />
     );

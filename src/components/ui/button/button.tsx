@@ -5,6 +5,7 @@ import { Button as BaseButton } from "@base-ui/react/button";
 import { useRender } from "@base-ui/react/use-render";
 import { cn } from "cn";
 
+import { useLinkRenderer } from "../link-renderer";
 import styles from "./button.module.css";
 
 type BaseButtonProps = React.ComponentPropsWithoutRef<typeof BaseButton>;
@@ -54,6 +55,7 @@ export type ButtonProps = ButtonActionProps | ButtonHrefProps;
 
 const ButtonAnchor = React.forwardRef<HTMLAnchorElement, ButtonHrefProps>(
   function ButtonAnchor(props, ref) {
+    const link = useLinkRenderer();
     const {
       className,
       disabled,
@@ -87,7 +89,8 @@ const ButtonAnchor = React.forwardRef<HTMLAnchorElement, ButtonHrefProps>(
       href,
     };
     // Base UI types callbacks as generic HTML props; this branch supplies required anchor props.
-    const typedRender = render as unknown as useRender.RenderProp;
+    const typedRender = (render ??
+      React.cloneElement(link, { href })) as unknown as useRender.RenderProp;
 
     return useRender({
       defaultTagName: "a",

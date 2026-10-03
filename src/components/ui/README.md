@@ -47,8 +47,17 @@ to CSS tokens.
   `Field` parts for an unusual control. See [field](field/field.mdx).
 - **Action or navigation:** Use `Button` for labeled actions and destinations,
   and `IconButton` for compact icon-only actions or destinations with a clear
-  accessible name. Add `href` to render a link. See [Button](button/button.mdx)
+  accessible name. Add `href` to render a link through the app's configured
+  renderer. `LinkRendererProvider` sets that renderer for Button, IconButton,
+  Card, and DropdownMenuLinkItem; each retains `render` for an individual
+  override. Without a provider, links use native anchors. See [Button](button/button.mdx)
   and [IconButton](button/icon-button.mdx).
+
+  Configure the provider in the app root with an anchor-compatible link element,
+  such as `<LinkRendererProvider link={<Link href="/" />}>`. The link's `href` is
+  replaced by each control's destination. An element can cross the server/client
+  boundary in the root layout; a component function cannot.
+
 - **Supplemental context:** Use `Tooltip` for brief, non-interactive
   descriptions on focusable controls. Keep important instructions visible or
   use a Popover for interactive content. See [Tooltip](tooltip/tooltip.mdx).

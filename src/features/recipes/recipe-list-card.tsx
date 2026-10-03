@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { Heading } from "@/components/ui/heading";
@@ -11,7 +10,7 @@ import styles from "./recipe-list-card.module.css";
 
 export function RecipeListCard({ recipe }: { recipe: RecipeSummary }) {
   return (
-    <Card as="li" label={`View ${recipe.title}`} render={<Link href={`/recipes/${recipe.id}`} />}>
+    <Card as="li" label={`View ${recipe.title}`} href={`/recipes/${recipe.id}`}>
       <Stack gap="150">
         <Stack gap="050">
           <Heading as="h2" level={5}>

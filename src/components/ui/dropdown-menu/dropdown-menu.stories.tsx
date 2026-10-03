@@ -1,5 +1,4 @@
 import * as React from "react";
-import Link from "next/link";
 import { Archive, BookOpen, Copy, Pencil } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
@@ -62,7 +61,7 @@ export const MixedActionsAndLinks: Story = {
         <DropdownMenuItem icon={Pencil} onClick={() => undefined}>
           Edit recipe
         </DropdownMenuItem>
-        <DropdownMenuLinkItem icon={BookOpen} render={<Link href="#recipe-details" />}>
+        <DropdownMenuLinkItem icon={BookOpen} href="#recipe-details">
           View details
         </DropdownMenuLinkItem>
         <DropdownMenuItem icon={Copy} onClick={() => undefined}>

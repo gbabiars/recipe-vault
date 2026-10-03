@@ -1,13 +1,20 @@
-import type { SVGProps } from "react";
+import * as React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 
 import { IconButton } from "./icon-button";
+import { LinkRendererProvider, type LinkRendererProps } from "../link-renderer";
 import styles from "./button.module.css";
 
-function TestIcon(props: SVGProps<SVGSVGElement>) {
+function TestIcon(props: React.SVGProps<SVGSVGElement>) {
   return <svg {...props} data-testid="icon-button-icon" />;
 }
+
+const RouterLink = React.forwardRef<HTMLAnchorElement, LinkRendererProps>(
+  function RouterLink(props, ref) {
+    return <a {...props} ref={ref} data-router="test" />;
+  },
+);
 
 test("renders a named medium default button with a decorative icon", () => {
   render(<IconButton icon={TestIcon} label="Delete recipe" />);
@@ -44,6 +51,18 @@ test("renders href mode as a named link with a decorative icon", () => {
   expect(ref.current).toBe(link);
   expect(icon.getAttribute("aria-hidden")).toBe("true");
   expect(icon.getAttribute("focusable")).toBe("false");
+});
+
+test("uses the configured link renderer in href mode", () => {
+  render(
+    <LinkRendererProvider link={<RouterLink href="/" />}>
+      <IconButton icon={TestIcon} label="Open recipe" href="/recipes/tomato-soup" />
+    </LinkRendererProvider>,
+  );
+
+  expect(screen.getByRole("link", { name: "Open recipe" }).getAttribute("data-router")).toBe(
+    "test",
+  );
 });
 
 test("handles clicks", () => {
