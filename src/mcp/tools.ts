@@ -92,6 +92,23 @@ const recipeDisplaySchema = z
 
 export const mcpGetRecipeOutputSchema = z.object({ recipe: recipeDisplaySchema }).strict();
 
+const searchRecipeDisplaySchema = z
+  .object({
+    id: z.string().uuid(),
+    title: z.string(),
+    summary: z.string().optional(),
+    prepTimeMinutes: z.number().int().nonnegative().optional(),
+    cookTimeMinutes: z.number().int().nonnegative().optional(),
+    totalTimeMinutes: z.number().int().nonnegative().optional(),
+    servings: z.number().int().positive().optional(),
+    tags: z.array(z.string()),
+  })
+  .strict();
+
+export const mcpSearchRecipesOutputSchema = z
+  .object({ recipes: z.array(searchRecipeDisplaySchema) })
+  .strict();
+
 function displayRecipe(recipe: Recipe) {
   return mcpGetRecipeOutputSchema.parse({
     recipe: {
@@ -274,7 +291,7 @@ export function createRecipeMcpTools(context: McpToolContext) {
           page: 1,
           pageSize: parsed.data.limit,
         });
-        return text({
+        const output = mcpSearchRecipesOutputSchema.parse({
           recipes: results.items.map((recipe) => ({
             id: recipe.id,
             title: recipe.title,
@@ -292,6 +309,7 @@ export function createRecipeMcpTools(context: McpToolContext) {
             tags: recipe.tags,
           })),
         });
+        return { ...text(output), structuredContent: output };
       } catch {
         return text({ error: "Unable to search recipes." }, true);
       }

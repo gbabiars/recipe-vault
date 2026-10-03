@@ -11,7 +11,7 @@ coverage/
 .vitest/
 test-results/
 *.tsbuildinfo
-src/mcp/recipe-view/.dist/
+src/mcp/*/.dist/
 
 # Environment files: commit only the safe template below.
 .env*

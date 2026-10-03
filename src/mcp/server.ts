@@ -16,9 +16,11 @@ import {
   createRecipeMcpTools,
   createTagMcpTools,
   mcpGetRecipeOutputSchema,
+  mcpSearchRecipesOutputSchema,
   mcpToolSchemas,
 } from "./tools";
 import { registerRecipeViewResource, recipeViewUri } from "./recipe-view-resource";
+import { registerSearchResultsResource, searchResultsViewUri } from "./search-results-resource";
 
 type McpExtra = RequestHandlerExtra<ServerRequest, ServerNotification>;
 type OwnedServiceFactory = (userId: string) => OwnerBoundRecipeService;
@@ -73,6 +75,7 @@ function registerRecipeTools(
   getTagService: OwnedTagServiceFactory,
 ) {
   registerRecipeViewResource(server);
+  registerSearchResultsResource(server);
   server.registerTool(
     "list_tags",
     {
@@ -115,13 +118,17 @@ function registerRecipeTools(
       return context ? createTagMcpTools(context).merge_tags(input) : denied();
     },
   );
-  server.registerTool(
+  registerAppTool(
+    server,
     "search_recipes",
     {
       title: "Search recipes",
-      description: "Search concise cards from the authenticated user's recipe vault.",
+      description:
+        "Search concise recipe cards from the authenticated user's vault. Use get_recipe with a returned ID to read one complete recipe.",
       inputSchema: mcpToolSchemas.search,
+      outputSchema: mcpSearchRecipesOutputSchema,
       annotations: { readOnlyHint: true },
+      _meta: { ui: { resourceUri: searchResultsViewUri, visibility: ["model"] } },
     },
     async (input, extra) => {
       const context = toolContext(extra, mcpScopes.read, getService);
