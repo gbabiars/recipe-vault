@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
+import { avatarImageFixtureUrl as profileImageFixtureUrl } from "../ui/avatar/avatar-image-fixture";
 import { AppMobileNavigation } from "./app-mobile-navigation";
 
 const meta = {
@@ -36,12 +37,13 @@ export const Recipes: Story = {
 };
 
 export const Profile: Story = {
-  args: { pathname: "/user-profile" },
+  args: { pathname: "/user-profile", userImageUrl: profileImageFixtureUrl },
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Open menu" }));
     const dialog = within(document.body).getByRole("dialog", { name: "Menu" });
     await expect(within(dialog).queryByRole("link", { name: "Settings" })).not.toBeInTheDocument();
     const trigger = within(dialog).getByRole("button", { name: "Ada Lovelace" });
+    await expect(trigger.querySelector("img")).toHaveAttribute("src", profileImageFixtureUrl);
     trigger.focus();
     await userEvent.keyboard("{Enter}");
 

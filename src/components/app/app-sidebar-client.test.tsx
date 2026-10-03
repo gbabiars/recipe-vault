@@ -6,13 +6,13 @@ import { AppSidebarClient } from "./app-sidebar-client";
 function renderSidebar(user: AppSidebarUser | null) {
   const onSignOut = vi.fn();
 
-  render(
+  const rendered = render(
     <AppSidebarStateProvider value={{ pathname: "/settings", user, onSignOut }}>
       <AppSidebarClient />
     </AppSidebarStateProvider>,
   );
 
-  return { onSignOut };
+  return { ...rendered, onSignOut };
 }
 
 test("client sidebar shows the account name and calls the provided sign-out action", () => {
@@ -35,8 +35,9 @@ test("client sidebar falls back to the username when the full name is blank", ()
 });
 
 test("client sidebar uses Account when no user is available", () => {
-  renderSidebar(null);
+  const { container } = renderSidebar(null);
 
   fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
   expect(screen.getByRole("button", { name: "Account" })).toBeInTheDocument();
+  expect(container.querySelector("aside img")).toBeNull();
 });

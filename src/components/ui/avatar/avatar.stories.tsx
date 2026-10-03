@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect, waitFor } from "storybook/test";
 
 import { Avatar } from "./avatar";
+import { avatarBrokenImageFixtureUrl, avatarImageFixtureUrl } from "./avatar-image-fixture";
 
 const meta = {
   title: "UI/Avatar",
@@ -21,6 +23,25 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+
+export const WithImage: Story = {
+  args: {
+    imageUrl: avatarImageFixtureUrl,
+  },
+};
+
+export const ImageFallback: Story = {
+  args: {
+    imageUrl: avatarBrokenImageFixtureUrl,
+  },
+  play: async ({ canvas }) => {
+    const avatar = canvas.getByRole("img", { name: "Ada Lovelace" });
+    const image = avatar.querySelector("img");
+
+    await waitFor(() => expect(image).toHaveAttribute("data-error"));
+    await expect(avatar).toHaveTextContent("AL");
+  },
+};
 
 export const SizeScale: Story = {
   render: () => (

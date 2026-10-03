@@ -4,6 +4,7 @@ import { createContext, useContext, type ReactNode } from "react";
 
 export type AppSidebarUser = {
   fullName?: string | null;
+  userImageUrl?: string | null;
   username?: string | null;
 };
 
