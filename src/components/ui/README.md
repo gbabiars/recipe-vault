@@ -38,6 +38,11 @@ to CSS tokens.
   header owns the page title and optional actions. Put `Breadcrumbs` in its
   overline for hierarchical navigation. See [page layout](page-layout/page-layout.mdx)
   and [breadcrumbs](breadcrumbs/breadcrumbs.mdx).
+- **Read-only recipe view:** The MCP recipe resource uses `PageLayout` and
+  `PageHeader` for the recipe title, `Inline` and `Chip` for tags, and `Card`,
+  `Stack`, `Heading`, and `Text` for recipe sections. Ingredients and steps
+  remain semantic lists. The standalone resource imports `src/app/globals.css`
+  so its components use the same light and dark semantic tokens as the app.
 - **Form field:** Prefer `TextInput`, `Textarea`, or a labeled choice. Compose
   `Field` parts for an unusual control. See [field](field/field.mdx).
 - **Action or navigation:** Use `Button` for labeled actions and destinations,

@@ -58,11 +58,15 @@ and tags are not renamed.
 `get_recipe` is display-only MCP Apps-enhanced. Models should first call
 `search_recipes`, then pass one returned ID to `get_recipe`; its static
 `ui://recipe-vault/recipe-view.html` resource renders the full read-only recipe
-in MCP Apps-capable hosts. The tool retains its existing JSON text response for
-other hosts and ambiguous or empty searches remain text-only clarification
-flows. The renderer receives a display projection only: never owner, audit, or
-authentication data. It does not add scopes, browser access, database access,
-or app-initiated tool calls.
+in MCP Apps-capable hosts using Recipe Vault's shared page, card, text, and tag
+components. The bundled view imports the app token stylesheet, follows the
+host's light or dark theme, and uses a supplied host font when available with a
+system sans-serif fallback. It applies host font information selectively so
+host color and typography scale variables do not replace Recipe Vault tokens.
+The tool retains its existing JSON text response for other hosts and ambiguous
+or empty searches remain text-only clarification flows. The renderer receives
+a display projection only: never owner, audit, or authentication data. It does
+not add scopes, browser access, database access, or app-initiated tool calls.
 
 `save_recipe` follows the shared ingredient contract. For example:
 
