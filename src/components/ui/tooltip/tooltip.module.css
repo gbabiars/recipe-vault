@@ -10,8 +10,7 @@
   background: var(--color-background-tooltip);
   color: var(--color-text-inverse);
   box-shadow: var(--shadow-raised);
-  font-size: var(--font-size-text-small);
-  line-height: var(--line-height-text-small);
+  font: var(--font-text-small);
 }
 
 .popup[data-closed] {
