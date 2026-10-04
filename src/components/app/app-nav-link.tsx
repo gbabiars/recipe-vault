@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
+import { Tooltip } from "../ui/tooltip";
 import styles from "./app-sidebar.module.css";
 
 type AppNavLinkProps = {
@@ -21,7 +22,7 @@ export function AppNavLink({
   onClick,
   collapsed = false,
 }: AppNavLinkProps) {
-  return (
+  const link = (
     <Link
       href={href}
       className={`${active ? `${styles.link} ${styles.active}` : styles.link}${collapsed ? ` ${styles.collapsedLink}` : ""}`}
@@ -32,4 +33,6 @@ export function AppNavLink({
       <span className={collapsed ? styles.visuallyHidden : undefined}>{children}</span>
     </Link>
   );
+
+  return collapsed ? <Tooltip trigger={link} content={children} side="right" /> : link;
 }

@@ -125,8 +125,39 @@ test("collapsed sidebar keeps navigation names accessible and renders compact co
   expect(screen.getByRole("link", { name: "Tags", hidden: true })).toHaveClass(
     styles.collapsedLink,
   );
-  expect(screen.getByRole("button", { name: "Ada Lovelace", hidden: true })).toBeInTheDocument();
-  expect(
+  expectTooltip(screen.getByRole("link", { name: "Recipes", hidden: true }), "Recipes");
+  expectTooltip(screen.getByRole("link", { name: "Tags", hidden: true }), "Tags");
+  expectTooltip(screen.getByRole("button", { name: "Ada Lovelace", hidden: true }), "Ada Lovelace");
+  expectTooltip(
     screen.getByRole("button", { name: "Expand navigation", hidden: true }),
-  ).toBeInTheDocument();
+    "Expand navigation",
+  );
 });
+
+test("expanded sidebar only describes the expand/collapse control with a tooltip", () => {
+  render(
+    <AppSidebar
+      pathname="/recipes"
+      userName="Ada Lovelace"
+      onSignOut={() => {}}
+      onToggleCollapse={() => {}}
+    />,
+  );
+
+  expectTooltip(
+    screen.getByRole("button", { name: "Collapse navigation", hidden: true }),
+    "Collapse navigation",
+  );
+  expect(screen.getByRole("link", { name: "Recipes", hidden: true })).not.toHaveAttribute(
+    "aria-describedby",
+  );
+  expect(screen.getByRole("button", { name: "Ada Lovelace", hidden: true })).not.toHaveAttribute(
+    "aria-describedby",
+  );
+});
+
+function expectTooltip(trigger: HTMLElement, content: string) {
+  const tooltipId = trigger.getAttribute("aria-describedby");
+  expect(tooltipId).toBeTruthy();
+  expect(document.getElementById(tooltipId ?? "")?.textContent).toBe(content);
+}
