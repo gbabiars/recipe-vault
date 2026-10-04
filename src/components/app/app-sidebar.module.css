@@ -4,17 +4,18 @@
   display: flex;
   flex: 0 0 var(--width-sidebar);
   flex-direction: column;
-  gap: var(--space-300);
+  gap: var(--space-200);
   height: 100dvh;
-  padding: var(--space-300) var(--space-200);
+  padding: var(--space-200) var(--space-100);
   border-right: 1px solid var(--color-border-subtle);
   background: var(--color-background-surface);
 }
 
 .brand {
   color: var(--color-text-primary);
-  font-weight: 800;
-  font-size: 1.2rem;
+  font-weight: 700;
+  font-size: var(--font-size-heading-3);
+  line-height: var(--line-height-heading-3);
   text-decoration: none;
 }
 
@@ -72,7 +73,7 @@
 .active {
   background: var(--color-selection-background);
   color: var(--color-selection-text);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .footer {
