@@ -1,8 +1,6 @@
 .breadcrumbs {
   color: var(--color-text-secondary);
-  font-size: var(--font-size-text-medium);
-  line-height: var(--line-height-text-medium);
-  font-weight: var(--font-weight-text-medium);
+  font: var(--font-text-medium);
 }
 
 .list {
