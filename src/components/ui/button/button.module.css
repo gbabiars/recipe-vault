@@ -41,6 +41,11 @@
   padding-inline: var(--space-200);
 }
 
+.button[data-size="large"] .icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
 .button.iconOnly {
   width: var(--height-button-medium);
   padding-inline: 0;

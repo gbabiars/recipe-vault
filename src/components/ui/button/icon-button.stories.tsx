@@ -105,10 +105,12 @@ export const VariantsAndSizes: Story = {
         const iconRect = icon.getBoundingClientRect();
         const iconStyle = getComputedStyle(icon);
 
-        expect(iconStyle.width).toBe("16px");
-        expect(iconStyle.height).toBe("16px");
-        expect(iconRect.width).toBe(16);
-        expect(iconRect.height).toBe(16);
+        const iconSize = size === "large" ? 20 : 16;
+
+        expect(iconStyle.width).toBe(`${iconSize}px`);
+        expect(iconStyle.height).toBe(`${iconSize}px`);
+        expect(iconRect.width).toBe(iconSize);
+        expect(iconRect.height).toBe(iconSize);
       }
     }
   },
