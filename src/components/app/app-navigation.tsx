@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BookOpen, ChevronDown, PanelLeftClose, PanelLeftOpen, Tags } from "lucide-react";
 import { Avatar } from "../ui/avatar";
 import { IconButton } from "../ui/button";
+import { Tooltip } from "../ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -44,13 +45,19 @@ export function AppNavigation({
       {onToggleCollapse ? (
         <div className={styles.navigationHeader}>
           {!collapsed ? <AppBrand onClick={onSelect} /> : null}
-          <IconButton
-            className={styles.collapseButton}
-            icon={collapsed ? PanelLeftOpen : PanelLeftClose}
-            label={collapsed ? "Expand navigation" : "Collapse navigation"}
-            size="large"
-            variant="subtle"
-            onClick={onToggleCollapse}
+          <Tooltip
+            trigger={
+              <IconButton
+                className={styles.collapseButton}
+                icon={collapsed ? PanelLeftOpen : PanelLeftClose}
+                label={collapsed ? "Expand navigation" : "Collapse navigation"}
+                size="large"
+                variant="subtle"
+                onClick={onToggleCollapse}
+              />
+            }
+            content={collapsed ? "Expand navigation" : "Collapse navigation"}
+            side="right"
           />
         </div>
       ) : (
@@ -80,17 +87,41 @@ export function AppNavigation({
       </nav>
       <div className={styles.footer}>
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button type="button" className={accountMenuTriggerClassName} aria-label={userName}>
-                <Avatar name={userName} imageUrl={userImageUrl} size="small" aria-hidden="true" />
-                <span className={collapsed ? styles.visuallyHidden : styles.accountName}>
-                  {userName}
-                </span>
-                {!collapsed ? <ChevronDown aria-hidden="true" size={16} /> : null}
-              </button>
-            }
-          />
+          {collapsed ? (
+            <Tooltip
+              trigger={
+                <DropdownMenuTrigger
+                  render={
+                    <button
+                      type="button"
+                      className={accountMenuTriggerClassName}
+                      aria-label={userName}
+                    >
+                      <Avatar
+                        name={userName}
+                        imageUrl={userImageUrl}
+                        size="small"
+                        aria-hidden="true"
+                      />
+                      <span className={styles.visuallyHidden}>{userName}</span>
+                    </button>
+                  }
+                />
+              }
+              content={userName}
+              side="right"
+            />
+          ) : (
+            <DropdownMenuTrigger
+              render={
+                <button type="button" className={accountMenuTriggerClassName} aria-label={userName}>
+                  <Avatar name={userName} imageUrl={userImageUrl} size="small" aria-hidden="true" />
+                  <span className={styles.accountName}>{userName}</span>
+                  <ChevronDown aria-hidden="true" size={16} />
+                </button>
+              }
+            />
+          )}
           <DropdownMenuPopup side="top" align="start" className={styles.accountMenuPopup}>
             <DropdownMenuLinkItem
               render={

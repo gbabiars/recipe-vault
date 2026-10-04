@@ -5,7 +5,13 @@ import { AppSidebar } from "./app-sidebar";
 const meta = {
   title: "app/Navigation/Sidebar",
   component: AppSidebar,
-  args: { pathname: "/recipes", userName: "Ada Lovelace", onSignOut: () => {} },
+  args: {
+    pathname: "/recipes",
+    userName: "Ada Lovelace",
+    onSignOut: () => {},
+    onToggleCollapse: () => {},
+  },
+  globals: { viewport: { value: "responsive", isRotated: false } },
   parameters: {
     layout: "fullscreen",
   },
