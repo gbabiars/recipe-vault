@@ -41,3 +41,14 @@ test("client sidebar uses Account when no user is available", () => {
   expect(screen.getByRole("button", { name: "Account" })).toBeInTheDocument();
   expect(container.querySelector("aside img")).toBeNull();
 });
+
+test("client sidebar toggles between expanded and collapsed navigation", () => {
+  const { container } = renderSidebar({ fullName: "Ada Lovelace" });
+
+  const sidebar = container.querySelector("aside");
+  expect(sidebar).toHaveAttribute("data-collapsed", "false");
+  fireEvent.click(screen.getByRole("button", { name: "Collapse navigation", hidden: true }));
+  expect(sidebar).toHaveAttribute("data-collapsed", "true");
+  fireEvent.click(screen.getByRole("button", { name: "Expand navigation", hidden: true }));
+  expect(sidebar).toHaveAttribute("data-collapsed", "false");
+});

@@ -105,3 +105,28 @@ test("sidebar invokes the supplied sign-out callback", () => {
 
   expect(onSignOut).toHaveBeenCalledOnce();
 });
+
+test("collapsed sidebar keeps navigation names accessible and renders compact controls", () => {
+  render(
+    <AppSidebar
+      pathname="/recipes"
+      userName="Ada Lovelace"
+      onSignOut={() => {}}
+      collapsed
+      onToggleCollapse={() => {}}
+    />,
+  );
+
+  const sidebar = screen.getByRole("complementary", { hidden: true });
+  expect(sidebar).toHaveAttribute("data-collapsed", "true");
+  expect(screen.getByRole("link", { name: "Recipes", hidden: true })).toHaveClass(
+    styles.collapsedLink,
+  );
+  expect(screen.getByRole("link", { name: "Tags", hidden: true })).toHaveClass(
+    styles.collapsedLink,
+  );
+  expect(screen.getByRole("button", { name: "Ada Lovelace", hidden: true })).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Expand navigation", hidden: true }),
+  ).toBeInTheDocument();
+});
