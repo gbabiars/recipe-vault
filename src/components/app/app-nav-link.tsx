@@ -9,6 +9,7 @@ type AppNavLinkProps = {
   active?: boolean;
   current?: boolean;
   onClick?: () => void;
+  collapsed?: boolean;
 };
 
 export function AppNavLink({
@@ -18,16 +19,17 @@ export function AppNavLink({
   active = false,
   current = false,
   onClick,
+  collapsed = false,
 }: AppNavLinkProps) {
   return (
     <Link
       href={href}
-      className={active ? `${styles.link} ${styles.active}` : styles.link}
+      className={`${active ? `${styles.link} ${styles.active}` : styles.link}${collapsed ? ` ${styles.collapsedLink}` : ""}`}
       aria-current={current ? "page" : undefined}
       onClick={onClick}
     >
       {Icon ? <Icon aria-hidden="true" focusable="false" size={18} /> : null}
-      {children}
+      <span className={collapsed ? styles.visuallyHidden : undefined}>{children}</span>
     </Link>
   );
 }

@@ -22,3 +22,6 @@ export const Profile: Story = { args: { pathname: "/user-profile" } };
 export const ProfileWithImage: Story = {
   args: { pathname: "/user-profile", userImageUrl: profileImageFixtureUrl },
 };
+export const Collapsed: Story = {
+  args: { collapsed: true, onToggleCollapse: () => {} },
+};

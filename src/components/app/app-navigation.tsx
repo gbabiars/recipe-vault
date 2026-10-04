@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { BookOpen, ChevronDown, Tags } from "lucide-react";
+import { BookOpen, ChevronDown, PanelLeftClose, PanelLeftOpen, Tags } from "lucide-react";
 import { Avatar } from "../ui/avatar";
+import { IconButton } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -18,6 +19,8 @@ type AppNavigationProps = {
   userImageUrl?: string | null;
   onSignOut: () => void | Promise<void>;
   onSelect?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 };
 
 export function AppNavigation({
@@ -26,6 +29,8 @@ export function AppNavigation({
   userImageUrl,
   onSignOut,
   onSelect,
+  collapsed = false,
+  onToggleCollapse,
 }: AppNavigationProps) {
   const recipesActive = pathname === "/recipes" || pathname.startsWith("/recipes/");
   const tagsActive = pathname === "/tags" || pathname.startsWith("/tags/");
@@ -36,13 +41,28 @@ export function AppNavigation({
 
   return (
     <>
-      <AppBrand onClick={onSelect} />
+      {onToggleCollapse ? (
+        <div className={styles.navigationHeader}>
+          {!collapsed ? <AppBrand onClick={onSelect} /> : null}
+          <IconButton
+            className={styles.collapseButton}
+            icon={collapsed ? PanelLeftOpen : PanelLeftClose}
+            label={collapsed ? "Expand navigation" : "Collapse navigation"}
+            size="large"
+            variant="subtle"
+            onClick={onToggleCollapse}
+          />
+        </div>
+      ) : (
+        <AppBrand onClick={onSelect} />
+      )}
       <nav className={styles.nav} aria-label="Primary">
         <AppNavLink
           href="/recipes"
           icon={BookOpen}
           active={recipesActive}
           current={recipesActive}
+          collapsed={collapsed}
           onClick={onSelect}
         >
           Recipes
@@ -52,6 +72,7 @@ export function AppNavigation({
           icon={Tags}
           active={tagsActive}
           current={tagsActive}
+          collapsed={collapsed}
           onClick={onSelect}
         >
           Tags
@@ -61,10 +82,12 @@ export function AppNavigation({
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <button type="button" className={accountMenuTriggerClassName}>
+              <button type="button" className={accountMenuTriggerClassName} aria-label={userName}>
                 <Avatar name={userName} imageUrl={userImageUrl} size="small" aria-hidden="true" />
-                <span className={styles.accountName}>{userName}</span>
-                <ChevronDown aria-hidden="true" size={16} />
+                <span className={collapsed ? styles.visuallyHidden : styles.accountName}>
+                  {userName}
+                </span>
+                {!collapsed ? <ChevronDown aria-hidden="true" size={16} /> : null}
               </button>
             }
           />
