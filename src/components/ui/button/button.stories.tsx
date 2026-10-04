@@ -157,7 +157,7 @@ export const IconAcrossSizes: Story = {
 
     expect(buttons).toHaveLength(sizes.length);
 
-    for (const button of buttons) {
+    for (const [index, button] of buttons.entries()) {
       const icon = button.querySelector("svg");
 
       if (icon === null) {
@@ -169,8 +169,10 @@ export const IconAcrossSizes: Story = {
       expect(icon.getAttribute("focusable")).toBe("false");
       expect(getComputedStyle(button).fontSize).toBe("16px");
       expect(getComputedStyle(button).lineHeight).toBe("16px");
-      expect(getComputedStyle(icon).width).toBe("16px");
-      expect(getComputedStyle(icon).height).toBe("16px");
+      const iconSize = sizes[index] === "large" ? "20px" : "16px";
+
+      expect(getComputedStyle(icon).width).toBe(iconSize);
+      expect(getComputedStyle(icon).height).toBe(iconSize);
       expect(getComputedStyle(icon).marginInlineEnd).toBe("8px");
     }
   },
