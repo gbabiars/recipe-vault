@@ -24,6 +24,9 @@ export const Recipes: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Open menu" }));
     const dialog = within(document.body).getByRole("dialog", { name: "Menu" });
     await expect(dialog).toBeVisible();
+    await expect(
+      within(dialog).queryByRole("link", { name: "Recipe Vault" }),
+    ).not.toBeInTheDocument();
     await expect(within(dialog).getByRole("link", { name: "Recipes" })).toHaveAttribute(
       "aria-current",
       "page",

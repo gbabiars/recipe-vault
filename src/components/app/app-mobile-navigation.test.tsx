@@ -8,6 +8,7 @@ test("mobile account menu closes the drawer when signing out", async () => {
 
   fireEvent.click(screen.getByRole("button", { name: "Open menu", hidden: true }));
   const dialog = screen.getByRole("dialog", { name: "Menu", hidden: true });
+  expect(screen.queryByRole("link", { name: "Recipe Vault", hidden: true })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Ada Lovelace", hidden: true }));
   fireEvent.click(screen.getByRole("menuitem", { name: "Sign out", hidden: true }));
 

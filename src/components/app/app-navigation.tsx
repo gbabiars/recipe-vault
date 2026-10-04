@@ -20,6 +20,7 @@ type AppNavigationProps = {
   userImageUrl?: string | null;
   onSignOut: () => void | Promise<void>;
   onSelect?: () => void;
+  showBrand?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 };
@@ -30,6 +31,7 @@ export function AppNavigation({
   userImageUrl,
   onSignOut,
   onSelect,
+  showBrand = true,
   collapsed = false,
   onToggleCollapse,
 }: AppNavigationProps) {
@@ -44,7 +46,7 @@ export function AppNavigation({
     <>
       {onToggleCollapse ? (
         <div className={styles.navigationHeader}>
-          {!collapsed ? <AppBrand onClick={onSelect} /> : null}
+          {!collapsed && showBrand ? <AppBrand onClick={onSelect} /> : null}
           <Tooltip
             trigger={
               <IconButton
@@ -60,9 +62,9 @@ export function AppNavigation({
             side="right"
           />
         </div>
-      ) : (
+      ) : showBrand ? (
         <AppBrand onClick={onSelect} />
-      )}
+      ) : null}
       <nav className={styles.nav} aria-label="Primary">
         <AppNavLink
           href="/recipes"

@@ -62,6 +62,7 @@ export function AppMobileNavigation({
               pathname={pathname}
               userName={userName}
               userImageUrl={userImageUrl}
+              showBrand={false}
               onSelect={() => setOpen(false)}
               onSignOut={onSignOut}
             />
