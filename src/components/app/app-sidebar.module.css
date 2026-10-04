@@ -142,8 +142,7 @@
   display: none;
 }
 
-.mobileHeader,
-.drawerHeader {
+.mobileHeader {
   display: flex;
   align-items: center;
   gap: var(--space-150);
@@ -154,13 +153,6 @@
   padding: var(--space-100) var(--space-200);
   border-bottom: 1px solid var(--color-border-subtle);
   background: var(--color-background-surface);
-}
-
-.mobileTitle,
-.drawerTitle {
-  color: var(--color-text-primary);
-  font-size: 1.2rem;
-  font-weight: 800;
 }
 
 .iconButton {
@@ -216,10 +208,6 @@
 
 .drawerHeader {
   justify-content: space-between;
-}
-
-.drawerTitle {
-  margin: 0;
 }
 
 @media (--viewport-below-md) {

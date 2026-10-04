@@ -4,6 +4,8 @@ import { Dialog } from "@base-ui/react/dialog";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AppNavigation } from "./app-navigation";
+import { Heading } from "@/components/ui/heading";
+import { Inline } from "@/components/ui/inline";
 import styles from "./app-sidebar.module.css";
 
 type AppMobileNavigationProps = {
@@ -37,17 +39,25 @@ export function AppMobileNavigation({
           <Dialog.Trigger className={styles.iconButton} aria-label="Open menu">
             <Menu aria-hidden="true" size={24} />
           </Dialog.Trigger>
-          <span className={styles.mobileTitle}>Recipe Vault</span>
+          <Heading level={3} as="h1">
+            Recipe Vault
+          </Heading>
         </header>
         <Dialog.Portal>
           <Dialog.Backdrop className={styles.backdrop} />
           <Dialog.Popup className={styles.drawer}>
-            <div className={styles.drawerHeader}>
-              <Dialog.Title className={styles.drawerTitle}>Menu</Dialog.Title>
+            <Inline align="center" justify="between">
+              <Dialog.Title
+                render={
+                  <Heading level={4} as="h2">
+                    Menu
+                  </Heading>
+                }
+              />
               <Dialog.Close className={styles.iconButton} aria-label="Close menu">
                 <X aria-hidden="true" size={24} />
               </Dialog.Close>
-            </div>
+            </Inline>
             <AppNavigation
               pathname={pathname}
               userName={userName}
