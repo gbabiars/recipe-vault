@@ -27,6 +27,40 @@
   margin-inline-end: var(--space-100);
 }
 
+.label {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.reservedLabel {
+  color: transparent;
+}
+
+.spinner {
+  position: absolute;
+  top: calc(50% - 0.5em);
+  left: calc(50% - 0.5em);
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  animation: button-spin 700ms linear infinite;
+}
+
+@keyframes button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
 .button[data-full-width] {
   width: 100%;
 }

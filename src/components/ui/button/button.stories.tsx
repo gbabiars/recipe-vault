@@ -121,6 +121,19 @@ export const Disabled: Story = {
   },
 };
 
+export const Pending: Story = {
+  args: {
+    pending: true,
+  },
+  play: async ({ canvas }) => {
+    const button = canvas.getByRole("button", { name: "Create recipe" });
+
+    expect(button).toBeDisabled();
+    expect(button.getAttribute("aria-busy")).toBe("true");
+    expect(button.querySelector('[aria-hidden="true"]')).not.toBeNull();
+  },
+};
+
 export const Width: Story = {
   render: () => (
     <div style={{ display: "grid", gap: "1rem", width: "20rem" }}>
