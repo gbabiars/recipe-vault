@@ -1,0 +1,46 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./alert-dialog.stories";
+
+<Meta of={Stories} />
+
+# Alert dialog
+
+## Purpose and choice
+
+Use for a brief decision that interrupts the current task. Provide a specific title and explain the consequence in the description. Use an in-page Alert for information that does not require a response.
+
+## Composition
+
+Pass one or more focusable buttons as `trigger`. For triggers elsewhere in the tree, use `createAlertDialogHandle()` and `AlertDialogTrigger` with the same handle as the dialog. A mounted handle also supports `handle.open(null)`. Triggers share the dialog's title, description, and callbacks.
+
+`confirmVariant="danger"` identifies a destructive action. Cancel receives initial focus. The cancel button and Escape call `onCancel`; the backdrop does not dismiss the dialog. `onConfirm` runs only for the confirmation button.
+
+For asynchronous work, control `open` with `onOpenChange` and close only when the caller is ready. In uncontrolled use, confirmation closes immediately after invoking `onConfirm`. The component does not manage pending state or prevent duplicate requests.
+
+```tsx
+<AlertDialog
+  trigger={<Button label="Archive recipe" />}
+  title="Archive this recipe?"
+  description="You can restore it later."
+  onConfirm={archiveRecipe}
+/>
+```
+
+```tsx
+const handle = createAlertDialogHandle();
+
+<AlertDialogTrigger handle={handle} render={<Button label="Archive from menu" />} />
+<Button label="Open confirmation" onClick={() => handle.open(null)} />
+<AlertDialog
+  handle={handle}
+  title="Archive this recipe?"
+  description="You can restore it later."
+  onConfirm={archiveRecipe}
+/>
+```
+
+## Stories
+
+<Canvas of={Stories.Default} />
+<Canvas of={Stories.Destructive} />
+<Canvas of={Stories.DetachedAndImperative} />

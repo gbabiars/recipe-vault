@@ -163,7 +163,7 @@
   position: fixed;
   inset: 0;
   z-index: 10;
-  background: rgb(0 0 0 / 45%);
+  background: var(--color-background-backdrop);
 }
 
 .backdrop[data-closed],

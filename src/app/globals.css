@@ -80,6 +80,7 @@
   --color-background-surface-active: var(--color-neutral-200);
   --color-background-surface-disabled: var(--color-neutral-100);
   --color-background-overlay: var(--color-neutral-0);
+  --color-background-backdrop: rgb(0 0 0 / 45%);
   --color-background-tooltip: var(--color-neutral-900);
 
   --shadow-subtle: 0 1px 2px rgb(0 0 0 / 8%);
@@ -258,6 +259,7 @@
   --color-background-surface-active: var(--color-neutral-700);
   --color-background-surface-disabled: var(--color-neutral-900);
   --color-background-overlay: var(--color-neutral-900);
+  --color-background-backdrop: rgb(0 0 0 / 45%);
   --color-background-tooltip: var(--color-neutral-100);
 
   --shadow-subtle: 0 1px 2px rgb(0 0 0 / 24%), inset 0 0 0 1px rgb(255 255 255 / 4%);
@@ -338,6 +340,7 @@
     --color-background-surface-active: var(--color-neutral-700);
     --color-background-surface-disabled: var(--color-neutral-900);
     --color-background-overlay: var(--color-neutral-900);
+    --color-background-backdrop: rgb(0 0 0 / 45%);
     --color-background-tooltip: var(--color-neutral-100);
 
     --shadow-subtle: 0 1px 2px rgb(0 0 0 / 24%), inset 0 0 0 1px rgb(255 255 255 / 4%);
