@@ -40,19 +40,26 @@ export const DropdownMenuPopup = React.forwardRef<HTMLDivElement, DropdownMenuPo
 
 type BaseItemProps = React.ComponentPropsWithoutRef<typeof Menu.Item>;
 type DropdownMenuItemIcon = React.ComponentType<React.SVGProps<SVGSVGElement>>;
+export type DropdownMenuItemVariant = "default" | "danger";
 export type DropdownMenuItemProps = Omit<BaseItemProps, "className" | "closeOnClick"> & {
   className?: BaseItemProps["className"];
+  /** Visual treatment for a destructive action. */
+  variant?: DropdownMenuItemVariant;
   /** Decorative leading icon; the visible item text remains its accessible name. */
   icon?: DropdownMenuItemIcon;
 };
 
 export const DropdownMenuItem = React.forwardRef<HTMLElement, DropdownMenuItemProps>(
-  function DropdownMenuItem({ className, icon: Icon, children, ...props }, ref) {
+  function DropdownMenuItem(
+    { className, icon: Icon, children, variant = "default", ...props },
+    ref,
+  ) {
     return (
       <Menu.Item
         {...props}
         ref={ref}
         closeOnClick
+        data-variant={variant}
         className={mergeClassName(styles.item, className)}
       >
         {Icon && <Icon className={styles.icon} aria-hidden="true" focusable={false} />}
@@ -65,12 +72,17 @@ export const DropdownMenuItem = React.forwardRef<HTMLElement, DropdownMenuItemPr
 type BaseLinkItemProps = React.ComponentPropsWithoutRef<typeof Menu.LinkItem>;
 export type DropdownMenuLinkItemProps = Omit<BaseLinkItemProps, "className" | "closeOnClick"> & {
   className?: BaseLinkItemProps["className"];
+  /** Visual treatment for a destructive destination. */
+  variant?: DropdownMenuItemVariant;
   /** Decorative leading icon; the visible item text remains its accessible name. */
   icon?: DropdownMenuItemIcon;
 };
 
 export const DropdownMenuLinkItem = React.forwardRef<Element, DropdownMenuLinkItemProps>(
-  function DropdownMenuLinkItem({ className, icon: Icon, children, href, render, ...props }, ref) {
+  function DropdownMenuLinkItem(
+    { className, icon: Icon, children, href, render, variant = "default", ...props },
+    ref,
+  ) {
     const link = useLinkRenderer();
 
     return (
@@ -80,6 +92,7 @@ export const DropdownMenuLinkItem = React.forwardRef<Element, DropdownMenuLinkIt
         render={render ?? (href === undefined ? undefined : React.cloneElement(link, { href }))}
         ref={ref}
         closeOnClick
+        data-variant={variant}
         className={mergeClassName(styles.item, className)}
       >
         {Icon && <Icon className={styles.icon} aria-hidden="true" focusable={false} />}

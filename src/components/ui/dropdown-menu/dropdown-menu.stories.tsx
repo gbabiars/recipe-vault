@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Archive, BookOpen, Copy, Pencil } from "lucide-react";
+import { Archive, BookOpen, Copy, Pencil, Trash2 } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 
@@ -22,6 +22,7 @@ type Story = StoryObj<typeof meta>;
 
 const onEdit = fn();
 const onArchive = fn();
+const onDelete = fn();
 
 export const ActionOnly: Story = {
   render: () => (
@@ -119,6 +120,41 @@ export const DisabledAction: Story = {
     await waitFor(() =>
       expect(document.querySelector("[data-base-ui-focus-guard]")).not.toBeInTheDocument(),
     );
+  },
+};
+
+export const DangerAction: Story = {
+  render: () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button label="Recipe actions" />} />
+      <DropdownMenuPopup>
+        <DropdownMenuItem icon={Pencil} onClick={() => undefined}>
+          Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem variant="danger" icon={Trash2} onClick={onDelete}>
+          Delete recipe
+        </DropdownMenuItem>
+        <DropdownMenuItem variant="danger" disabled icon={Archive} onClick={() => undefined}>
+          Delete unavailable
+        </DropdownMenuItem>
+      </DropdownMenuPopup>
+    </DropdownMenu>
+  ),
+  play: async ({ canvas }) => {
+    onDelete.mockClear();
+    await userEvent.click(canvas.getByRole("button", { name: "Recipe actions" }));
+    const action = await within(document.body).findByRole("menuitem", { name: "Delete recipe" });
+    const disabled = await within(document.body).findByRole("menuitem", {
+      name: "Delete unavailable",
+    });
+    await expect(action).toHaveAttribute("data-variant", "danger");
+    await expect(disabled).toHaveAttribute("aria-disabled", "true");
+    await userEvent.hover(disabled);
+    await expect(getComputedStyle(disabled).color).toBe("rgb(163, 163, 163)");
+    await expect(getComputedStyle(disabled).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+    await userEvent.click(action);
+    await expect(onDelete).toHaveBeenCalledTimes(1);
+    await expect(within(document.body).queryByRole("menu")).not.toBeInTheDocument();
   },
 };
 
