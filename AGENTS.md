@@ -49,6 +49,8 @@ vault. Keep the application deployable and add product behavior only when reques
 
 ## Multi-agent work
 
+For feature slices and change reviews, follow `docs/agent-workflows.md`.
+
 - Use subagents for bounded, independent exploration, documentation research,
   diagnosis, or review when parallel work improves the outcome. Keep dependent
   decisions and short tasks with the coordinating agent.
