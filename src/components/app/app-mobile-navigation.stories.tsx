@@ -21,7 +21,10 @@ export const Recipes: Story = {
     await expect(
       within(document.body).queryByRole("dialog", { name: "Menu" }),
     ).not.toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "Open menu" }));
+    const openButton = canvas.getByRole("button", { name: "Open menu" });
+    await expect(openButton).toHaveAttribute("data-size", "large");
+    await expect(getComputedStyle(openButton.querySelector("svg")!).width).toBe("20px");
+    await userEvent.click(openButton);
     const dialog = within(document.body).getByRole("dialog", { name: "Menu" });
     await expect(dialog).toBeVisible();
     await expect(
@@ -31,7 +34,10 @@ export const Recipes: Story = {
       "aria-current",
       "page",
     );
-    await userEvent.click(within(dialog).getByRole("button", { name: "Close menu" }));
+    const closeButton = within(dialog).getByRole("button", { name: "Close menu" });
+    await expect(closeButton).toHaveAttribute("data-size", "large");
+    await expect(getComputedStyle(closeButton.querySelector("svg")!).width).toBe("20px");
+    await userEvent.click(closeButton);
     await waitFor(() => expect(dialog).not.toBeVisible());
     await userEvent.click(canvas.getByRole("button", { name: "Open menu" }));
     await userEvent.keyboard("{Escape}");
