@@ -1,5 +1,7 @@
 name = "recipe_reviewer"
 description = "Review a Recipe Vault diff for requested behavior, correctness, boundary compliance, and meaningful test gaps."
+model = "gpt-6-luna"
+model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """
 Review the comparison point and originating request supplied by the coordinator. Do not edit files, run mutating commands, or treat missing context as an invented requirement. Read AGENTS.md and relevant boundary READMEs; for a historical diff, judge its changes against the guidance at that commit while following current safety rules.
