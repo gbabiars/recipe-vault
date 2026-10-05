@@ -2,13 +2,13 @@
 
 ## Project
 
-Recipe Vault is a private-only recipe application built with Next.js 16, React 19,
-TypeScript, and Supabase. This repository is currently Iteration 0: keep the
-foundation deployable without adding product behavior that has not been requested.
+Recipe Vault is a private, multi-user recipe application built with Next.js 16,
+React 19, TypeScript, Clerk, and Supabase. Each authenticated user has an isolated
+vault. Keep the application deployable and add product behavior only when requested.
 
 ## Setup and checks
 
-- Use Node.js 20.9 or newer and `pnpm` (pinned to 11.23.0) for dependency and
+- Use Node.js 24 or newer and `pnpm` (pinned to 11.23.0) for dependency and
   script commands.
 - On a pnpm store mismatch, preserve the existing store and `node_modules`
   state. Stop before changing install state or store settings, and ask the user
@@ -16,9 +16,11 @@ foundation deployable without adding product behavior that has not been requeste
 - Run the narrowest relevant check while working: `pnpm lint`, `pnpm typecheck`,
   `pnpm test`, or `pnpm build`. Run `pnpm check` for changes that span linting,
   types, and tests.
-- Always run `pnpm format` after making changes, before running checks or
-  handing off work. The pre-commit hook formats staged files as a safeguard,
-  but it does not replace this required formatting step.
+- Run `pnpm format` after making changes, before running checks or handing off
+  work. In a multi-agent task, the coordinating agent runs it once after edits
+  are integrated; workers must not run repository-wide formatting concurrently.
+  The pre-commit hook formats staged files as a safeguard, but does not replace
+  this step.
 - Add or update focused tests when changing observable behavior. Colocate each
   test file with the module it exercises; use `.test.tsx` for component tests
   and `.test.ts` for unit tests.
@@ -39,11 +41,25 @@ foundation deployable without adding product behavior that has not been requeste
 - Put database repositories and Supabase access adapters in `src/lib/db`.
   Features must not query Supabase directly.
 - Put shared validation schemas in `src/lib/validation`.
-- Put Supabase browser/server client setup and future auth policy in
-  `src/lib/auth`.
-- Put the future remote MCP transport and adapters in `src/mcp`; it must reuse
-  the web/API authorization and recipe-domain policies.
+- Put Clerk identity and Supabase browser/server client setup in `src/lib/auth`.
+- Put the remote MCP transport, Clerk OAuth policy, and tool adapters in
+  `src/mcp`. MCP tools must reuse recipe-domain ownership rules and enforce
+  their scopes.
 - Read the `README.md` in the boundary you are changing before adding code there.
+
+## Multi-agent work
+
+- Use subagents for bounded, independent exploration, documentation research,
+  diagnosis, or review when parallel work improves the outcome. Keep dependent
+  decisions and short tasks with the coordinating agent.
+- Give each subagent a specific question, relevant boundaries, expected evidence,
+  and a concise result to return. The coordinator reconciles findings and owns
+  the final design, integration, formatting, and verification.
+- Give each editing task one owner and explicit file boundaries. Coordinate
+  before agents edit shared files, generated output, or database state. Prefer
+  read-only parallel review when work overlaps.
+- For changes to authentication, RLS, MCP scopes, or service-role access, request
+  an independent owner-isolation review before handing off the change.
 
 ## API design
 
@@ -59,11 +75,15 @@ foundation deployable without adding product behavior that has not been requeste
 
 - Never commit `.env.local`, secrets, or real credentials; use `.env.example`
   only for non-sensitive placeholders.
-- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are public
-  client configuration. Never expose `SUPABASE_SERVICE_ROLE_KEY` through a
-  `NEXT_PUBLIC_*` variable, browser code, logs, responses, or error messages.
-- Preserve private-only recipe visibility. Do not guess the sign-in provider,
-  owner email, or first MCP client; these are deferred product decisions.
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and
+  `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` are public client configuration.
+  `CLERK_SECRET_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are server-only. Never expose
+  them through a `NEXT_PUBLIC_*` variable, browser code, logs, responses, or
+  error messages.
+- Preserve private-only recipe visibility and Clerk user ownership. Browser and
+  API requests use Clerk session tokens with Supabase RLS; only the verified MCP
+  adapter may use the Supabase service-role credential. Do not infer an owner
+  identity or grant access from request or tool input.
 
 ## Change discipline
 
@@ -104,21 +124,20 @@ consult Storybook's component guidance before answering or changing UI. Read
 `src/components/ui/README.md` and the linked family guide for local intent and
 token usage.
 
-When designing or revising a reusable UI component, review relevant patterns in
-all four design systems: [shadcn/ui](https://ui.shadcn.com/),
+When designing a new reusable UI pattern or resolving a meaningful design
+choice, review relevant guidance from [shadcn/ui](https://ui.shadcn.com/),
 [Astryx](https://astryx.atmeta.com/),
 [Atlassian Design System](https://atlassian.design/get-started), and
-[Primer](https://primer.style/product/getting-started/). Consider their guidance
-on behavior, accessibility, composition, and states alongside the local
-Storybook guidance. Keep the local component API and tokens authoritative.
+[Primer](https://primer.style/product/getting-started/) as useful for the task.
+Keep the local component API and tokens authoritative.
 
 - Call `docs-list` to find the relevant components, then `docs-show` for their
   props, guidance, and examples. Check every prop before using it, even when its
   name seems familiar.
-- Use only props supported by the documentation or example stories. If a needed
-  prop is absent, ask the user instead of inferring an API from another library
-  or component. Verify a prop in docs or stories even if a story title suggests
-  it exists.
+- Use only existing props supported by the documentation, example stories, or
+  exported types. If a needed prop is absent, propose an API change with a
+  consuming JSX example; ask the user when the choice needs a product decision.
+  Never infer an existing prop from another library or a story title.
 - Before creating or updating stories, call `get-storybook-story-instructions`.
 - After changing stories or components, use `test-run` to check the affected
   stories.
