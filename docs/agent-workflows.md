@@ -5,6 +5,19 @@ review. For a small, self-contained change, one agent can follow the same
 quality gates without spawning subagents. `AGENTS.md` remains the authority for
 project boundaries, security, formatting, and checks.
 
+## Roles
+
+| Role                       | Where it lives                                     | Responsibility                                                                    |
+| -------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Coordinator                | Root agent, directed by `AGENTS.md` and this guide | Own requirements, decisions, task boundaries, integration, and final verification |
+| `recipe_worker`            | `.codex/agents/recipe_worker.toml`                 | Implement one assigned slice and return focused evidence                          |
+| `recipe_reviewer`          | `.codex/agents/recipe_reviewer.toml`               | Independently inspect a diff for behavior, correctness, boundaries, and test gaps |
+| `owner_isolation_reviewer` | `.codex/agents/owner_isolation_reviewer.toml`      | Inspect Clerk, RLS, MCP, and service-role ownership risks when relevant           |
+
+The coordinator remains the root thread; spawning another coordinator would
+duplicate ownership. Use the built-in `explorer` for read-only codebase mapping
+when that work is large enough to delegate.
+
 ## Shared handoff
 
 The coordinating agent owns the task from requirements through final
@@ -36,11 +49,11 @@ feature, service, repository, UI component, or MCP boundary.
    Clerk, MCP, or Storybook guidance. Each returns only facts needed for the
    slice, with source locations and open questions. The coordinator chooses the
    design and resolves product decisions.
-3. **Implement with one file owner.** Assign the slice to one worker with
+3. **Implement with one file owner.** Assign the slice to `recipe_worker` with
    explicit file boundaries. If independent workers are needed, separate their
    files and interfaces first; integrate one slice before changing shared
    contracts. Add focused tests when observable behavior changes.
-4. **Review the integrated diff.** Have an independent, read-only reviewer check
+4. **Review the integrated diff.** Have `recipe_reviewer` check
    the acceptance criteria, call sites, ownership boundaries, and missing
    states. For changes to auth, RLS, MCP scopes, or service-role access, add an
    `owner_isolation_reviewer` review. Give actionable findings back to the file
@@ -68,9 +81,10 @@ cannot run. Use a disposable local database for migration and RLS verification.
 
 > Implement one vertical slice for the requested behavior. Use read-only
 > subagents to map the affected boundaries and check current documentation.
-> Show the intended call site, then assign implementation to one file owner.
-> Have an independent agent review the integrated diff. Run the focused checks
-> and report the behavior delivered, evidence, and remaining limits.
+> Show the intended call site, then assign implementation to `recipe_worker`
+> with explicit file ownership. Have `recipe_reviewer` review the integrated
+> diff. Run the focused checks and report the behavior delivered, evidence,
+> and remaining limits.
 
 ## Change review
 
@@ -84,10 +98,9 @@ assessment before merge or handoff. Fix the comparison point first, such as
    historical commit, use the guidance and boundary READMEs at that commit to
    judge its changes; use current `AGENTS.md` for safe execution in the working
    checkout.
-2. **Review independently.** Give one read-only agent correctness, behavior,
-   and test coverage. Give another architecture, documented standards, and
-   privacy or authorization where relevant. For high-risk ownership changes,
-   use the project `owner_isolation_reviewer` to trace Clerk identity through
+2. **Review independently.** Give `recipe_reviewer` correctness, behavior,
+   documented standards, and test coverage. For high-risk ownership changes,
+   concurrently use `owner_isolation_reviewer` to trace Clerk identity through
    the API or MCP adapter to the service, repository, and RLS or service-role
    boundary. Agents must not edit or run mutating database commands during
    review.
@@ -101,10 +114,11 @@ assessment before merge or handoff. Fix the comparison point first, such as
 
 **Invocation example:**
 
-> Review this branch against `main` with two read-only subagents. Have one
-> inspect behavior and test gaps, and the other inspect project boundaries and
-> owner isolation. Wait for both. Return only actionable, prioritized findings
-> with file and line references and a short account of checks performed.
+> Review this branch against `main` with `recipe_reviewer` and
+> `owner_isolation_reviewer` as read-only subagents. Give both the originating
+> request, wait for their findings, and return only actionable, prioritized
+> findings with file and line references and a short account of checks
+> performed.
 
 For a small diff, use one reviewer. For independent high-risk areas, add a
 specialist review only when its scope is clear. More agents do not replace a

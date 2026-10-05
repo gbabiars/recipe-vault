@@ -51,6 +51,12 @@ vault. Keep the application deployable and add product behavior only when reques
 
 For feature slices and change reviews, follow `docs/agent-workflows.md`.
 
+- The root agent is the coordinator. It defines the outcome, assigns bounded
+  work, reconciles findings, integrates edits, and owns final verification.
+- Use `recipe_worker` for an assigned implementation slice and `recipe_reviewer`
+  for independent review. Use `owner_isolation_reviewer` when ownership or
+  credential boundaries are affected.
+
 - Use subagents for bounded, independent exploration, documentation research,
   diagnosis, or review when parallel work improves the outcome. Keep dependent
   decisions and short tasks with the coordinating agent.
