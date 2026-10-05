@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import { LinkRendererProvider } from "@/components/ui/link-renderer";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ToastProvider } from "@/components/ui/toast";
 import "./globals.css";
 
 const inter = Inter({
@@ -25,7 +26,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       <body>
         <LinkRendererProvider link={<Link href="/" />}>
           <TooltipProvider>
-            <ClerkProvider>{children}</ClerkProvider>
+            <ToastProvider>
+              <ClerkProvider>{children}</ClerkProvider>
+            </ToastProvider>
           </TooltipProvider>
         </LinkRendererProvider>
       </body>
