@@ -81,6 +81,7 @@ const semanticTokens = [
   "background-surface-active",
   "background-surface-disabled",
   "background-overlay",
+  "background-backdrop",
   "background-tooltip",
   "interaction-neutral-hover",
   "interaction-neutral-active",

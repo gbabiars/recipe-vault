@@ -1,0 +1,38 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--color-background-backdrop);
+}
+
+.viewport {
+  position: fixed;
+  inset: 0;
+  z-index: 101;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: var(--space-200);
+  overflow-y: auto;
+  pointer-events: none;
+}
+
+.popup {
+  box-sizing: border-box;
+  width: min(100%, 28rem);
+  max-height: calc(100dvh - 2 * var(--space-200));
+  overflow-y: auto;
+  padding: var(--space-surface-large);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-200);
+  background: var(--color-background-overlay);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-floating);
+  pointer-events: auto;
+}
+
+.backdrop[data-closed],
+.viewport[data-closed],
+.popup[data-closed] {
+  visibility: hidden;
+}
