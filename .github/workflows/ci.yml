@@ -29,3 +29,23 @@ jobs:
       - run: pnpm test:components
       - run: pnpm test:storybook
       - run: pnpm build
+
+  database:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      DO_NOT_TRACK: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.23.0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - run: pnpm supabase:start
+      - run: pnpm db:reset
+      - run: pnpm test:db
