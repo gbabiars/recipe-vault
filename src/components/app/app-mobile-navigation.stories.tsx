@@ -4,7 +4,7 @@ import { avatarImageFixtureUrl as profileImageFixtureUrl } from "../ui/avatar/av
 import { AppMobileNavigation } from "./app-mobile-navigation";
 
 const meta = {
-  title: "app/Navigation/Mobile",
+  title: "App/Navigation/Mobile",
   component: AppMobileNavigation,
   args: { pathname: "/recipes", userName: "Ada Lovelace", onSignOut: () => {} },
   globals: { viewport: { value: "mobile1", isRotated: false } },

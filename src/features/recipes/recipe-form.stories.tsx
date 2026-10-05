@@ -17,7 +17,7 @@ const recipe: Recipe = {
 };
 
 const meta = {
-  title: "Recipes/RecipeForm",
+  title: "App/Recipes/RecipeForm",
   component: RecipeForm,
   args: { saveAction: async () => ({ errors: {} }) },
 } satisfies Meta<typeof RecipeForm>;

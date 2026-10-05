@@ -7,7 +7,7 @@ import { TagFilter } from "./tag-filter";
 const tags = ["dinner", "soup", "weeknight"];
 
 const meta = {
-  title: "Recipes/TagFilter",
+  title: "App/Recipes/TagFilter",
   component: TagFilter,
   beforeEach: () => {
     const originalFetch = globalThis.fetch;

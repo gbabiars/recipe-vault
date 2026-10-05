@@ -3,7 +3,7 @@ import { expect, userEvent, within } from "storybook/test";
 import { RecipesHeaderActions } from "./recipes-header-actions";
 
 const meta = {
-  title: "Recipes/RecipesHeaderActions",
+  title: "App/Recipes/RecipesHeaderActions",
   component: RecipesHeaderActions,
 } satisfies Meta<typeof RecipesHeaderActions>;
 

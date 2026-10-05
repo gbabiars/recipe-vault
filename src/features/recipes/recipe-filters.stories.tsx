@@ -3,7 +3,7 @@ import { expect } from "storybook/test";
 import { RecipeFilters } from "./recipe-filters";
 
 const meta = {
-  title: "Recipes/RecipeFilters",
+  title: "App/Recipes/RecipeFilters",
   component: RecipeFilters,
   parameters: { layout: "padded" },
   beforeEach: () => {

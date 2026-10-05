@@ -3,7 +3,7 @@ import { avatarImageFixtureUrl as profileImageFixtureUrl } from "../ui/avatar/av
 import { AppSidebar } from "./app-sidebar";
 
 const meta = {
-  title: "app/Navigation/Sidebar",
+  title: "App/Navigation/Sidebar",
   component: AppSidebar,
   args: {
     pathname: "/recipes",

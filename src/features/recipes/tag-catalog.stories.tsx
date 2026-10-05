@@ -3,7 +3,7 @@ import { expect } from "storybook/test";
 import { TagCatalog } from "./tag-catalog";
 
 const meta = {
-  title: "features/recipes/TagCatalog",
+  title: "App/Recipes/TagCatalog",
   component: TagCatalog,
   args: {
     tags: [

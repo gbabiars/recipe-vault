@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { RecipeMethodCard } from "./recipe-detail-cards";
 
 const meta = {
-  title: "Recipes/RecipeMethodCard",
+  title: "App/Recipes/RecipeMethodCard",
   component: RecipeMethodCard,
   args: {
     steps: [

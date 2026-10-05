@@ -16,7 +16,7 @@ const recipe: RecipeSummary = {
 };
 
 const meta = {
-  title: "Recipes/RecipeListCard",
+  title: "App/Recipes/RecipeListCard",
   component: RecipeListCard,
   args: { recipe },
   decorators: [
