@@ -21,6 +21,12 @@ const preview: Preview = {
     ),
   ],
   parameters: {
+    options: {
+      storySort: {
+        method: "alphabetical-by-kind",
+        locales: "en",
+      },
+    },
     docs: {
       codePanel: true,
     },
