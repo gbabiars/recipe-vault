@@ -1,0 +1,28 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./checkbox-input.stories";
+
+<Meta of={Stories} />
+
+# CheckboxInput
+
+## Purpose and choice
+
+Represents one standalone yes/no choice. Use it when the choice does not belong
+to a set of related options. Use `CheckboxGroup` for a set of choices and
+`RadioGroup` when exactly one item from a set can be selected.
+
+## Variants and composition
+
+There is no visual variant prop. Provide a label; help text and an error are
+optional. Set `name` and `value` when the choice should submit a form value.
+
+## Content and accessibility
+
+Keep the label meaningful, including when visually hidden. When required,
+`CheckboxInput` adds a decorative `*` to the label; the required state remains
+the accessible signal. Explain errors in words and set required or disabled
+state to match behavior.
+
+## Story
+
+<Canvas of={Stories.Standalone} />

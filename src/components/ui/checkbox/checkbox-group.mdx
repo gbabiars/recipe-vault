@@ -1,0 +1,29 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./checkbox-group.stories";
+
+<Meta of={Stories} />
+
+# CheckboxGroup
+
+## Purpose and choice
+
+Represents a set of independent yes/no choices. Use `CheckboxGroup` when people
+can select multiple values from a set. Use `RadioGroup` when exactly one item
+can be selected.
+
+## Variants and composition
+
+There is no visual variant prop. A group has a shared label and an optional
+name for form submission. Give each `CheckboxGroupItem` a distinct value and a
+concise label. Group and item controls support help text, errors, invalid state,
+and disabled state.
+
+## Content and accessibility
+
+Keep the group label and each choice label meaningful, including when the group
+label is visually hidden. Explain errors in words and set disabled state to
+match behavior. Group legends and choice item labels stay unmarked.
+
+## Story
+
+<Canvas of={Stories.Group} />
