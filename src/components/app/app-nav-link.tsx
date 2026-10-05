@@ -29,7 +29,7 @@ export function AppNavLink({
       aria-current={current ? "page" : undefined}
       onClick={onClick}
     >
-      {Icon ? <Icon aria-hidden="true" focusable="false" size={18} /> : null}
+      {Icon ? <Icon aria-hidden="true" focusable="false" size={20} /> : null}
       <span className={collapsed ? styles.visuallyHidden : undefined}>{children}</span>
     </Link>
   );

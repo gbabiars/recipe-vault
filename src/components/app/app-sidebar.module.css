@@ -146,32 +146,12 @@
   display: flex;
   align-items: center;
   gap: var(--space-150);
-}
-
-.mobileHeader {
   min-height: 4rem;
   padding: var(--space-100) var(--space-200);
   border-bottom: 1px solid var(--color-border-subtle);
   background: var(--color-background-surface);
 }
 
-.iconButton {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 0;
-  border-radius: var(--radius-100);
-  background: transparent;
-  color: var(--color-text-primary);
-  cursor: pointer;
-}
-
-.iconButton:hover {
-  background: var(--color-background-surface-hover);
-}
-
-.iconButton:focus-visible,
 .link:focus-visible,
 .brand:focus-visible,
 .accountMenuTrigger:focus-visible {
@@ -204,10 +184,6 @@
   overflow-y: auto;
   background: var(--color-background-surface);
   box-shadow: var(--shadow-floating);
-}
-
-.drawerHeader {
-  justify-content: space-between;
 }
 
 @media (--viewport-below-md) {
