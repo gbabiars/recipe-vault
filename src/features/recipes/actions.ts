@@ -55,5 +55,5 @@ export async function deleteRecipeAction(
   } catch {
     return { errors: {}, message: "Unable to delete this recipe. Please try again." };
   }
-  redirect("/recipes");
+  return { errors: {}, deleted: true };
 }
