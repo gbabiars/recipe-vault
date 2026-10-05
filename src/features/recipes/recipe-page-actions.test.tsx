@@ -24,10 +24,12 @@ afterEach(() => push.mockReset());
 test("offers edit and delete actions and links to the current edit route", async () => {
   renderActions(vi.fn());
   fireEvent.click(screen.getByRole("button", { name: "Actions" }));
-  expect(screen.getByRole("menuitem", { name: "Edit recipe" }).getAttribute("href")).toBe(
-    "/recipes/recipe-1/edit",
-  );
-  fireEvent.click(screen.getByRole("menuitem", { name: "Delete recipe" }));
+  const editItem = screen.getByRole("menuitem", { name: "Edit recipe" });
+  const deleteItem = screen.getByRole("menuitem", { name: "Delete recipe" });
+  expect(editItem.getAttribute("href")).toBe("/recipes/recipe-1/edit");
+  expect(editItem.querySelector("svg")).toBeTruthy();
+  expect(deleteItem.querySelector("svg")).toBeTruthy();
+  fireEvent.click(deleteItem);
   expect(screen.getByRole("alertdialog")).toBeTruthy();
   expect(screen.getByRole("button", { name: "Delete recipe" })).toBeTruthy();
 });

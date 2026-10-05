@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Pencil, Trash2 } from "lucide-react";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -92,8 +93,12 @@ export function RecipePageActionsView({
       <DropdownMenu>
         <DropdownMenuTrigger render={<Button label="Actions" />} />
         <DropdownMenuPopup align="end">
-          <DropdownMenuLinkItem href={editHref}>Edit recipe</DropdownMenuLinkItem>
-          <DropdownMenuItem onClick={() => setDialogOpen(true)}>Delete recipe</DropdownMenuItem>
+          <DropdownMenuLinkItem icon={Pencil} href={editHref}>
+            Edit recipe
+          </DropdownMenuLinkItem>
+          <DropdownMenuItem variant="danger" icon={Trash2} onClick={() => setDialogOpen(true)}>
+            Delete recipe
+          </DropdownMenuItem>
         </DropdownMenuPopup>
       </DropdownMenu>
       <AlertDialog
