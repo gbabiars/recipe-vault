@@ -36,6 +36,8 @@ export type ButtonAnchorProps = Omit<React.ComponentPropsWithoutRef<"a">, "child
 type ButtonActionProps = Omit<BaseButtonProps, "children" | "type"> &
   ButtonVisualProps & {
     href?: undefined;
+    /** Shows a spinner, preserves the label's space, and disables the action. */
+    pending?: boolean;
     type?: React.ComponentProps<"button">["type"];
   };
 
@@ -111,19 +113,26 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(
       className,
       fullWidth = false,
       icon: Icon,
+      pending = false,
       size = "medium",
       type = "button",
       variant = "default",
       label,
       ...buttonProps
     } = props;
+    const resolvedLabel = (
+      <span className={styles.label} aria-hidden={pending || undefined}>
+        <span className={pending ? styles.reservedLabel : undefined}>{label}</span>
+        {pending && <span className={styles.spinner} aria-hidden="true" />}
+      </span>
+    );
     const resolvedChildren = Icon ? (
       <>
         <Icon className={styles.icon} aria-hidden="true" focusable={false} />
-        {label}
+        {resolvedLabel}
       </>
     ) : (
-      label
+      resolvedLabel
     );
 
     return (
@@ -134,6 +143,9 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(
         data-variant={variant}
         data-size={size}
         data-full-width={fullWidth ? "" : undefined}
+        aria-label={pending ? label : undefined}
+        aria-busy={pending || undefined}
+        disabled={pending || buttonProps.disabled}
         className={cn(styles.button, className)}
       >
         {resolvedChildren}

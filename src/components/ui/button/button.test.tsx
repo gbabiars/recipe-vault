@@ -241,3 +241,36 @@ test("does not handle clicks while disabled", () => {
 
   expect(handleClick).not.toHaveBeenCalled();
 });
+
+test("renders pending state accessibly and disables the action", () => {
+  const handleClick = vi.fn();
+
+  render(<Button label="Save recipe" pending onClick={handleClick} />);
+
+  const button = screen.getByRole("button", { name: "Save recipe" });
+
+  expect(button).toBeDisabled();
+  expect(button).toHaveAttribute("aria-busy", "true");
+  expect(button).toHaveAttribute("aria-label", "Save recipe");
+  expect(button.querySelector('[aria-hidden="true"]')).not.toBeNull();
+  expect(button.querySelector(`.${styles.spinner}`)).toBeInTheDocument();
+
+  fireEvent.click(button);
+
+  expect(handleClick).not.toHaveBeenCalled();
+});
+
+test.each(["small", "medium", "large"] as const)(
+  "preserves the %s button dimensions while pending",
+  (size) => {
+    const { rerender } = render(<Button label="Save recipe" size={size} />);
+    const button = screen.getByRole("button", { name: "Save recipe" });
+    const initial = button.getBoundingClientRect();
+
+    rerender(<Button label="Save recipe" size={size} pending />);
+
+    const pending = button.getBoundingClientRect();
+    expect(pending.width).toBe(initial.width);
+    expect(pending.height).toBe(initial.height);
+  },
+);

@@ -16,7 +16,8 @@ clear accessible name.
 - **Label:** Provide a required `label` string. Button renders it as visible text and the default accessible name. Without `href`, it triggers an action. In a form, set `type="submit"`; outside a form, the default is `type="button"`. With `href`, it renders a native anchor for navigation. Use `Inline` to arrange related actions.
 - **Link rendering:** `href` uses the app's configured link renderer, or a native anchor when no provider is present. Use `render` to override an individual link. In client components, its callback receives anchor props, including `href`, styles, handlers, and the forwarded ref. Server components can pass a link element to `render` and keep its `href` equal to the Button's `href`.
 - **Leading icon:** Pass an SVG component with `icon`; it is sized and marked decorative internally. Small and medium buttons use 16px icons; large buttons use 20px icons. Keep the visible label so it remains the accessible name.
-- **Caller accessibility:** Make the label describe the action, and reflect pending or unavailable states with `disabled` when appropriate. Explain a destructive action in its surrounding UI.
+- **Pending actions:** Set `pending` while an action is in progress. The button disables itself, exposes its busy state, and replaces the visible label with a spinner while preserving its dimensions and accessible name. `pending` applies to action buttons, not links.
+- **Caller accessibility:** Make the label describe the action. Explain a destructive action in its surrounding UI.
 
 ```tsx
 import { Plus } from "lucide-react";
@@ -26,6 +27,10 @@ import { Plus } from "lucide-react";
 
 ```tsx
 <Button label="Create recipe" href="/recipes/new" />
+```
+
+```tsx
+<Button label="Save recipe" pending />
 ```
 
 ```tsx
