@@ -1,0 +1,45 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./toast.stories";
+
+<Meta of={Stories} />
+
+# Toast
+
+## Purpose and choice
+
+Use Toast for brief feedback after an interaction. Use Alert for information that
+must remain visible in the page.
+
+## Use
+
+Mount `ToastProvider` once at the app root. A client component can call
+`useToast().showToast({ title, description, variant })`. The title is required;
+the description is optional. The variants are `default`, `danger`, `success`,
+and `warning`. The default variant is `default`.
+
+```tsx
+const { showToast } = useToast();
+
+showToast({
+  title: "Recipe saved",
+  description: "Your changes are ready to view.",
+  variant: "success",
+});
+```
+
+Toasts dismiss after five seconds or when the user activates the close button.
+Do not put actions in toast content.
+
+## Content and accessibility
+
+Write a specific title and a short description when more context is needed.
+Use `danger` for errors that should receive an urgent announcement. The leading
+icon is decorative; the title and description carry the message.
+
+## Stories
+
+<Canvas of={Stories.Default} />
+<Canvas of={Stories.Danger} />
+<Canvas of={Stories.Warning} />
+<Canvas of={Stories.Success} />
+<Canvas of={Stories.TitleOnlyAndDismiss} />
