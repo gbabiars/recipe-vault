@@ -1,0 +1,16 @@
+.link {
+  color: var(--color-text-link);
+  font: inherit;
+  text-decoration: underline;
+}
+
+.link:hover {
+  color: var(--color-text-link-hover);
+}
+
+button.link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}

@@ -1,0 +1,34 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./link.stories";
+
+<Meta of={Stories} />
+
+# Link
+
+Renders a text link through the app's configured `LinkRendererProvider`, or as a
+native anchor when no provider is present.
+
+## Use and composition
+
+- Keep `href`, `target`, and other navigation attributes on `Link`. The `render`
+  prop chooses the element and does not carry navigation attributes.
+- Use `render={<a />}` for an individual anchor override.
+- Use `render={<button />}` for an action. In this mode `href` is omitted and
+  `type` defaults to `button`.
+- The component forwards children, attributes, and its ref to the rendered
+  element. Button overrides retain button semantics and use the same link color.
+- Text inherits the surrounding font scale.
+
+```tsx
+<Link href="/recipes">Browse recipes</Link>
+<Link render={<a />} href="/help" target="_blank">Help</Link>
+<Link render={<button />} onClick={openHelp}>Open help</Link>
+```
+
+## Story
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.ButtonAction} />
+
+<Canvas of={Stories.InheritedFont} />
