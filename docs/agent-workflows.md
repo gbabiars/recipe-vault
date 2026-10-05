@@ -43,7 +43,8 @@ feature, service, repository, UI component, or MCP boundary.
 4. **Review the integrated diff.** Have an independent, read-only reviewer check
    the acceptance criteria, call sites, ownership boundaries, and missing
    states. For changes to auth, RLS, MCP scopes, or service-role access, add an
-   owner-isolation review. Give actionable findings back to the file owner.
+   `owner_isolation_reviewer` review. Give actionable findings back to the file
+   owner.
 5. **Verify and finish.** The coordinator runs `pnpm format`, the narrowest
    relevant checks, and any runtime or database verification needed by the
    change. Resolve failures caused by the slice and report the result with any
@@ -79,13 +80,17 @@ assessment before merge or handoff. Fix the comparison point first, such as
 
 1. **Establish scope.** The coordinator records the comparison point, changed
    files, requested behavior, and applicable project guidance. Separate
-   unrelated pre-existing failures from issues introduced by the diff.
+   unrelated pre-existing failures from issues introduced by the diff. For a
+   historical commit, use the guidance and boundary READMEs at that commit to
+   judge its changes; use current `AGENTS.md` for safe execution in the working
+   checkout.
 2. **Review independently.** Give one read-only agent correctness, behavior,
    and test coverage. Give another architecture, documented standards, and
    privacy or authorization where relevant. For high-risk ownership changes,
-   explicitly trace Clerk identity through the API or MCP adapter to the
-   service, repository, and RLS or service-role boundary. Agents must not edit
-   or run mutating database commands during review.
+   use the project `owner_isolation_reviewer` to trace Clerk identity through
+   the API or MCP adapter to the service, repository, and RLS or service-role
+   boundary. Agents must not edit or run mutating database commands during
+   review.
 3. **Reconcile findings.** The coordinator removes duplicates and checks each
    claim against the diff. Report findings first, ordered by severity, with
    file and line, concrete failure mode, and the evidence needed to reproduce
