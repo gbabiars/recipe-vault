@@ -40,6 +40,9 @@ run. A skipped test is not a passing test.
 **Use for:** a requested feature or behavior change that crosses a route,
 feature, service, repository, UI component, or MCP boundary.
 
+The reusable `$recipe-feature-slice` skill packages this workflow for direct
+invocation.
+
 1. **Define one outcome.** Record the user-visible behavior, affected callers,
    owner and privacy rules, and acceptance criteria. Keep each implementation
    slice small enough to verify independently. Show a realistic consuming call
