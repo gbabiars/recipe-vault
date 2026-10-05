@@ -38,15 +38,23 @@
   height: var(--size-button-icon);
 }
 
-.item:hover {
-  color: inherit;
-}
-
 .item[data-highlighted] {
   background: var(--color-background-surface-hover);
 }
 
-.item[data-disabled] {
+.item[data-variant="danger"] {
+  color: var(--color-error-text);
+}
+
+.item[data-variant="danger"][data-highlighted] {
+  background: var(--color-error-background);
+  color: var(--color-error-text);
+}
+
+.item[data-disabled],
+.item[data-disabled]:hover,
+.item[data-disabled][data-highlighted] {
   color: var(--color-text-disabled);
+  background: transparent;
   cursor: not-allowed;
 }

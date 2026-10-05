@@ -1,7 +1,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 
 import "../../../app/globals.css";
 import { LinkRendererProvider, type LinkRendererProps } from "../link-renderer";
@@ -88,4 +88,59 @@ test("an explicit menu render overrides the configured link renderer", async () 
   const link = await screen.findByRole("menuitem", { name: "Download recipes" });
   expect(link.getAttribute("data-router")).toBeNull();
   expect(link.hasAttribute("download")).toBe(true);
+});
+
+test("supports danger variants on action and link items while retaining disabled behavior", async () => {
+  const onDelete = vi.fn();
+  render(
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<button type="button">Actions</button>} />
+      <DropdownMenuPopup>
+        <DropdownMenuItem onClick={() => undefined}>Edit</DropdownMenuItem>
+        <DropdownMenuItem disabled onClick={() => undefined}>
+          Edit unavailable
+        </DropdownMenuItem>
+        <DropdownMenuItem variant="danger" onClick={onDelete}>
+          Delete recipe
+        </DropdownMenuItem>
+        <DropdownMenuLinkItem variant="danger" href="#delete-help">
+          Deletion help
+        </DropdownMenuLinkItem>
+        <DropdownMenuItem variant="danger" disabled onClick={() => undefined}>
+          Delete unavailable
+        </DropdownMenuItem>
+      </DropdownMenuPopup>
+    </DropdownMenu>,
+  );
+
+  fireEvent.click(screen.getByRole("button", { name: "Actions" }));
+
+  const action = await screen.findByRole("menuitem", { name: "Delete recipe" });
+  const defaultAction = screen.getByRole("menuitem", { name: "Edit" });
+  const defaultDisabled = screen.getByRole("menuitem", { name: "Edit unavailable" });
+  const link = screen.getByRole("menuitem", { name: "Deletion help" });
+  const disabled = screen.getByRole("menuitem", { name: "Delete unavailable" });
+  expect(action).toHaveAttribute("data-variant", "danger");
+  expect(link).toHaveAttribute("data-variant", "danger");
+  expect(defaultAction).toHaveAttribute("data-variant", "default");
+  expect(getComputedStyle(action).color).toBe("rgb(185, 28, 28)");
+  expect(getComputedStyle(defaultAction).color).not.toBe(getComputedStyle(action).color);
+  expect(disabled).toHaveAttribute("data-variant", "danger");
+  expect(disabled).toHaveAttribute("aria-disabled", "true");
+  expect(defaultDisabled).toHaveAttribute("aria-disabled", "true");
+
+  action.setAttribute("data-highlighted", "");
+  expect(getComputedStyle(action).backgroundColor).toBe("rgb(254, 242, 242)");
+  disabled.setAttribute("data-highlighted", "");
+  defaultDisabled.setAttribute("data-highlighted", "");
+  expect(getComputedStyle(disabled).color).toBe("rgb(163, 163, 163)");
+  expect(getComputedStyle(disabled).color).toBe(getComputedStyle(defaultDisabled).color);
+  expect(getComputedStyle(disabled).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+  expect(getComputedStyle(disabled).backgroundColor).toBe(
+    getComputedStyle(defaultDisabled).backgroundColor,
+  );
+
+  fireEvent.click(action);
+  expect(onDelete).toHaveBeenCalledTimes(1);
+  expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 });

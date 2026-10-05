@@ -12,7 +12,7 @@ Show a short list of secondary actions and navigation links from a caller-suppli
 DropdownMenu owns open state and composes the menu trigger with a popup. DropdownMenuPopup includes the portal and positioner; it fits its contents and defaults to side="bottom" and align="start". Both values can be set on the popup.
 
 ```tsx
-import { Archive, BookOpen, Pencil } from "lucide-react";
+import { Archive, BookOpen, Pencil, Trash2 } from "lucide-react";
 import {
   Button,
   DropdownMenu,
@@ -31,6 +31,9 @@ import {
     <DropdownMenuItem disabled icon={Archive} onClick={onArchive}>
       Archive
     </DropdownMenuItem>
+    <DropdownMenuItem variant="danger" icon={Trash2} onClick={onDelete}>
+      Delete recipe
+    </DropdownMenuItem>
     <DropdownMenuLinkItem icon={BookOpen} href="/recipes">
       Browse recipes
     </DropdownMenuLinkItem>
@@ -39,6 +42,8 @@ import {
 ```
 
 DropdownMenuItem represents an action and accepts the Base UI item props, including onClick and disabled. DropdownMenuLinkItem represents navigation; `href` uses the app's configured link renderer, or a native anchor without a provider. `render` overrides an individual link. Both accept an optional SVG component through `icon`, render it as a decorative leading visual, and close the menu when activated. Keep visible item text descriptive; it remains the accessible name.
+
+Both item types accept `variant="danger"` for destructive actions or destinations. Danger styling uses the error text color and error background when highlighted. Disabled items keep their disabled text styling, and danger does not change activation or menu closing behavior.
 
 Use a consistent icon treatment within each dropdown: either every menu item has a leading icon or none do. This applies across actions, links, and disabled rows.
 
@@ -53,5 +58,6 @@ Base UI handles menu keyboard navigation and focus management. Open a menu with 
 <Canvas of={Stories.ActionOnly} />
 <Canvas of={Stories.MixedActionsAndLinks} />
 <Canvas of={Stories.DisabledAction} />
+<Canvas of={Stories.DangerAction} />
 <Canvas of={Stories.ControlledOpenState} />
 <Canvas of={Stories.KeyboardNavigation} />
