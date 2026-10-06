@@ -7,12 +7,11 @@ project boundaries, security, formatting, and checks.
 
 ## Roles
 
-| Role                       | Where it lives                                     | Responsibility                                                                    |
-| -------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Coordinator                | Root agent, directed by `AGENTS.md` and this guide | Own requirements, decisions, task boundaries, integration, and final verification |
-| `recipe_worker`            | `.codex/agents/recipe_worker.toml`                 | Implement one assigned slice and return focused evidence                          |
-| `recipe_reviewer`          | `.codex/agents/recipe_reviewer.toml`               | Independently inspect a diff for behavior, correctness, boundaries, and test gaps |
-| `owner_isolation_reviewer` | `.codex/agents/owner_isolation_reviewer.toml`      | Inspect Clerk, RLS, MCP, and service-role ownership risks when relevant           |
+| Role              | Where it lives                                     | Responsibility                                                                              |
+| ----------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Coordinator       | Root agent, directed by `AGENTS.md` and this guide | Own requirements, decisions, task boundaries, integration, and final verification           |
+| `recipe_worker`   | `.codex/agents/recipe_worker.toml`                 | Implement one assigned slice and return focused evidence                                    |
+| `recipe_reviewer` | `.codex/agents/recipe_reviewer.toml`               | Inspect behavior, correctness, boundaries, test gaps, and authorization risks independently |
 
 The coordinator remains the root thread; spawning another coordinator would
 duplicate ownership. Use the built-in `explorer` for read-only codebase mapping
@@ -58,9 +57,10 @@ invocation.
    contracts. Add focused tests when observable behavior changes.
 4. **Review the integrated diff.** Have `recipe_reviewer` check
    the acceptance criteria, call sites, ownership boundaries, and missing
-   states. For changes to auth, RLS, MCP scopes, or service-role access, add an
-   `owner_isolation_reviewer` review. Give actionable findings back to the file
-   owner.
+   states. For changes to auth, ownership, RLS, MCP scopes, or service-role
+   access, ask the reviewer to trace the authorization path, owner binding,
+   scope enforcement, and credential boundaries. Give actionable findings back
+   to the file owner.
 5. **Verify and finish.** The coordinator runs `pnpm format`, the narrowest
    relevant checks, and any runtime or database verification needed by the
    change. Resolve failures caused by the slice and report the result with any
@@ -103,10 +103,9 @@ assessment before merge or handoff. Fix the comparison point first, such as
    checkout.
 2. **Review independently.** Give `recipe_reviewer` correctness, behavior,
    documented standards, and test coverage. For high-risk ownership changes,
-   concurrently use `owner_isolation_reviewer` to trace Clerk identity through
-   the API or MCP adapter to the service, repository, and RLS or service-role
-   boundary. Agents must not edit or run mutating database commands during
-   review.
+   explicitly ask it to trace Clerk identity through the API or MCP adapter to
+   the service, repository, and RLS or service-role boundary. The reviewer must
+   not edit or run mutating database commands during review.
 3. **Reconcile findings.** The coordinator removes duplicates and checks each
    claim against the diff. Report findings first, ordered by severity, with
    file and line, concrete failure mode, and the evidence needed to reproduce
@@ -117,11 +116,11 @@ assessment before merge or handoff. Fix the comparison point first, such as
 
 **Invocation example:**
 
-> Review this branch against `main` with `recipe_reviewer` and
-> `owner_isolation_reviewer` as read-only subagents. Give both the originating
-> request, wait for their findings, and return only actionable, prioritized
-> findings with file and line references and a short account of checks
-> performed.
+> Review this branch against `main` with `recipe_reviewer` as a read-only
+> subagent. Include the originating request and explicitly request an
+> authorization-path review for ownership-sensitive changes. Return actionable,
+> prioritized findings with file and line references and a short account of
+> checks performed.
 
 For a small diff, use one reviewer. For independent high-risk areas, add a
 specialist review only when its scope is clear. More agents do not replace a
