@@ -44,6 +44,10 @@ export const ActionOnly: Story = {
     await userEvent.click(trigger);
     await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "true"));
     const edit = await within(document.body).findByRole("menuitem", { name: "Edit" });
+    const menu = within(document.body).getByRole("menu");
+    await expect(getComputedStyle(menu).outlineStyle).toBe("none");
+    await userEvent.hover(edit);
+    await expect(getComputedStyle(edit).outlineStyle).toBe("none");
     const icon = edit.querySelector("svg");
     await expect(edit.firstElementChild).toBe(icon);
     await expect(icon).toHaveAttribute("aria-hidden", "true");
@@ -202,6 +206,8 @@ export const KeyboardNavigation: Story = {
     const trigger = canvas.getByRole("button", { name: "Recipe actions" });
     await userEvent.click(trigger);
     const edit = await within(document.body).findByRole("menuitem", { name: "Edit" });
+    const menu = within(document.body).getByRole("menu");
+    await expect(getComputedStyle(menu).outlineStyle).toBe("none");
     await userEvent.keyboard("{ArrowDown}");
     await waitFor(() => expect(edit).toHaveAttribute("data-highlighted", ""));
     await userEvent.keyboard("{ArrowDown}");
@@ -211,6 +217,8 @@ export const KeyboardNavigation: Story = {
         "",
       ),
     );
+    const duplicate = within(document.body).getByRole("menuitem", { name: "Duplicate" });
+    await expect(getComputedStyle(duplicate).outlineStyle).toBe("solid");
     await userEvent.keyboard("{Escape}");
     await expect(within(document.body).queryByRole("menu")).not.toBeInTheDocument();
     await waitFor(() =>

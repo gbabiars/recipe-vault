@@ -7,8 +7,13 @@ import { cn } from "cn";
 import { useLinkRenderer } from "../link-renderer";
 import styles from "./dropdown-menu.module.css";
 
-export type DropdownMenuProps = React.ComponentPropsWithoutRef<typeof Menu.Root>;
-export const DropdownMenu = Menu.Root;
+export type DropdownMenuProps = Omit<
+  React.ComponentPropsWithoutRef<typeof Menu.Root>,
+  "highlightItemOnHover"
+>;
+export function DropdownMenu(props: DropdownMenuProps) {
+  return <Menu.Root {...props} highlightItemOnHover={false} />;
+}
 
 export type DropdownMenuTriggerProps = React.ComponentPropsWithoutRef<typeof Menu.Trigger>;
 export const DropdownMenuTrigger = Menu.Trigger;
