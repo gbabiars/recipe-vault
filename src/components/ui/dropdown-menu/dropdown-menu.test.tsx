@@ -48,6 +48,8 @@ test("renders decorative leading icons on action and link items", async () => {
     expect(icon.getAttribute("focusable")).toBe("false");
   }
   expect(link.getAttribute("href")).toBe("/recipes");
+  link.setAttribute("data-highlighted", "");
+  expect(getComputedStyle(link).color).toBe(getComputedStyle(action).color);
 });
 
 test("uses the configured renderer for href links in the menu", async () => {
