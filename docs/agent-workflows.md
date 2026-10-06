@@ -1,127 +1,101 @@
 # Agent workflows
 
-Use these workflows for work that benefits from independent investigation or
-review. For a small, self-contained change, one agent can follow the same
-quality gates without spawning subagents. `AGENTS.md` remains the authority for
-project boundaries, security, formatting, and checks.
+`AGENTS.md` remains the authority for Recipe Vault boundaries, security, formatting,
+and checks. Use a workflow skill for a repeatable unit of work and a small set of
+reusable agents for bounded tasks. The root coordinator owns state, decisions,
+integration, and final verification. Do not create an agent for each stage.
 
-## Roles
+## App feature workflow
 
-| Role              | Where it lives                                     | Responsibility                                                                              |
-| ----------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Coordinator       | Root agent, directed by `AGENTS.md` and this guide | Own requirements, decisions, task boundaries, integration, and final verification           |
-| `recipe_worker`   | `.codex/agents/recipe_worker.toml`                 | Implement one assigned slice and return focused evidence                                    |
-| `recipe_reviewer` | `.codex/agents/recipe_reviewer.toml`               | Inspect behavior, correctness, boundaries, test gaps, and authorization risks independently |
+Invoke `$app-feature-workflow` for an application feature. Its durable record lives
+in `workflows/<linear-id>-<prompt-summary>/`, or `workflows/<prompt-summary>/`
+without a Linear issue. Lowercase and hyphenate the name. Use the Linear issue ID
+when available; summarize the requested behavior in the slug. Add a numeric
+suffix if the name already exists. Use `feat/<same-name>` for the branch. Work in
+the current checkout; do not discard an unrelated dirty tree to switch branches.
 
-The coordinator remains the root thread; spawning another coordinator would
-duplicate ownership. Use the built-in `explorer` for read-only codebase mapping
-when that work is large enough to delegate.
+The run folder contains `spec.md`, `plan.md`, and numbered JSON files under
+`handoffs/`. The spec and plan each carry a revision number. Increment the
+revision whenever approved content changes; a prior approval never covers a
+new revision. Put `Revision: 1` on its own line in each initial document. The
+approval handoff records the document's SHA-256 digest (for example,
+`shasum -a 256 workflows/<name>/spec.md`) so editing content invalidates its
+approval even when the revision line was not updated. Never put credentials,
+private customer data, or raw secrets in
+tracked artifacts. Each handoff uses the schema in
+[`handoff.schema.json`](workflows/handoff.schema.json). Validate the folder with
+`pnpm workflow:validate workflows/<name>` before advancing a stage and before
+opening or updating the PR. A validator can check the record; only the human's
+explicit message grants approval.
 
-## Shared handoff
+For example, the coordinator checks the run before consuming its latest handoff:
 
-The coordinating agent owns the task from requirements through final
-verification. Give each subagent a bounded task with:
+```ts
+const errors = await validateWorkflowDirectory(runDir);
+if (errors.length > 0) throw new Error(errors.join("\n"));
+const handoff = handoffSchema.parse(JSON.parse(await readFile(handoffPath, "utf8")));
+if (handoff.to === "implementation") await assignImplementation(handoff.artifacts);
+```
 
-- The question to answer and the files or boundary to inspect.
-- The relevant behavior and constraints from the request.
-- Whether the task is read-only or which files the agent may edit.
-- The expected result: findings with file references, a proposed call site, or
-  a completed change with its verification evidence.
+| Stage          | Outcome and next step                                                                                                                                                                                                                                                                                                                 |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Intake         | Read the request and accessible Linear issue, research, inspect the code, and use `$grilling` to settle product decisions. Write `spec.md` with behavior, scope, constraints, and acceptance criteria. Human approval is required for `intake → plan`.                                                                                |
+| Plan           | Write `plan.md` with the implementation approach, affected boundaries, realistic consuming call sites for new APIs, small steps, and checks. Human approval is required for `plan → verify-plan`.                                                                                                                                     |
+| Verify Plan    | Start a fresh, read-only reviewer with the original request, approved spec and plan, and relevant repo context. Do not pass the planner's debate or preferred answer. Pass to Implementation, or return findings to Plan. A revised plan requires new human approval and another fresh review.                                        |
+| Implementation | Assign bounded file ownership to the implementer. Build in small verifiable slices. Routine details within the approved plan may be resolved locally; a product change returns to Intake, and a material technical plan change returns to Plan. Escalate an unresolved decision.                                                      |
+| Verify/Fix     | The coordinator runs `pnpm format` after edits and the narrowest relevant checks. The implementer repairs failures. A stage entry allows at most three repair attempts before escalation.                                                                                                                                             |
+| Review         | Start an independent reviewer against the approved spec, plan, and full diff. Check requirements, correctness, boundaries, and test gaps; add accessibility and functional checks when the change warrants them. Return findings to Verify/Fix, with at most three Review returns per run. Changes to approved behavior go to Intake. |
+| Open PR        | Open a ready-for-review PR with a summary of acceptance criteria, evidence, remaining limits, and the run folder. Failed PR CI returns to Verify/Fix; re-review the changed diff before updating the PR.                                                                                                                              |
+| Human Review   | Human feedback returns to Verify/Fix, with at most three repair attempts per feedback round. A change to approved behavior returns to Intake. The human merges; record the merged PR as completion.                                                                                                                                   |
 
-Keep parallel tasks independent. Assign one owner to each edited file. Do not
-run repository-wide formatting, builds, migrations, or checks concurrently in a
-shared checkout. The coordinator resolves conflicting findings, integrates
-edits, runs `pnpm format`, and reports which checks passed, failed, or were not
-run. A skipped test is not a passing test.
+Write one handoff for every transition, including a blocked stage that waits for
+human input. Number files `0001-intake-to-plan.json`, `0002-plan-to-verify-plan.json`,
+and so on. `runId` matches the run folder name. `artifacts` contains paths within
+the run folder; `evidence` contains concise check results or links, and `findings`
+contains actionable failures. Record every failed Verify/Fix repair as a
+`verify-fix → verify-fix` handoff with `outcome: "retry"` and increment `attempt`
+for the next attempt. The third attempt must either pass or block for human
+input. A new entry from Review, CI, or Human Review resets the count to `1`.
+`attempt` is `1` outside Verify/Fix. Approval handoffs record the human
+statement, approved revision, and digest. A blocked
+handoff stays in its current stage and names the question or failure in
+`findings`.
 
-## Feature slice
+## Reusable roles
 
-**Use for:** a requested feature or behavior change that crosses a route,
-feature, service, repository, UI component, or MCP boundary.
+- **Coordinator:** the root agent. It owns the run folder and stage transitions,
+  asks the human at gates, assigns bounded work, reconciles findings, formats,
+  validates handoffs, and reports check results.
+- **`workflow_implementer`:** edits only assigned files, preserves project
+  boundaries, and returns changed files plus focused evidence. The coordinator
+  may keep short or dependent implementation work itself.
+- **`workflow_reviewer`:** read-only and independent. Use a fresh instance for
+  Verify Plan and Review. For authentication, ownership, RLS, MCP scopes, or
+  service-role changes, explicitly trace owner binding, scope enforcement, and
+  credential boundaries.
 
-The reusable `$recipe-feature-slice` skill packages this workflow for direct
-invocation.
-
-1. **Define one outcome.** Record the user-visible behavior, affected callers,
-   owner and privacy rules, and acceptance criteria. Keep each implementation
-   slice small enough to verify independently. Show a realistic consuming call
-   site before choosing a new service or component API.
-2. **Explore in parallel when useful.** Ask one read-only agent to map existing
-   code and boundary READMEs. Ask another to check relevant Next.js, Supabase,
-   Clerk, MCP, or Storybook guidance. Each returns only facts needed for the
-   slice, with source locations and open questions. The coordinator chooses the
-   design and resolves product decisions.
-3. **Implement with one file owner.** Assign the slice to `recipe_worker` with
-   explicit file boundaries. If independent workers are needed, separate their
-   files and interfaces first; integrate one slice before changing shared
-   contracts. Add focused tests when observable behavior changes.
-4. **Review the integrated diff.** Have `recipe_reviewer` check
-   the acceptance criteria, call sites, ownership boundaries, and missing
-   states. For changes to auth, ownership, RLS, MCP scopes, or service-role
-   access, ask the reviewer to trace the authorization path, owner binding,
-   scope enforcement, and credential boundaries. Give actionable findings back
-   to the file owner.
-5. **Verify and finish.** The coordinator runs `pnpm format`, the narrowest
-   relevant checks, and any runtime or database verification needed by the
-   change. Resolve failures caused by the slice and report the result with any
-   checks that could not run.
-
-Choose checks by the affected behavior:
+Keep parallel work independent and give each editing file one owner. The
+coordinator runs repository-wide formatting and checks after integration. A
+skipped check is not a pass. Choose checks by the changed behavior:
 
 | Change                                     | Relevant verification                                                                                                             |
 | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| Validation, services, API, or repositories | Focused `.test.ts` files, then `pnpm lint` and `pnpm typecheck` when code changes span those concerns                             |
+| Validation, services, API, or repositories | Focused `.test.ts` files; lint and typecheck when code spans those concerns                                                       |
 | UI interaction                             | Focused Vitest `components` browser test and affected Storybook stories; inspect the running UI when layout or navigation matters |
-| Database schema, RPC, or RLS               | Local migration and affected `supabase/tests` verification, including concurrency checks where relevant                           |
-| MCP transport, tools, or views             | Focused MCP tests and the applicable local smoke or browser check                                                                 |
+| Database schema, RPC, or RLS               | Local migration and affected `supabase/tests`, including concurrency checks when relevant                                         |
+| MCP transport, tools, or views             | Focused MCP tests and the applicable smoke or browser check                                                                       |
 | Cross-boundary change                      | `pnpm check`; use `pnpm build` when Next.js integration or generated output is affected                                           |
 
-`pnpm check` does not include `test:db` or `test:e2e`. Authenticated browser tests
-require `E2E_EMAIL` and `E2E_PASSWORD`; report when those tests are skipped or
-cannot run. Use a disposable local database for migration and RLS verification.
+`pnpm check` excludes `test:db` and `test:e2e`. Authenticated browser tests
+require `E2E_EMAIL` and `E2E_PASSWORD`; report when those tests are unavailable.
+Use a disposable local database for migration and RLS verification.
 
-**Invocation example:**
+## Other work
 
-> Implement one vertical slice for the requested behavior. Use read-only
-> subagents to map the affected boundaries and check current documentation.
-> Show the intended call site, then assign implementation to `recipe_worker`
-> with explicit file ownership. Have `recipe_reviewer` review the integrated
-> diff. Run the focused checks and report the behavior delivered, evidence,
-> and remaining limits.
-
-## Change review
-
-**Use for:** a branch, pull request, or working diff that needs an independent
-assessment before merge or handoff. Fix the comparison point first, such as
-`main`, a commit, or the merge base, and obtain the originating request or spec.
-
-1. **Establish scope.** The coordinator records the comparison point, changed
-   files, requested behavior, and applicable project guidance. Separate
-   unrelated pre-existing failures from issues introduced by the diff. For a
-   historical commit, use the guidance and boundary READMEs at that commit to
-   judge its changes; use current `AGENTS.md` for safe execution in the working
-   checkout.
-2. **Review independently.** Give `recipe_reviewer` correctness, behavior,
-   documented standards, and test coverage. For high-risk ownership changes,
-   explicitly ask it to trace Clerk identity through the API or MCP adapter to
-   the service, repository, and RLS or service-role boundary. The reviewer must
-   not edit or run mutating database commands during review.
-3. **Reconcile findings.** The coordinator removes duplicates and checks each
-   claim against the diff. Report findings first, ordered by severity, with
-   file and line, concrete failure mode, and the evidence needed to reproduce
-   or verify it. Distinguish a confirmed defect from a question or test gap.
-4. **Close the loop when fixes are requested.** Assign each accepted finding to
-   one file owner. Re-review the changed lines, run `pnpm format` and relevant
-   checks after integration, and state whether each finding was resolved.
-
-**Invocation example:**
-
-> Review this branch against `main` with `recipe_reviewer` as a read-only
-> subagent. Include the originating request and explicitly request an
-> authorization-path review for ownership-sensitive changes. Return actionable,
-> prioritized findings with file and line references and a short account of
-> checks performed.
-
-For a small diff, use one reviewer. For independent high-risk areas, add a
-specialist review only when its scope is clear. More agents do not replace a
-precise spec or a runnable verification environment.
+Refactors, upgrades, design-system work, and standalone change reviews may
+reuse the handoff format and roles, but should have their own workflow skills
+and stage rules when repeated. A small self-contained task can stay with one
+agent while following the same project checks. For a standalone diff review,
+fix the comparison point and provide the originating request or spec; ask the
+read-only reviewer for actionable findings with file, line, failure mode, and
+evidence.
