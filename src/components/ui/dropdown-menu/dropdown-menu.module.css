@@ -47,6 +47,7 @@
 .item:hover,
 .item[data-highlighted] {
   background: var(--color-background-surface-hover);
+  color: inherit;
 }
 
 .item[data-variant="danger"] {
