@@ -54,8 +54,8 @@ For feature slices and change reviews, follow `docs/agent-workflows.md`.
 - The root agent is the coordinator. It defines the outcome, assigns bounded
   work, reconciles findings, integrates edits, and owns final verification.
 - Use `recipe_worker` for an assigned implementation slice and `recipe_reviewer`
-  for independent review. Use `owner_isolation_reviewer` when ownership or
-  credential boundaries are affected.
+  for independent review. For changes to ownership or credential boundaries,
+  ask `recipe_reviewer` to explicitly trace the authorization path.
 
 - Use subagents for bounded, independent exploration, documentation research,
   diagnosis, or review when parallel work improves the outcome. Keep dependent
@@ -66,8 +66,9 @@ For feature slices and change reviews, follow `docs/agent-workflows.md`.
 - Give each editing task one owner and explicit file boundaries. Coordinate
   before agents edit shared files, generated output, or database state. Prefer
   read-only parallel review when work overlaps.
-- For changes to authentication, RLS, MCP scopes, or service-role access, request
-  an independent owner-isolation review before handing off the change.
+- For changes to authentication, RLS, MCP scopes, or service-role access,
+  require `recipe_reviewer` to check owner binding, scope enforcement, and
+  credential boundaries before handing off the change.
 
 ## API design
 

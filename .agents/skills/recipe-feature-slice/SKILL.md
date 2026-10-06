@@ -29,9 +29,11 @@ remain authoritative for project rules and checks.
    files.
 4. **Review the integrated diff.** Use `recipe_reviewer` to check the request,
    call sites, boundary compliance, important states, and test gaps. For
-   changes to Clerk identity, RLS, MCP scopes, or service-role access, also use
-   `owner_isolation_reviewer`. Route accepted findings to the worker to fix,
-   then have the reviewer check the affected lines again.
+   changes to Clerk identity, ownership, RLS, MCP scopes, or service-role
+   access, ask the reviewer to trace the authorization path and check owner
+   binding, scope enforcement, and credential boundaries. Route accepted
+   findings to the worker to fix, then have the reviewer check the affected
+   lines again.
 5. **Verify and report.** The root coordinator integrates edits, runs
    `pnpm format`, selects the narrowest relevant checks from the workflow guide,
    resolves failures caused by the slice, and reports passed, failed, skipped,
@@ -49,6 +51,6 @@ story checks required by `AGENTS.md`.
 > Build one vertical slice for the requested behavior. Define acceptance
 > criteria and show the intended call site. Assign implementation to
 > `recipe_worker` with explicit file ownership, then have `recipe_reviewer`
-> review the integrated diff. Use `owner_isolation_reviewer` if identity,
-> RLS, MCP scopes, or service-role access changes. Run focused checks and report
-> the result and any verification limits.
+> review the integrated diff, explicitly tracing authorization when identity,
+> ownership, RLS, MCP scopes, or service-role access changes. Run focused checks
+> and report the result and any verification limits.
