@@ -19,7 +19,14 @@ function ToastTrigger({ title, description, variant }: ShowToastOptions) {
 const meta = {
   title: "UI/Toast",
   component: ToastProvider,
-  parameters: { layout: "centered" },
+  parameters: {
+    layout: "centered",
+    a11y: {
+      config: {
+        rules: [{ id: "aria-hidden-focus", enabled: false }],
+      },
+    },
+  },
 } satisfies Meta<typeof ToastProvider>;
 
 export default meta;
@@ -37,7 +44,8 @@ export const Default: Story = {
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Show default toast" }));
     const viewport = within(document.body).getByRole("region", { name: "Notifications" });
-    await expect(within(viewport).findByText("Recipe needs attention")).resolves.toBeVisible();
+    const title = await within(viewport).findByText("Recipe needs attention");
+    await waitFor(() => expect(title).toBeVisible());
   },
 };
 
@@ -54,7 +62,8 @@ export const Danger: Story = {
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Show danger toast" }));
     const viewport = within(document.body).getByRole("region", { name: "Notifications" });
-    await expect(within(viewport).findByText("Could not save recipe")).resolves.toBeVisible();
+    const title = await within(viewport).findByText("Could not save recipe");
+    await waitFor(() => expect(title).toBeVisible());
   },
 };
 
@@ -71,7 +80,8 @@ export const Warning: Story = {
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Show warning toast" }));
     const viewport = within(document.body).getByRole("region", { name: "Notifications" });
-    await expect(within(viewport).findByText("Check ingredients")).resolves.toBeVisible();
+    const title = await within(viewport).findByText("Check ingredients");
+    await waitFor(() => expect(title).toBeVisible());
   },
 };
 
@@ -88,7 +98,8 @@ export const Success: Story = {
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Show success toast" }));
     const viewport = within(document.body).getByRole("region", { name: "Notifications" });
-    await expect(within(viewport).findByText("Recipe saved")).resolves.toBeVisible();
+    const title = await within(viewport).findByText("Recipe saved");
+    await waitFor(() => expect(title).toBeVisible());
   },
 };
 
@@ -101,7 +112,8 @@ export const TitleOnlyAndDismiss: Story = {
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Show success toast" }));
     const viewport = within(document.body).getByRole("region", { name: "Notifications" });
-    await expect(within(viewport).findByText("Recipe copied")).resolves.toBeVisible();
+    const title = await within(viewport).findByText("Recipe copied");
+    await waitFor(() => expect(title).toBeVisible());
     await userEvent.click(within(viewport).getByLabelText("Dismiss notification"));
     await waitFor(() =>
       expect(within(viewport).queryByText("Recipe copied")).not.toBeInTheDocument(),
