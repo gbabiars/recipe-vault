@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "runId": "recipes-live-filters",
+  "sequence": 16,
+  "from": "review",
+  "to": "open-pr",
+  "outcome": "pass",
+  "artifacts": ["spec.md", "plan.md"],
+  "evidence": [
+    "Fresh independent read-only re-review of the focus and stale-route fixes found no actionable issues.",
+    "Reviewer confirmed search/tag focus coverage, pending self-navigation tracking, external route synchronization, and overlapping update coverage."
+  ],
+  "findings": [],
+  "attempt": 1
+}
