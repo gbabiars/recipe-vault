@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "runId": "recipes-create-breadcrumbs",
+  "sequence": 1,
+  "from": "intake",
+  "to": "plan",
+  "outcome": "pass",
+  "artifacts": ["spec.md"],
+  "evidence": ["Human approved spec revision 1: Approve"],
+  "findings": [],
+  "attempt": 1,
+  "approval": {
+    "artifact": "spec.md",
+    "revision": 1,
+    "decision": "approved",
+    "source": "human-chat",
+    "statement": "Approve",
+    "sha256": "ab7eb6ac50afd195c6d8c77fba58d59e44a2a99198f415f152abeec2960844d6"
+  }
+}
