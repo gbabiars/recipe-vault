@@ -1,6 +1,6 @@
 # Live recipe filters implementation plan
 
-Revision: 2
+Revision: 3
 
 ## Outcome
 
@@ -11,8 +11,16 @@ tag matching behavior.
 ## Proposed component API
 
 Make `TagFilter` controlled so the recipe filter can apply selection changes
-immediately. Use the same `value` and `onValueChange` shape documented for its
-underlying `ComboboxField`:
+immediately. Require both props and use the same `value` and `onValueChange`
+shape documented for its underlying `ComboboxField`; do not keep an uncontrolled
+or `tag`-prop path:
+
+```ts
+type TagFilterProps = {
+  value: string[];
+  onValueChange: (nextTags: string[]) => void;
+};
+```
 
 ```tsx
 <TagFilter
@@ -50,11 +58,14 @@ The search input remains controlled by `RecipeFilters` and receives its
    `ComboboxField`, label it **Tags**, and remove its helper text. Construct
    `/recipes` query values from `q` and repeated `tag` keys, omit empty values,
    and call `router.replace` with scrolling disabled. Synchronize local control
-   state when route props change.
+   state when route props change. Migrate all direct `TagFilter` uses from the
+   existing `tag` or no-prop API to the required controlled props.
 3. Remove the submit button and its layout styles. Update recipe filter tests,
    page tests, and stories to cover debounce, immediate Enter without a native
    form navigation, immediate tag updates, multiple tag removal, URL replacement,
-   empty parameters, and the requested copy changes. Keep real `TextInput` and
+   empty parameters, and the requested copy changes. Update the standalone
+   callers in `tag-filter.test.tsx` and `tag-filter.stories.tsx` to provide
+   controlled values and change handlers. Keep real `TextInput` and
    `ComboboxField` components in interaction tests; mock only the Next
    navigation boundary if needed.
 
