@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "runId": "recipes-live-filters",
+  "sequence": 3,
+  "from": "verify-plan",
+  "to": "plan",
+  "outcome": "return",
+  "artifacts": ["plan.md"],
+  "evidence": [
+    "Independent review identified a possible native GET submission on Enter that could compete with router.replace."
+  ],
+  "findings": [
+    "Specify that the Next Form action wrapper is removed or its submit event is prevented, and add an Enter interaction check for immediate router replacement without native form navigation."
+  ],
+  "attempt": 1
+}
