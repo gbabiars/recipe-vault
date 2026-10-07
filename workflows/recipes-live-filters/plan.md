@@ -1,6 +1,6 @@
 # Live recipe filters implementation plan
 
-Revision: 1
+Revision: 2
 
 ## Outcome
 
@@ -41,18 +41,22 @@ The search input remains controlled by `RecipeFilters` and receives its
 
 1. Convert `RecipeFilters` to a client component with local search and selected
    tag state initialized from its `q` and `tag` props. Use a 300 ms trailing
-   timer for search updates. Cancel a pending timer and immediately apply the
-   latest search and tags on Enter or a tag selection/removal.
+   timer for search updates. Keep a semantic native form with an `onSubmit`
+   handler that prevents default navigation and applies filters through the
+   immediate URL replacement path. Cancel a pending timer and apply the latest
+   search and tags immediately on Enter or a tag selection/removal. Remove the
+   existing Next `<Form action="/recipes">` wrapper.
 2. Add controlled `value` and `onValueChange` props to `TagFilter`, pass them to
    `ComboboxField`, label it **Tags**, and remove its helper text. Construct
    `/recipes` query values from `q` and repeated `tag` keys, omit empty values,
    and call `router.replace` with scrolling disabled. Synchronize local control
    state when route props change.
 3. Remove the submit button and its layout styles. Update recipe filter tests,
-   page tests, and stories to cover debounce, immediate Enter and tag updates,
-   multiple tag removal, URL replacement, empty parameters, and the requested
-   copy changes. Keep real `TextInput` and `ComboboxField` components in
-   interaction tests; mock only the Next navigation boundary if needed.
+   page tests, and stories to cover debounce, immediate Enter without a native
+   form navigation, immediate tag updates, multiple tag removal, URL replacement,
+   empty parameters, and the requested copy changes. Keep real `TextInput` and
+   `ComboboxField` components in interaction tests; mock only the Next
+   navigation boundary if needed.
 
 ## Boundaries
 

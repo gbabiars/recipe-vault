@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "runId": "recipes-live-filters",
+  "sequence": 4,
+  "from": "plan",
+  "to": "verify-plan",
+  "outcome": "pass",
+  "artifacts": ["plan.md"],
+  "evidence": ["Human approved plan revision 2 in chat."],
+  "findings": [],
+  "attempt": 1,
+  "approval": {
+    "artifact": "plan.md",
+    "revision": 2,
+    "decision": "approved",
+    "source": "human-chat",
+    "statement": "Approve",
+    "sha256": "2e2ce5621c016d61ec8f2fb0b496ad0b783228cde88910861bb6514cdf4821ea"
+  }
+}
