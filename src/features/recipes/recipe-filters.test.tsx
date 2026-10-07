@@ -60,6 +60,34 @@ test("Enter applies search immediately and prevents form navigation", async () =
   expect(replaceMock).toHaveBeenCalledTimes(1);
 });
 
+test("keeps search focus when route filter props update", async () => {
+  const { rerender } = render(<RecipeFilters />);
+  const search = screen.getByRole("searchbox", { name: "Search title" });
+  await userEvent.click(search);
+  fireEvent.change(search, { target: { value: "soup " } });
+
+  await waitFor(() =>
+    expect(replaceMock).toHaveBeenLastCalledWith("/recipes?q=soup", { scroll: false }),
+  );
+
+  rerender(<RecipeFilters q="soup" />);
+
+  expect(screen.getByRole("searchbox", { name: "Search title" })).toBe(search);
+  expect(document.activeElement).toBe(search);
+  expect(search).toHaveValue("soup ");
+});
+
+test("keeps tag input focus when route filter props update", async () => {
+  const { rerender } = render(<RecipeFilters />);
+  const tagInput = screen.getByRole("combobox", { name: "Tags" });
+  await userEvent.click(tagInput);
+
+  rerender(<RecipeFilters tag="dinner" />);
+
+  expect(screen.getByRole("combobox", { name: "Tags" })).toBe(tagInput);
+  expect(document.activeElement).toBe(tagInput);
+});
+
 test("tag changes immediately apply pending search text and cancel its timer", async () => {
   render(<RecipeFilters />);
   const search = screen.getByRole("searchbox", { name: "Search title" });

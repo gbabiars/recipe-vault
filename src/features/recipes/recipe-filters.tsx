@@ -10,15 +10,12 @@ import styles from "./recipe-filters.module.css";
 const searchDebounceMs = 300;
 
 export function RecipeFilters(props: { q?: string; tag?: string | string[] }) {
-  const key = `${props.q ?? ""}\u0000${normalizeTags(props.tag).join("\u0000")}`;
-  return <RecipeFiltersForm key={key} {...props} />;
-}
-
-function RecipeFiltersForm({ q, tag }: { q?: string; tag?: string | string[] }) {
+  const { q, tag } = props;
   const router = useRouter();
   const [searchText, setSearchText] = useState(q ?? "");
   const [selectedTags, setSelectedTags] = useState(normalizeTags(tag));
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastAppliedFiltersRef = useRef<string | null>(null);
 
   const clearSearchTimer = useCallback(() => {
     if (timerRef.current !== null) {
@@ -33,6 +30,7 @@ function RecipeFiltersForm({ q, tag }: { q?: string; tag?: string | string[] }) 
       const normalizedSearch = search.trim();
       if (normalizedSearch) params.set("q", normalizedSearch);
       for (const selectedTag of tags) params.append("tag", selectedTag);
+      lastAppliedFiltersRef.current = filtersKey(normalizedSearch, tags);
       const query = params.toString();
       router.replace(query ? `/recipes?${query}` : "/recipes", { scroll: false });
     },
@@ -76,6 +74,22 @@ function RecipeFiltersForm({ q, tag }: { q?: string; tag?: string | string[] }) 
     }
   }
 
+  useEffect(() => {
+    const nextSearchText = q ?? "";
+    const nextTags = normalizeTags(tag);
+    const nextFiltersKey = filtersKey(nextSearchText, nextTags);
+
+    if (lastAppliedFiltersRef.current === nextFiltersKey) {
+      lastAppliedFiltersRef.current = null;
+      return;
+    }
+
+    lastAppliedFiltersRef.current = null;
+    clearSearchTimer();
+    setSearchText((current) => (current === nextSearchText ? current : nextSearchText));
+    setSelectedTags((current) => (areTagsEqual(current, nextTags) ? current : nextTags));
+  }, [clearSearchTimer, q, tag]);
+
   useEffect(() => clearSearchTimer, [clearSearchTimer]);
 
   return (
@@ -103,4 +117,12 @@ function RecipeFiltersForm({ q, tag }: { q?: string; tag?: string | string[] }) 
 
 function normalizeTags(tag?: string | string[]) {
   return tag == null ? [] : Array.isArray(tag) ? tag : [tag];
+}
+
+function filtersKey(search: string, tags: string[]) {
+  return JSON.stringify([search, tags]);
+}
+
+function areTagsEqual(first: string[], second: string[]) {
+  return first.length === second.length && first.every((tag, index) => tag === second[index]);
 }
