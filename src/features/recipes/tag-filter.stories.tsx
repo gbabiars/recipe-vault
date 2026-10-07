@@ -1,7 +1,6 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent, within } from "storybook/test";
-import { Button } from "@/components/ui/button";
 import { TagFilter } from "./tag-filter";
 
 const tags = ["dinner", "soup", "weeknight"];
@@ -9,6 +8,7 @@ const tags = ["dinner", "soup", "weeknight"];
 const meta = {
   title: "App/Recipes/TagFilter",
   component: TagFilter,
+  args: { value: [], onValueChange: () => {} },
   beforeEach: () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (input) => {
@@ -26,27 +26,21 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const BrowseAndFilter: Story = {
+export const BrowseAndSelect: Story = {
   render: () => {
     function Example() {
-      const [submitted, setSubmitted] = React.useState("");
+      const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
       return (
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            setSubmitted(new FormData(event.currentTarget).getAll("tag").join(", "));
-          }}
-        >
-          <TagFilter />
-          <Button label="Filter" type="submit" />
-          <output aria-label="Submitted tag">{submitted}</output>
-        </form>
+        <>
+          <TagFilter value={selectedTags} onValueChange={setSelectedTags} />
+          <output aria-label="Selected tags">{selectedTags.join(", ")}</output>
+        </>
       );
     }
     return <Example />;
   },
   play: async ({ canvas }) => {
-    const input = canvas.getByRole("combobox", { name: "Tag" });
+    const input = canvas.getByRole("combobox", { name: "Tags" });
     await userEvent.click(input);
     await userEvent.keyboard("{ArrowDown}");
     await userEvent.click(await within(document.body).findByRole("option", { name: "soup" }));
@@ -59,17 +53,22 @@ export const BrowseAndFilter: Story = {
     await userEvent.click(input);
     await expect(await within(document.body).findByRole("option", { name: "soup" })).toBeVisible();
     await userEvent.keyboard("{Escape}");
-    await userEvent.click(canvas.getByRole("button", { name: "Filter" }));
-    await expect(canvas.getByRole("status", { name: "Submitted tag" })).toHaveTextContent(
+    await expect(canvas.getByRole("status", { name: "Selected tags" })).toHaveTextContent(
       "weeknight",
     );
   },
 };
 
 export const OldUrlTag: Story = {
-  args: { tag: "renamed" },
+  render: () => {
+    function Example() {
+      const [selectedTags, setSelectedTags] = React.useState(["renamed"]);
+      return <TagFilter value={selectedTags} onValueChange={setSelectedTags} />;
+    }
+    return <Example />;
+  },
   play: async ({ canvas }) => {
-    const input = canvas.getByRole("combobox", { name: "Tag" });
+    const input = canvas.getByRole("combobox", { name: "Tags" });
     await expect(canvas.getByText("renamed")).toBeVisible();
     await userEvent.click(input);
     await userEvent.keyboard("{ArrowDown}");
