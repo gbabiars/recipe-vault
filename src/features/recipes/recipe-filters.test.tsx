@@ -81,11 +81,48 @@ test("keeps tag input focus when route filter props update", async () => {
   const { rerender } = render(<RecipeFilters />);
   const tagInput = screen.getByRole("combobox", { name: "Tags" });
   await userEvent.click(tagInput);
+  await userEvent.keyboard("{ArrowDown}");
+  await userEvent.click(await screen.findByRole("option", { name: "dinner" }));
+
+  expect(replaceMock).toHaveBeenCalledWith("/recipes?tag=dinner", { scroll: false });
 
   rerender(<RecipeFilters tag="dinner" />);
 
   expect(screen.getByRole("combobox", { name: "Tags" })).toBe(tagInput);
   expect(document.activeElement).toBe(tagInput);
+});
+
+test("stale route props do not overwrite a newer search edit", async () => {
+  const { rerender } = render(<RecipeFilters q="old" />);
+  const tagInput = screen.getByRole("combobox", { name: "Tags" });
+  await userEvent.click(tagInput);
+  await userEvent.keyboard("{ArrowDown}");
+  await userEvent.click(await screen.findByRole("option", { name: "dinner" }));
+  await userEvent.keyboard("{Escape}");
+
+  const search = screen.getByRole("searchbox", { name: "Search title" });
+  fireEvent.change(search, { target: { value: "new" } });
+  rerender(<RecipeFilters q="old" tag="dinner" />);
+
+  expect(search).toHaveValue("new");
+  await waitFor(() =>
+    expect(replaceMock).toHaveBeenLastCalledWith("/recipes?q=new&tag=dinner", {
+      scroll: false,
+    }),
+  );
+});
+
+test("external route changes sync controls and cancel pending search", async () => {
+  const { rerender } = render(<RecipeFilters />);
+  const search = screen.getByRole("searchbox", { name: "Search title" });
+  fireEvent.change(search, { target: { value: "pending" } });
+
+  rerender(<RecipeFilters q="external" tag="dinner" />);
+
+  expect(search).toHaveValue("external");
+  expect(screen.getByRole("button", { name: "Remove dinner" })).toBeVisible();
+  await new Promise((resolve) => setTimeout(resolve, 350));
+  expect(replaceMock).not.toHaveBeenCalled();
 });
 
 test("tag changes immediately apply pending search text and cancel its timer", async () => {

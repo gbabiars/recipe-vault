@@ -15,7 +15,7 @@ export function RecipeFilters(props: { q?: string; tag?: string | string[] }) {
   const [searchText, setSearchText] = useState(q ?? "");
   const [selectedTags, setSelectedTags] = useState(normalizeTags(tag));
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastAppliedFiltersRef = useRef<string | null>(null);
+  const pendingFiltersRef = useRef<string[]>([]);
 
   const clearSearchTimer = useCallback(() => {
     if (timerRef.current !== null) {
@@ -28,13 +28,20 @@ export function RecipeFilters(props: { q?: string; tag?: string | string[] }) {
     (search: string, tags: string[]) => {
       const params = new URLSearchParams();
       const normalizedSearch = search.trim();
+      const nextFiltersKey = filtersKey(normalizedSearch, tags);
+      const currentFiltersKey = filtersKey(q ?? "", normalizeTags(tag));
       if (normalizedSearch) params.set("q", normalizedSearch);
       for (const selectedTag of tags) params.append("tag", selectedTag);
-      lastAppliedFiltersRef.current = filtersKey(normalizedSearch, tags);
+      if (
+        nextFiltersKey !== currentFiltersKey &&
+        !pendingFiltersRef.current.includes(nextFiltersKey)
+      ) {
+        pendingFiltersRef.current.push(nextFiltersKey);
+      }
       const query = params.toString();
       router.replace(query ? `/recipes?${query}` : "/recipes", { scroll: false });
     },
-    [router],
+    [q, router, tag],
   );
 
   const applyImmediately = useCallback(() => {
@@ -79,12 +86,12 @@ export function RecipeFilters(props: { q?: string; tag?: string | string[] }) {
     const nextTags = normalizeTags(tag);
     const nextFiltersKey = filtersKey(nextSearchText, nextTags);
 
-    if (lastAppliedFiltersRef.current === nextFiltersKey) {
-      lastAppliedFiltersRef.current = null;
+    const pendingIndex = pendingFiltersRef.current.indexOf(nextFiltersKey);
+    if (pendingIndex !== -1) {
+      pendingFiltersRef.current.splice(pendingIndex, 1);
       return;
     }
 
-    lastAppliedFiltersRef.current = null;
     clearSearchTimer();
     setSearchText((current) => (current === nextSearchText ? current : nextSearchText));
     setSelectedTags((current) => (areTagsEqual(current, nextTags) ? current : nextTags));
