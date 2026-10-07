@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "runId": "recipes-live-filters",
+  "sequence": 5,
+  "from": "verify-plan",
+  "to": "plan",
+  "outcome": "return",
+  "artifacts": ["plan.md"],
+  "evidence": [
+    "Fresh independent review found the controlled TagFilter API contract and direct story/test call-site updates were unspecified."
+  ],
+  "findings": [
+    "Define whether TagFilter's value and onValueChange props are required or optional, and explicitly update its standalone stories and tests to use the chosen controlled API."
+  ],
+  "attempt": 1
+}
