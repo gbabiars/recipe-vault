@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "runId": "recipes-create-breadcrumbs",
+  "sequence": 4,
+  "from": "implementation",
+  "to": "verify-fix",
+  "outcome": "pass",
+  "artifacts": [],
+  "evidence": [
+    "Focused Playwright-backed component test passed: 1 test.",
+    "pnpm lint passed.",
+    "pnpm typecheck passed.",
+    "Breadcrumbs trailing-separator Storybook preview is available; MCP test-run was attempted twice but returned an internal Vitest Orchestrator not found error before test execution."
+  ],
+  "findings": [],
+  "attempt": 1
+}
