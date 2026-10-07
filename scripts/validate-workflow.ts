@@ -1,10 +1,13 @@
 import { validateWorkflowDirectory } from "./workflow-handoff";
 
-const runDir = process.argv[2];
-if (!runDir) {
-  console.error("Usage: pnpm workflow:validate <run-directory>");
-  process.exitCode = 2;
-} else {
+async function main(): Promise<void> {
+  const runDir = process.argv[2];
+  if (!runDir) {
+    console.error("Usage: pnpm workflow:validate <run-directory>");
+    process.exitCode = 2;
+    return;
+  }
+
   try {
     const errors = await validateWorkflowDirectory(runDir);
     if (errors.length > 0) {
@@ -18,3 +21,5 @@ if (!runDir) {
     process.exitCode = 1;
   }
 }
+
+void main();
