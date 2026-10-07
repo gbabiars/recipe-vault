@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import {
   handoffSchema,
@@ -162,6 +164,35 @@ test("checks artifact revision in a run directory", async () => {
         error.includes("revision does not match"),
       ),
     );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("CLI validates a workflow directory when run through tsx", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "recipe-workflow-cli-"));
+  const runDir = path.join(root, runId);
+  const handoffDir = path.join(runDir, "handoffs");
+  try {
+    await mkdir(handoffDir, { recursive: true });
+    await writeFile(path.join(runDir, "spec.md"), specContent);
+    await writeFile(path.join(runDir, "plan.md"), planContent);
+    await writeFile(path.join(handoffDir, "0001-intake-to-plan.json"), JSON.stringify(intake));
+    await writeFile(path.join(handoffDir, "0002-plan-to-verify-plan.json"), JSON.stringify(plan));
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        "--import",
+        "tsx",
+        fileURLToPath(new URL("./validate-workflow.ts", import.meta.url)),
+        runDir,
+      ],
+      { cwd: process.cwd(), encoding: "utf8" },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Valid workflow handoffs/);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

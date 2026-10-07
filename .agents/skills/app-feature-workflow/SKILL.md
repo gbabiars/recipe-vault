@@ -36,6 +36,14 @@ for bounded work, not one agent per stage.
    ready-for-review PR with evidence and the run folder. The human performs the
    merge; record completion once merged.
 
+At the end of every stage, validate its handoff and finish the relevant checks,
+then commit the stage changes and handoff JSON before starting the next stage.
+Create a separate commit for every transition, including returns, retries, and
+blocked handoffs. Follow the repository's commit message format and identify
+the completed stage in the subject. Preserve earlier stage commits; do not amend
+or squash them. When work returns to an earlier stage, resume from the latest
+checkpoint and commit the new revision separately.
+
 Only the human's explicit message counts as a gate approval. A validator result
 does not grant approval. Report failed, skipped, and unavailable checks
 accurately. Keep secrets and private customer data out of tracked artifacts.

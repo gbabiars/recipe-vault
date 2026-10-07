@@ -28,6 +28,20 @@ tracked artifacts. Each handoff uses the schema in
 opening or updating the PR. A validator can check the record; only the human's
 explicit message grants approval.
 
+### Stage commit checkpoints
+
+Before starting the next stage, commit the completed stage's changes together
+with its handoff JSON. This applies to every transition, including returns,
+retries, and blocked handoffs. Validate the run and finish the stage's relevant
+checks before committing. Give each checkpoint its own commit; do not amend or
+squash an earlier stage checkpoint. Use the repository's commit message format
+and identify the completed stage in the subject. When a stage is returned,
+continue from the latest checkpoint and commit its revisions separately so the
+earlier state remains available for comparison or recovery. Use the commit
+history to inspect the stage sequence and
+`git diff <earlier-checkpoint>..<later-checkpoint>` to compare changes between
+stages.
+
 For example, the coordinator checks the run before consuming its latest handoff:
 
 ```ts
