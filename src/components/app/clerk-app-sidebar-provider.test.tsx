@@ -19,11 +19,13 @@ vi.mock("@clerk/nextjs", () => ({
   useUser: () => ({ user: clerkState.user }),
 }));
 
-vi.mock("next/navigation", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("next/navigation")>();
+vi.mock("./app-sidebar-actions", () => ({
+  setAppSidebarCollapsed: vi.fn().mockResolvedValue(undefined),
+}));
 
-  return { ...actual, usePathname: () => "/recipes" };
-});
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/recipes",
+}));
 
 function renderSidebar() {
   return render(
