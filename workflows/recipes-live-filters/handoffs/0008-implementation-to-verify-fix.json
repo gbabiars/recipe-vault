@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "runId": "recipes-live-filters",
+  "sequence": 8,
+  "from": "implementation",
+  "to": "verify-fix",
+  "outcome": "pass",
+  "artifacts": ["spec.md", "plan.md"],
+  "evidence": [
+    "Recipe filter, tag filter, and recipes page component tests passed; 12 tests total.",
+    "pnpm lint passed.",
+    "pnpm typecheck passed.",
+    "pnpm format completed.",
+    "Storybook previews were generated for all four affected stories."
+  ],
+  "findings": [
+    "The Storybook MCP test-run tool failed before executing stories with a Vitest Orchestrator not found error; retry during Verify/Fix."
+  ],
+  "attempt": 1
+}

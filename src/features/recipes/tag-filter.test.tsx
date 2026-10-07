@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useState } from "react";
 import { userEvent } from "vitest/browser";
 import { afterEach, expect, test, vi } from "vitest";
 import { TagFilter, loadOwnedTags } from "./tag-filter";
@@ -16,10 +17,19 @@ afterEach(() => {
   fetchMock.mockClear();
 });
 
+function ControlledTagFilter({ initialTags = [] }: { initialTags?: string[] }) {
+  const [tags, setTags] = useState(initialTags);
+  return (
+    <form>
+      <TagFilter value={tags} onValueChange={setTags} />
+    </form>
+  );
+}
+
 test("loads initial tags, searches, and reloads when cleared", async () => {
   vi.stubGlobal("fetch", fetchMock);
-  render(<TagFilter />);
-  const input = screen.getByRole("combobox", { name: "Tag" });
+  render(<TagFilter value={[]} onValueChange={vi.fn()} />);
+  const input = screen.getByRole("combobox", { name: "Tags" });
   await waitFor(() => expect(fetchMock).toHaveBeenCalled());
   await userEvent.click(input);
   await userEvent.keyboard("{ArrowDown}");
@@ -35,12 +45,8 @@ test("loads initial tags, searches, and reloads when cleared", async () => {
 
 test("keeps an old URL tag visible and submits its value until replaced", async () => {
   vi.stubGlobal("fetch", fetchMock);
-  const { container } = render(
-    <form>
-      <TagFilter tag="renamed" />
-    </form>,
-  );
-  const input = screen.getByRole("combobox", { name: "Tag" });
+  const { container } = render(<ControlledTagFilter initialTags={["renamed"]} />);
+  const input = screen.getByRole("combobox", { name: "Tags" });
   expect(screen.getByText("renamed")).toBeTruthy();
   expect(new FormData(container.querySelector("form")!).get("tag")).toBe("renamed");
   await waitFor(() => expect(fetchMock).toHaveBeenCalled());
@@ -52,12 +58,8 @@ test("keeps an old URL tag visible and submits its value until replaced", async 
 
 test("selects and submits multiple tags", async () => {
   vi.stubGlobal("fetch", fetchMock);
-  const { container } = render(
-    <form>
-      <TagFilter />
-    </form>,
-  );
-  const input = screen.getByRole("combobox", { name: "Tag" });
+  const { container } = render(<ControlledTagFilter />);
+  const input = screen.getByRole("combobox", { name: "Tags" });
   await waitFor(() => expect(fetchMock).toHaveBeenCalled());
   await userEvent.click(input);
   await userEvent.keyboard("{ArrowDown}");
@@ -75,12 +77,8 @@ test("selects and submits multiple tags", async () => {
 
 test("typing without selecting does not submit a tag", async () => {
   vi.stubGlobal("fetch", fetchMock);
-  const { container } = render(
-    <form>
-      <TagFilter />
-    </form>,
-  );
-  const input = screen.getByRole("combobox", { name: "Tag" });
+  const { container } = render(<ControlledTagFilter />);
+  const input = screen.getByRole("combobox", { name: "Tags" });
   fireEvent.change(input, { target: { value: "invented" } });
   expect(new FormData(container.querySelector("form")!).get("tag")).not.toBe("invented");
 });
