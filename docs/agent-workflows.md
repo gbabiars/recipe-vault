@@ -25,8 +25,10 @@ private customer data, or raw secrets in
 tracked artifacts. Each handoff uses the schema in
 [`handoff.schema.json`](workflows/handoff.schema.json). Validate the folder with
 `pnpm workflow:validate workflows/<name>` before advancing a stage and before
-opening or updating the PR. A validator can check the record; only the human's
-explicit message grants approval.
+opening or updating the PR. Keep the complete run directory on the feature
+branch while the PR is active, including review and rework. The PR may show the
+run directory while it is under review. A validator can check the record; only
+the human's explicit message grants approval.
 
 ### Stage commit checkpoints
 
@@ -59,12 +61,34 @@ if (handoff.to === "implementation") await assignImplementation(handoff.artifact
 | Implementation | Assign bounded file ownership to the implementer. Build in small verifiable slices. Routine details within the approved plan may be resolved locally; a product change returns to Intake, and a material technical plan change returns to Plan. Escalate an unresolved decision.                                                      |
 | Verify/Fix     | The coordinator runs `pnpm format` after edits and the narrowest relevant checks. The implementer repairs failures. A stage entry allows at most three repair attempts before escalation.                                                                                                                                             |
 | Review         | Start an independent reviewer against the approved spec, plan, and full diff. Check requirements, correctness, boundaries, and test gaps; add accessibility and functional checks when the change warrants them. Return findings to Verify/Fix, with at most three Review returns per run. Changes to approved behavior go to Intake. |
-| Open PR        | Open a ready-for-review PR with a summary of acceptance criteria, evidence, remaining limits, and the run folder. Failed PR CI returns to Verify/Fix; re-review the changed diff before updating the PR.                                                                                                                              |
-| Human Review   | Human feedback returns to Verify/Fix, with at most three repair attempts per feedback round. A change to approved behavior returns to Intake. The human merges; record the merged PR as completion.                                                                                                                                   |
+| Open PR        | Open a ready-for-review PR with product summary, acceptance criteria, evidence, remaining limits, and the run folder on the branch. Keep workflow-step summaries out of the description and comments; return failed CI to Verify/Fix and re-review before updating.                                                                   |
+| Human Review   | Human feedback returns to Verify/Fix or Intake within the limits above. Keep the run directory through review and rework. When approved for merge, use `$app-feature-merge`; the merged PR and squash SHA mark completion.                                                                                                            |
 
-Write one handoff for every transition, including a blocked stage that waits for
-human input. Number files `0001-intake-to-plan.json`, `0002-plan-to-verify-plan.json`,
-and so on. `runId` matches the run folder name. `artifacts` contains paths within
+### PR finalization artifacts
+
+Use `$app-feature-merge <run-id> <pr-number>` only after human review is ready
+to merge. Before cleanup, read the latest approved spec and plan and run
+`pnpm workflow:validate workflows/<run-id>`. The skill removes the entire run
+directory from the feature branch, then reviews the final code and durable
+product documentation diff against the approved intent. The final PR diff must
+not contain `workflows/<run-id>/` or unrelated files. Generate the squash
+message from that final diff and verified behavior, never from the PR
+description. Confirm checks and any required approval apply to the final PR
+head, then wait for explicit human authorization before merging with
+`gh pr merge --squash`.
+
+If review requests changes after cleanup and before merge, restore the run
+directory from the pre-cleanup branch commit, record the return using the
+workflow handoff rules, and resume the workflow. After merge, the PR and squash
+commit are the completion record. Do not add the per-feature run directory, a
+completion summary, or workflow-step summaries to `main`; retain shared
+workflow infrastructure such as the validator and handoff schema.
+
+Write one handoff for every workflow transition through Human Review, including
+a blocked stage that waits for human input. Final merge cleanup is not a
+workflow transition; do not add a post-merge completion handoff. Number files
+`0001-intake-to-plan.json`, `0002-plan-to-verify-plan.json`, and so on. `runId`
+matches the run folder name. `artifacts` contains paths within
 the run folder; `evidence` contains concise check results or links, and `findings`
 contains actionable failures. Record every failed Verify/Fix repair as a
 `verify-fix → verify-fix` handoff with `outcome: "retry"` and increment `attempt`
