@@ -11,18 +11,22 @@ export async function loadOwnedTags(query: string, signal: AbortSignal): Promise
   return payload.data.map(({ name }) => ({ value: name, label: name }));
 }
 
-export function TagFilter({ tag }: { tag?: string | string[] }) {
-  const tags = tag == null ? [] : Array.isArray(tag) ? tag : [tag];
-
+export function TagFilter({
+  value,
+  onValueChange,
+}: {
+  value: string[];
+  onValueChange: (nextTags: string[]) => void;
+}) {
   return (
     <ComboboxField
       name="tag"
-      label="Tag"
+      label="Tags"
       multiple
-      defaultValue={tags}
+      value={value}
+      onValueChange={onValueChange}
       loadOptions={loadOwnedTags}
       loadOnEmpty
-      helpText="Showing up to 25 tags. Type to narrow the list."
     />
   );
 }

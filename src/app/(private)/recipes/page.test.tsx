@@ -1,22 +1,15 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import type { ComponentProps } from "react";
 import { userEvent } from "vitest/browser";
 import { expect, test, vi } from "vitest";
 import RecipesPage from "./page";
 
-const { listMock } = vi.hoisted(() => ({
+const { listMock, replaceMock } = vi.hoisted(() => ({
   listMock: vi.fn(async () => []),
+  replaceMock: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/require-user", () => ({ requireUser: async () => ({ id: "user-1" }) }));
-vi.mock("next/form", () => ({
-  __esModule: true,
-  default: ({
-    action,
-    scroll: _scroll,
-    ...props
-  }: ComponentProps<"form"> & { scroll?: boolean }) => <form action={action} {...props} />,
-}));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: replaceMock }) }));
 vi.mock("@/lib/recipes", () => ({
   getRecipeService: async () => ({ list: listMock }),
 }));
@@ -34,9 +27,9 @@ test("ignores a saved dietary filter and preserves search and repeated tag value
     screen.getByRole("heading", { level: 1, name: "Your recipes" }).getAttribute("data-level"),
   ).toBe("2");
   expect(screen.getByRole("searchbox", { name: "Search title" })).toBeTruthy();
-  expect(screen.getByRole("combobox", { name: "Tag" })).toBeTruthy();
+  expect(screen.getByRole("combobox", { name: "Tags" })).toBeTruthy();
   expect(screen.queryByRole("textbox", { name: "Dietary flag" })).toBeNull();
-  expect(container.querySelector("form")!.getAttribute("action")).toBe("/recipes");
+  expect(container.querySelector("form")!.getAttribute("action")).toBeNull();
   const formData = new FormData(container.querySelector("form")!);
   expect(formData.get("q")).toBe("soup");
   expect(formData.getAll("tag")).toEqual(["quick", "vegetarian"]);
