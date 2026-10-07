@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "runId": "recipes-live-filters",
+  "sequence": 17,
+  "from": "open-pr",
+  "to": "human-review",
+  "outcome": "pass",
+  "artifacts": ["spec.md", "plan.md"],
+  "evidence": [
+    "PR 2 was updated with the reviewed focus-retention and stale-route fixes: https://github.com/gbabiars/recipe-vault/pull/2.",
+    "The PR body now includes the regression coverage and latest verification results."
+  ],
+  "findings": [],
+  "attempt": 1
+}
