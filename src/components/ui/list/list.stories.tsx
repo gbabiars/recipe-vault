@@ -18,14 +18,19 @@ export const WithIcons: Story = {
       <ListItem
         icon={BookOpen}
         title="Tomato soup"
-        description={
-          <>
-            A family recipe · <a href="#quick-meals">Quick meals</a>
-          </>
-        }
+        description="A family recipe"
         href="#tomato-soup"
       />
-      <ListItem icon={BookOpen} title="Roast vegetables" href="#roast-vegetables" />
+      <ListItem
+        icon={BookOpen}
+        title="Roast vegetables"
+        description={
+          <>
+            A weeknight favorite · <a href="#quick-meals">Quick meals</a>
+          </>
+        }
+        href="#roast-vegetables"
+      />
     </List>
   ),
   play: async ({ canvas }) => {
