@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "runId": "recipes-live-filters",
+  "sequence": 1,
+  "from": "intake",
+  "to": "plan",
+  "outcome": "pass",
+  "artifacts": ["spec.md"],
+  "evidence": ["Human approved spec revision 1 in chat."],
+  "findings": [],
+  "attempt": 1,
+  "approval": {
+    "artifact": "spec.md",
+    "revision": 1,
+    "decision": "approved",
+    "source": "human-chat",
+    "statement": "Approve",
+    "sha256": "cd3bfdea429d0fe7a28de6921a96ec2c1f81b39f17c580ee3496a2e428bb06f5"
+  }
+}
