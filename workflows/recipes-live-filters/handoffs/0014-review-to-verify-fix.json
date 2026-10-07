@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "runId": "recipes-live-filters",
+  "sequence": 14,
+  "from": "review",
+  "to": "verify-fix",
+  "outcome": "return",
+  "artifacts": ["spec.md", "plan.md"],
+  "evidence": [
+    "Fresh independent review of the focus fix found a race between overlapping router.replace updates.",
+    "Reviewer noted the tag-focus test should exercise tag selection and the resulting route-prop update."
+  ],
+  "findings": [
+    "An earlier self-initiated route update can arrive after a newer edit and be mistaken for external navigation, resetting controls and canceling the newer debounce. Track pending self-initiated updates and test overlapping replacements.",
+    "Strengthen tag focus regression coverage to select a tag and simulate the corresponding route-prop update."
+  ],
+  "attempt": 1
+}
