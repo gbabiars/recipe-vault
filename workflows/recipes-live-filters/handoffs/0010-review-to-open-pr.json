@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "runId": "recipes-live-filters",
+  "sequence": 10,
+  "from": "review",
+  "to": "open-pr",
+  "outcome": "pass",
+  "artifacts": ["spec.md", "plan.md"],
+  "evidence": [
+    "Fresh independent read-only review of the full diff and approved artifacts found no actionable issues.",
+    "Reviewer confirmed search debounce, immediate Enter/tag application, repeated tag query values, empty filters, and requested control changes.",
+    "Reviewer confirmed recipe loading remains in the existing server page and query path."
+  ],
+  "findings": [],
+  "attempt": 1
+}
