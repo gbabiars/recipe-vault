@@ -70,6 +70,28 @@ test("accepts an approved intake and plan followed by independent plan verificat
   );
 });
 
+test("accepts human-confirmed completion with PR evidence", () => {
+  const events: Handoff[] = [
+    intake,
+    plan,
+    handoff(3, "verify-plan", "implementation"),
+    handoff(4, "implementation", "verify-fix"),
+    handoff(5, "verify-fix", "review"),
+    handoff(6, "review", "open-pr"),
+    handoff(7, "open-pr", "human-review", { evidence: ["https://example.com/pr/123"] }),
+    handoff(8, "human-review", "complete", {
+      outcome: "complete",
+      evidence: ["Human confirmed PR #123 is merged"],
+    }),
+  ];
+
+  assert.deepEqual(validateHandoffs(events, runId), []);
+  events[7] = handoff(8, "human-review", "complete", { outcome: "complete" });
+  assert.ok(
+    validateHandoffs(events, runId).some((error) => error.includes("completion needs PR evidence")),
+  );
+});
+
 test("rejects missing approvals, skipped stages, and wrong outcome", () => {
   const errors = validateHandoffs(
     [handoff(1, "intake", "plan"), handoff(2, "review", "verify-fix", { outcome: "pass" })],

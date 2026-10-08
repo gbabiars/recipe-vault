@@ -12,6 +12,7 @@ coverage/
 test-results/
 *.tsbuildinfo
 src/mcp/*/.dist/
+/workflows/
 
 # Environment files: commit only the safe template below.
 .env*
