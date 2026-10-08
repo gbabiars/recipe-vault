@@ -51,7 +51,7 @@ const intake = handoff(1, "intake", "plan", {
     sha256: sha256(specContent),
   },
 });
-const plan = handoff(2, "plan", "verify-plan", {
+const plan = handoff(2, "plan", "implementation", {
   artifacts: ["plan.md"],
   approval: {
     artifact: "plan.md",
@@ -63,10 +63,12 @@ const plan = handoff(2, "plan", "verify-plan", {
   },
 });
 
-test("accepts an approved intake and plan followed by independent plan verification", () => {
-  assert.deepEqual(
-    validateHandoffs([intake, plan, handoff(3, "verify-plan", "implementation")], runId),
-    [],
+test("accepts implementation only after the spec and plan are approved", () => {
+  assert.deepEqual(validateHandoffs([intake, plan], runId), []);
+  assert.ok(
+    validateHandoffs([handoff(1, "intake", "plan", { artifacts: ["spec.md"] }), plan], runId).some(
+      (error) => error.includes("spec.md must be approved before implementation"),
+    ),
   );
 });
 
@@ -74,19 +76,18 @@ test("accepts human-confirmed completion with PR evidence", () => {
   const events: Handoff[] = [
     intake,
     plan,
-    handoff(3, "verify-plan", "implementation"),
-    handoff(4, "implementation", "verify-fix"),
-    handoff(5, "verify-fix", "review"),
-    handoff(6, "review", "open-pr"),
-    handoff(7, "open-pr", "human-review", { evidence: ["https://example.com/pr/123"] }),
-    handoff(8, "human-review", "complete", {
+    handoff(3, "implementation", "verify-fix"),
+    handoff(4, "verify-fix", "review"),
+    handoff(5, "review", "open-pr"),
+    handoff(6, "open-pr", "human-review", { evidence: ["https://example.com/pr/123"] }),
+    handoff(7, "human-review", "complete", {
       outcome: "complete",
       evidence: ["Human confirmed PR #123 is merged"],
     }),
   ];
 
   assert.deepEqual(validateHandoffs(events, runId), []);
-  events[7] = handoff(8, "human-review", "complete", { outcome: "complete" });
+  events[6] = handoff(7, "human-review", "complete", { outcome: "complete" });
   assert.ok(
     validateHandoffs(events, runId).some((error) => error.includes("completion needs PR evidence")),
   );
@@ -107,9 +108,8 @@ test("caps repeated Review returns at three", () => {
   const events: Handoff[] = [
     intake,
     plan,
-    handoff(3, "verify-plan", "implementation"),
-    handoff(4, "implementation", "verify-fix"),
-    handoff(5, "verify-fix", "review"),
+    handoff(3, "implementation", "verify-fix"),
+    handoff(4, "verify-fix", "review"),
   ];
   for (let index = 0; index < 4; index += 1) {
     events.push(
@@ -129,18 +129,17 @@ test("tracks Verify/Fix attempts across retry handoffs", () => {
   const events: Handoff[] = [
     intake,
     plan,
-    handoff(3, "verify-plan", "implementation"),
-    handoff(4, "implementation", "verify-fix"),
-    handoff(5, "verify-fix", "verify-fix", { outcome: "retry", findings: ["Check failed"] }),
-    handoff(6, "verify-fix", "verify-fix", {
+    handoff(3, "implementation", "verify-fix"),
+    handoff(4, "verify-fix", "verify-fix", { outcome: "retry", findings: ["Check failed"] }),
+    handoff(5, "verify-fix", "verify-fix", {
       outcome: "retry",
       findings: ["Check failed again"],
       attempt: 2,
     }),
-    handoff(7, "verify-fix", "review", { attempt: 3 }),
+    handoff(6, "verify-fix", "review", { attempt: 3 }),
   ];
   assert.deepEqual(validateHandoffs(events, runId), []);
-  events[6] = handoff(7, "verify-fix", "verify-fix", {
+  events[5] = handoff(6, "verify-fix", "verify-fix", {
     outcome: "retry",
     findings: ["Still failing"],
     attempt: 3,
@@ -162,7 +161,7 @@ test("checks artifact revision in a run directory", async () => {
       JSON.stringify(intake),
     );
     await writeFile(
-      path.join(runDir, "handoffs", "0002-plan-to-verify-plan.json"),
+      path.join(runDir, "handoffs", "0002-plan-to-implementation.json"),
       JSON.stringify(plan),
     );
     assert.deepEqual(await validateWorkflowDirectory(runDir), []);
@@ -175,7 +174,7 @@ test("checks artifact revision in a run directory", async () => {
     await writeFile(path.join(runDir, "plan.md"), planContent);
     await writeFile(
       path.join(runDir, "handoffs", "0003-wrong-name.json"),
-      JSON.stringify(handoff(3, "verify-plan", "implementation", { artifacts: ["missing.md"] })),
+      JSON.stringify(handoff(3, "implementation", "verify-fix", { artifacts: ["missing.md"] })),
     );
     const artifactErrors = await validateWorkflowDirectory(runDir);
     assert.ok(artifactErrors.some((error) => error.includes("expected filename")));
@@ -200,7 +199,10 @@ test("CLI validates a workflow directory when run through tsx", async () => {
     await writeFile(path.join(runDir, "spec.md"), specContent);
     await writeFile(path.join(runDir, "plan.md"), planContent);
     await writeFile(path.join(handoffDir, "0001-intake-to-plan.json"), JSON.stringify(intake));
-    await writeFile(path.join(handoffDir, "0002-plan-to-verify-plan.json"), JSON.stringify(plan));
+    await writeFile(
+      path.join(handoffDir, "0002-plan-to-implementation.json"),
+      JSON.stringify(plan),
+    );
 
     const result = spawnSync(
       process.execPath,
@@ -222,7 +224,7 @@ test("CLI validates a workflow directory when run through tsx", async () => {
 
 test("rejects artifact paths outside the run folder", () => {
   const errors = validateHandoffs(
-    [intake, handoff(2, "plan", "verify-plan", { artifacts: ["../secret.txt"] })],
+    [intake, handoff(2, "plan", "implementation", { artifacts: ["../secret.txt"] })],
     runId,
   );
   assert.ok(errors.some((error) => error.includes("Invalid string")));
