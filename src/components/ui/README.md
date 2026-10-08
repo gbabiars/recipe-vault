@@ -71,10 +71,11 @@ to CSS tokens.
   secondary actions or destinations belong under one trigger. See
   [Dropdown menu](dropdown-menu/dropdown-menu.mdx).
 - **Card and list:** Use `List` and `ListItem` for simple titled rows. `Card` can
-  be a list item when it needs richer content; arrange its title, summary,
+  contain a list when it needs a grouped surface; arrange its title, summary,
   metadata, and chips with `Stack` and `Inline`. See [list](list/list.mdx),
   [card](card/card.mdx), and the existing
-  [recipe list card story](../../features/recipes/recipe-list-card.stories.tsx).
+  [recipe list](../../features/recipes/recipe-list.stories.tsx) and
+  [recipe list item](../../features/recipes/recipe-list-item.stories.tsx) stories.
 
 ## Open questions
 

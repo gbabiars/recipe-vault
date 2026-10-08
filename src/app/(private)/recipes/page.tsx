@@ -1,4 +1,3 @@
-import styles from "./page.module.css";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout
 import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
 import { RecipeFilters } from "@/features/recipes/recipe-filters";
-import { RecipeListCard } from "@/features/recipes/recipe-list-card";
+import { RecipeList } from "@/features/recipes/recipe-list";
 import { RecipesHeaderActions } from "@/features/recipes/recipes-header-actions";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
@@ -77,11 +76,7 @@ async function RecipeResults({ q, tags }: { q?: string; tags: string[] }) {
           </Stack>
         </Card>
       ) : (
-        <Stack as="ul" gap="200" className={styles.recipeList}>
-          {recipes.map((recipe) => (
-            <RecipeListCard key={recipe.id} recipe={recipe} />
-          ))}
-        </Stack>
+        <RecipeList recipes={recipes} />
       )}
     </>
   );
