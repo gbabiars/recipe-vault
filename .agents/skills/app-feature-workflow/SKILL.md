@@ -1,6 +1,6 @@
 ---
 name: app-feature-workflow
-description: Coordinate a Recipe Vault app feature from approved specification through plan verification, implementation, review, and PR.
+description: Coordinate a Recipe Vault app feature from approved specification and plan through implementation, review, and PR.
 metadata:
   short-description: Run an app feature workflow
 ---
@@ -20,28 +20,25 @@ for bounded work, not one agent per stage.
    or ask for the missing issue text. Never overwrite unrelated working changes.
 2. At Intake, research and inspect the relevant code, then use `$grilling` to
    interview the human. Produce a readable spec and acceptance criteria. Format
-   the document before requesting approval. Stop for explicit approval before
-   recording the Intake handoff.
+   the document, print its complete contents in chat when requesting approval,
+   and stop for explicit approval before recording the Intake handoff.
 3. Produce an implementation plan in small steps. Show realistic consuming
-   code for every new API or component shape. Format the document before
-   requesting approval. Stop for explicit approval before recording the Plan
-   handoff.
-4. Give a fresh, read-only reviewer the original request, approved artifacts,
-   and repo context for Verify Plan. If it finds issues, revise the plan and
-   seek fresh human approval. Do not pass the planning discussion to this
-   reviewer.
-5. Implement bounded slices and run focused verification. Review the full diff
+   code for every new API or component shape. Format the document, print its
+   complete contents in chat when requesting approval, and stop for explicit
+   approval before recording the Plan handoff. Do not modify app code until
+   both the current spec and plan have explicit human approval.
+4. Implement bounded slices and run focused verification. Review the full diff
    independently, including functional and accessibility checks when relevant.
    Route findings, CI failures, and human feedback through Verify/Fix under the
    limits in the workflow guide. Reopen Intake if approved behavior changes.
-6. Validate JSON handoffs before advancing. After Review passes, open a
+5. Validate JSON handoffs before advancing. After Review passes, open a
    ready-for-review PR with a product summary, acceptance criteria, verification
    evidence, and remaining limits. Keep run artifacts local; do not include them
    in the PR.
-7. Route human review feedback or CI failures through Verify/Fix or Intake as
+6. Route human review feedback or CI failures through Verify/Fix or Intake as
    appropriate. At Human Review, present the PR and ask the human to approve
    merging. Only an explicit approval allows work to advance to Complete.
-8. At Complete, merge with `gh pr merge --squash`, using a squash commit title
+7. At Complete, merge with `gh pr merge --squash`, using a squash commit title
    and body that follow the repository's commit conventions. Confirm the merge
    succeeded before cleanup. Then remove this feature's run directory under
    `workflows/`. If the current checkout is on the feature branch, switch to

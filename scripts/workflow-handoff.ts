@@ -6,7 +6,6 @@ import { z } from "zod";
 const stageSchema = z.enum([
   "intake",
   "plan",
-  "verify-plan",
   "implementation",
   "verify-fix",
   "review",
@@ -47,8 +46,7 @@ type Stage = z.infer<typeof stageSchema>;
 
 const allowedTransitions: Record<Stage, readonly Stage[]> = {
   intake: ["plan"],
-  plan: ["verify-plan"],
-  "verify-plan": ["implementation", "plan"],
+  plan: ["implementation"],
   implementation: ["verify-fix", "plan", "intake"],
   "verify-fix": ["review", "plan", "intake"],
   review: ["open-pr", "verify-fix", "plan", "intake"],
@@ -58,7 +56,6 @@ const allowedTransitions: Record<Stage, readonly Stage[]> = {
 };
 
 const returnTransitions = new Set([
-  "verify-plan:plan",
   "implementation:plan",
   "implementation:intake",
   "verify-fix:plan",
@@ -137,7 +134,7 @@ export function validateHandoffs(handoffs: readonly unknown[], runId: string): s
     const approvalArtifact =
       handoff.from === "intake" && handoff.to === "plan"
         ? "spec.md"
-        : handoff.from === "plan" && handoff.to === "verify-plan"
+        : handoff.from === "plan" && handoff.to === "implementation"
           ? "plan.md"
           : undefined;
     if (
@@ -156,6 +153,13 @@ export function validateHandoffs(handoffs: readonly unknown[], runId: string): s
     }
     if (approvalArtifact && handoff.approval)
       approvedRevision[approvalArtifact] = handoff.approval.revision;
+    if (
+      handoff.from === "plan" &&
+      handoff.to === "implementation" &&
+      approvedRevision["spec.md"] === 0
+    ) {
+      errors.push(`Handoff ${index + 1}: spec.md must be approved before implementation`);
+    }
     if (!approvalArtifact && handoff.approval)
       errors.push(`Handoff ${index + 1}: approval is only valid at a human gate`);
 
