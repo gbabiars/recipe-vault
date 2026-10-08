@@ -11,9 +11,10 @@ Invoke `$app-feature-workflow` for an application feature. Its local run artifac
 live in the ignored `workflows/<linear-id>-<prompt-summary>/` directory, or
 `workflows/<prompt-summary>/` without a Linear issue. Lowercase and hyphenate the
 name. Use the Linear issue ID when available; summarize the requested behavior
-in the slug. Add a numeric suffix if the name already exists. Use
-`feat/<same-name>` for the branch. Work in the current checkout; do not discard
-an unrelated dirty tree to switch branches.
+in the slug. Add a numeric suffix if the name already exists. Work in the
+current checkout and existing branch by default. Create or switch to a branch
+or worktree only when the user explicitly requests one. Do not discard an
+unrelated dirty tree to switch branches.
 
 The run folder contains `spec.md`, `plan.md`, and numbered JSON files under
 `handoffs/`. The spec and plan each carry a revision number. Increment the

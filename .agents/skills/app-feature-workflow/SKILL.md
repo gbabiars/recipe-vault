@@ -13,8 +13,9 @@ contract, run directory, handoff format, roles, retry limits, and checks. Keep
 the stage mechanics here; use `workflow_implementer` and `workflow_reviewer`
 for bounded work, not one agent per stage.
 
-1. Create or resume the feature branch and local run folder under the ignored
-   `workflows/` directory. If a Linear
+1. Use the current checkout and existing branch by default. Create or switch
+   to a branch or worktree only when the human explicitly requests one. Create
+   the local run folder under the ignored `workflows/` directory. If a Linear
    issue is supplied, read it when accessible; otherwise use supplied content
    or ask for the missing issue text. Never overwrite unrelated working changes.
 2. At Intake, research and inspect the relevant code, then use `$grilling` to
