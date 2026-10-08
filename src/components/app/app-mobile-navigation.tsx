@@ -2,11 +2,12 @@
 
 import { Dialog } from "@base-ui/react/dialog";
 import { Menu, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AppNavigation } from "./app-navigation";
 import { IconButton } from "../ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Inline } from "@/components/ui/inline";
+import { useBreakpoint } from "../ui/viewport";
 import styles from "./app-sidebar.module.css";
 
 type AppMobileNavigationProps = {
@@ -22,16 +23,26 @@ export function AppMobileNavigation({
   userImageUrl,
   onSignOut,
 }: AppMobileNavigationProps) {
-  const [open, setOpen] = useState(false);
+  const isMdUp = useBreakpoint("md");
 
-  useEffect(() => {
-    const desktop = window.matchMedia("(min-width: 768px)");
-    const closeOnDesktop = () => {
-      if (desktop.matches) setOpen(false);
-    };
-    desktop.addEventListener("change", closeOnDesktop);
-    return () => desktop.removeEventListener("change", closeOnDesktop);
-  }, []);
+  return (
+    <MobileNavigationContent
+      key={isMdUp ? "md-up" : "below-md"}
+      pathname={pathname}
+      userName={userName}
+      userImageUrl={userImageUrl}
+      onSignOut={onSignOut}
+    />
+  );
+}
+
+function MobileNavigationContent({
+  pathname,
+  userName,
+  userImageUrl,
+  onSignOut,
+}: AppMobileNavigationProps) {
+  const [open, setOpen] = useState(false);
 
   return (
     <div className={styles.mobileNavigation}>
