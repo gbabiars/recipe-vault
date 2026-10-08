@@ -29,7 +29,9 @@ async function renderPage(searchParams: SearchParams = {}) {
 }
 
 function listedNames() {
-  return screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent);
+  return Array.from(screen.getByRole("list", { name: "Tags" }).querySelectorAll("li a")).map(
+    (link) => link.textContent,
+  );
 }
 
 function cursorFromLink(name: "Previous" | "Next", direction: "before" | "after") {
@@ -60,20 +62,26 @@ test("shows exact tag counts and optional descriptions with matching recipe filt
   await renderPage();
 
   expect(screen.getByRole("heading", { level: 1, name: "Tags" })).toBeInTheDocument();
-  expect(screen.getByRole("heading", { level: 2, name: "page tag 001" })).toBeInTheDocument();
+  const tagsList = screen.getByRole("list", { name: "Tags" });
+  const listCard = tagsList.parentElement?.parentElement;
+  expect(listCard).toHaveAttribute("data-padding", "none");
+  expect(document.querySelectorAll('[data-padding="none"]')).toHaveLength(1);
   expect(screen.getByRole("link", { name: "page tag 001" })).toHaveAttribute(
     "href",
     "/recipes?tag=page%20tag%20001",
   );
-  expect(screen.getByRole("link", { name: "0 recipes" })).toHaveAttribute(
-    "href",
-    "/recipes?tag=page%20tag%20001",
+  expect(screen.getAllByRole("listitem")[0]?.querySelector("span")?.textContent?.trim()).toBe(
+    "0 recipes",
   );
-  expect(screen.getByRole("link", { name: "1 recipe" })).toHaveAttribute(
-    "href",
-    "/recipes?tag=page%20tag%20002",
-  );
-  expect(screen.getByText("Easy dinners for busy evenings.")).toBeInTheDocument();
+  expect(
+    screen
+      .getAllByRole("listitem")[1]
+      ?.querySelector("span")
+      ?.textContent?.replace(/\s+/g, " ")
+      .trim(),
+  ).toBe("Easy dinners for busy evenings. · 1 recipe");
+  expect(screen.queryByRole("link", { name: "0 recipes" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "1 recipe" })).not.toBeInTheDocument();
   expect(screen.getAllByRole("listitem")).toHaveLength(2);
   expect(listMock).toHaveBeenCalledWith("owner-ada", {
     usage: "all",

@@ -5,9 +5,10 @@ Forms convert `FormData` to the canonical validation wire format; pages stay in
 `src/app/(private)` and compose these feature components. The route group's layout
 owns the shared private shell; its navigation lives in `src/components/app`.
 
-`TagCatalog` renders the private tag inventory as read-only cards. The `/tags`
-route supplies owner-scoped results from `TagService`, including unused tags,
-optional descriptions, exact recipe counts, and validated previous/next cursors.
+`TagCatalog` renders the private tag inventory as a grouped list inside one
+card. Tag names link to the matching recipe filter; optional descriptions,
+recipe counts, and validated previous/next cursors remain visible. The `/tags`
+route supplies owner-scoped results from `TagService`, including unused tags.
 
 Ingredient forms collect one optional free-text amount alongside the ingredient
 name and notes. Edit forms retain free-text amounts such as fractions, ranges,

@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
 import { Inline } from "@/components/ui/inline";
+import { List, ListItem } from "@/components/ui/list";
 import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
 import type { TagInventoryItem } from "@/lib/db/tag-repository";
@@ -42,34 +42,28 @@ export function TagCatalog({ tags, previousHref, nextHref, error = false }: TagC
 
   return (
     <Stack gap="200">
-      <Stack as="ul" gap="200" style={{ listStyle: "none", margin: 0, padding: 0 }}>
-        {tags.map((tag) => {
-          const recipeHref = `/recipes?tag=${encodeURIComponent(tag.name)}`;
-          return (
-            <Card as="li" key={tag.id} label={tag.name} href={recipeHref}>
-              <Stack gap="150">
-                <Stack gap="050">
-                  <Heading as="h2" level={5}>
-                    {tag.name}
-                  </Heading>
-                  {tag.description && (
-                    <Text as="p" size="large">
-                      {tag.description}
-                    </Text>
-                  )}
-                </Stack>
-                <Inline gap="100">
-                  <Text size="large" appearance="secondary">
-                    <Link href={recipeHref}>
+      <Card padding="none">
+        <Stack paddingBlock="100" paddingInline="0">
+          <List aria-label="Tags">
+            {tags.map((tag) => {
+              const recipeHref = `/recipes?tag=${encodeURIComponent(tag.name)}`;
+              return (
+                <ListItem
+                  key={tag.id}
+                  title={tag.name}
+                  href={recipeHref}
+                  description={
+                    <>
+                      {tag.description && `${tag.description} · `}
                       {tag.usageCount} {tag.usageCount === 1 ? "recipe" : "recipes"}
-                    </Link>
-                  </Text>
-                </Inline>
-              </Stack>
-            </Card>
-          );
-        })}
-      </Stack>
+                    </>
+                  }
+                />
+              );
+            })}
+          </List>
+        </Stack>
+      </Card>
       {(previousHref || nextHref) && (
         <nav aria-label="Tag pages">
           <Inline gap="100">
