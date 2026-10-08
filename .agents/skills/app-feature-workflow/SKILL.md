@@ -39,9 +39,16 @@ for bounded work, not one agent per stage.
    evidence, and remaining limits. Keep run artifacts local; do not include them
    in the PR.
 7. Route human review feedback or CI failures through Verify/Fix or Intake as
-   appropriate. The human handles PR completion. After the human confirms the
-   PR is merged, record the final `human-review → complete` handoff with the
-   confirmation and PR evidence.
+   appropriate. At Human Review, present the PR and ask the human to approve
+   merging. Only an explicit approval allows work to advance to Complete.
+8. At Complete, merge with `gh pr merge --squash`, using a squash commit title
+   and body that follow the repository's commit conventions. Confirm the merge
+   succeeded before cleanup. Then remove this feature's run directory under
+   `workflows/`. If the current checkout is on the feature branch, switch to
+   `main` and delete that feature branch locally. Preserve unrelated workflow
+   directories and local branches. Record the terminal `human-review →
+   complete` handoff with the human's approval, merge confirmation, PR
+   evidence, and cleanup result.
 
 At the end of each stage, validate its handoff and finish the relevant checks
 before advancing. Keep handoffs in the local ignored run folder.
