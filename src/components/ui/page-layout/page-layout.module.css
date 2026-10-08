@@ -7,9 +7,3 @@
 .content {
   min-width: 0;
 }
-
-@media (--viewport-below-sm) {
-  .headingRow[data-wrap="false"] {
-    flex-direction: column;
-  }
-}

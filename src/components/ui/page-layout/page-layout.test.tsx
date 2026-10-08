@@ -47,14 +47,18 @@ test("renders the optional overline, description, and actions", () => {
   expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
 
   const header = heading.closest("header");
-  const headingRow = heading.parentElement?.parentElement;
+  const headingRow = heading.parentElement;
   expect(
     header?.firstElementChild?.contains(screen.getByRole("link", { name: "All recipes" })),
   ).toBe(true);
-  expect(header?.lastElementChild).toBe(headingRow);
+  expect(header?.children[1]).toBe(headingRow);
   expect(
     headingRow?.lastElementChild?.contains(screen.getByRole("button", { name: "Share" })),
   ).toBe(true);
+  expect(header?.children[2]).toBe(screen.getByText("Fresh basil soup"));
+  expect(headingRow?.contains(screen.getByText("Fresh basil soup"))).toBe(false);
+  expect(getComputedStyle(headingRow!).flexDirection).toBe("row");
+  expect(getComputedStyle(headingRow!).flexWrap).toBe("nowrap");
   expect(getComputedStyle(headingRow!).alignItems).toBe("flex-start");
 });
 
