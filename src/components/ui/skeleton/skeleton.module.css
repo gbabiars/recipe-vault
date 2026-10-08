@@ -1,0 +1,60 @@
+.skeleton {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: var(--skeleton-radius, var(--radius-050));
+  background-color: var(--color-background-skeleton);
+  vertical-align: middle;
+  animation: skeleton-pulse 2.4s ease-in-out infinite;
+}
+
+.skeleton[data-radius="0"] {
+  --skeleton-radius: var(--radius-0);
+}
+.skeleton[data-radius="025"] {
+  --skeleton-radius: var(--radius-025);
+}
+.skeleton[data-radius="050"] {
+  --skeleton-radius: var(--radius-050);
+}
+.skeleton[data-radius="075"] {
+  --skeleton-radius: var(--radius-075);
+}
+.skeleton[data-radius="100"] {
+  --skeleton-radius: var(--radius-100);
+}
+.skeleton[data-radius="150"] {
+  --skeleton-radius: var(--radius-150);
+}
+.skeleton[data-radius="200"] {
+  --skeleton-radius: var(--radius-200);
+}
+.skeleton[data-radius="300"] {
+  --skeleton-radius: var(--radius-300);
+}
+.skeleton[data-radius="full"] {
+  --skeleton-radius: var(--radius-full);
+}
+
+.line {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    background-color: var(--color-background-skeleton);
+  }
+  50% {
+    background-color: var(--color-background-surface-subtle);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

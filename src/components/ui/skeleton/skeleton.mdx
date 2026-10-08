@@ -1,0 +1,39 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./skeleton.stories";
+
+<Meta of={Stories} />
+
+# Skeleton
+
+## Purpose and composition
+
+Use `Skeleton` for a basic placeholder with configurable dimensions and a radius
+token. `SkeletonText`, `SkeletonHeading`, and `SkeletonAvatar` match the sizing
+of their corresponding UI components.
+
+```tsx
+<Skeleton width="12rem" height="2rem" radius="150" />
+<SkeletonText size="large" width="70%" />
+<SkeletonHeading level={2} width="60%" />
+<SkeletonAvatar size="small" />
+```
+
+Text and Heading wrappers use a transparent outer box sized to the typographic
+line-height, with vertical padding around an inner skeleton bar sized to the
+font-size. The heading wrapper renders as a div and does not create a document
+heading. Avatar placeholders use the 24, 32, and 40 px sizes and a full radius.
+
+## Motion and accessibility
+
+Skeletons pulse between the skeleton and subtle surface colors on a slow cycle.
+The pulse stops when reduced motion is
+preferred. Skeletons are hidden from assistive technology; announce loading
+state from the containing region when needed.
+
+## Stories
+
+<Canvas of={Stories.Primitive} />
+
+<Canvas of={Stories.TextAndHeading} />
+
+<Canvas of={Stories.AvatarSizes} />
