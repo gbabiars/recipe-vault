@@ -34,18 +34,16 @@ export function PageHeader({
     <Stack as="header" gap="050" className={className} {...props}>
       {overline && <div>{overline}</div>}
       <Inline gap="200" align="start" justify="between" wrap={false} className={styles.headingRow}>
-        <Stack gap="050" style={{ minWidth: 0 }}>
-          <Heading as="h1" level={2}>
-            {title}
-          </Heading>
-          {description && (
-            <Text as="p" size="medium">
-              {description}
-            </Text>
-          )}
-        </Stack>
+        <Heading as="h1" level={2}>
+          {title}
+        </Heading>
         {actions && <Inline gap="100">{actions}</Inline>}
       </Inline>
+      {description && (
+        <Text as="p" size="medium">
+          {description}
+        </Text>
+      )}
     </Stack>
   );
 }
