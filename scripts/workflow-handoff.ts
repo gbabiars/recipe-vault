@@ -164,7 +164,7 @@ export function validateHandoffs(handoffs: readonly unknown[], runId: string): s
       if (reviewReturns > 3) errors.push(`Handoff ${index + 1}: Review has exceeded three returns`);
     }
     if (handoff.to === "complete" && handoff.evidence.length === 0)
-      errors.push(`Handoff ${index + 1}: merge completion needs PR evidence`);
+      errors.push(`Handoff ${index + 1}: completion needs PR evidence`);
     if (
       handoff.from === "open-pr" &&
       handoff.to === "human-review" &&
