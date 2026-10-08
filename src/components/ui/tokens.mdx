@@ -16,6 +16,23 @@ widths strictly below 640px and `--viewport-below-md` for widths strictly below
 768px. `GridItem`'s `sm` and `md` props use container widths, not these viewport
 breakpoints.
 
+Client Components can use `useBreakpoint` to conditionally render against the
+same minimum-width breakpoints. Its server snapshot assumes the smallest
+viewport, so each check starts as `false` and updates to the browser width after
+hydration. Negate a check for a below-breakpoint condition.
+
+```tsx
+"use client";
+
+import { useBreakpoint } from "@/components/ui/viewport";
+
+function Navigation() {
+  const isMdUp = useBreakpoint("md");
+
+  return isMdUp ? <DesktopNavigation /> : <MobileNavigation />;
+}
+```
+
 <table>
   <thead>
     <tr>
