@@ -44,6 +44,7 @@ test("renders one wrapping horizontal div with default spacing and alignment", (
   expect(inline.children).toHaveLength(2);
   expect(inline.classList.contains(styles.inline)).toBe(true);
   expect(inline.getAttribute("data-gap")).toBe("0");
+  expect(inline.getAttribute("data-padding")).toBeNull();
   expect(inline.getAttribute("data-row-gap")).toBeNull();
   expect(inline.getAttribute("data-padding-inline")).toBeNull();
   expect(inline.getAttribute("data-padding-block")).toBeNull();
@@ -97,6 +98,30 @@ test.each(paddings)("maps paddingInline %s to both inline sides", (padding: Inli
   expect(inline.getAttribute("data-padding-inline")).toBe(padding);
   expect(computed.paddingInlineStart).toBe(pixels(rem));
   expect(computed.paddingInlineEnd).toBe(pixels(rem));
+});
+
+test.each(paddings)("maps padding %s to all sides", (padding: InlinePadding, rem) => {
+  render(<Inline padding={padding} data-testid="inline" />);
+
+  const inline = screen.getByTestId("inline");
+  const computed = getComputedStyle(inline);
+
+  expect(inline.getAttribute("data-padding")).toBe(padding);
+  expect(computed.paddingInlineStart).toBe(pixels(rem));
+  expect(computed.paddingInlineEnd).toBe(pixels(rem));
+  expect(computed.paddingBlockStart).toBe(pixels(rem));
+  expect(computed.paddingBlockEnd).toBe(pixels(rem));
+});
+
+test("axis and side padding override padding", () => {
+  render(<Inline padding="400" paddingInline="200" paddingBlockEnd="100" data-testid="inline" />);
+
+  const computed = getComputedStyle(screen.getByTestId("inline"));
+
+  expect(computed.paddingInlineStart).toBe(pixels(1));
+  expect(computed.paddingInlineEnd).toBe(pixels(1));
+  expect(computed.paddingBlockStart).toBe(pixels(2));
+  expect(computed.paddingBlockEnd).toBe(pixels(0.5));
 });
 
 test.each(paddings)("maps paddingBlock %s to both block sides", (padding: InlinePadding, rem) => {

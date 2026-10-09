@@ -15,6 +15,7 @@ type StackElement = keyof React.JSX.IntrinsicElements;
 export type StackProps<T extends StackElement = "div"> = {
   as?: T;
   gap?: StackGap;
+  padding?: StackPadding;
   paddingInline?: StackPadding;
   paddingBlock?: StackPadding;
   paddingInlineStart?: StackPadding;
@@ -27,6 +28,7 @@ export type StackProps<T extends StackElement = "div"> = {
   React.ComponentPropsWithoutRef<T>,
   | "as"
   | "gap"
+  | "padding"
   | "paddingInline"
   | "paddingBlock"
   | "paddingInlineStart"
@@ -46,6 +48,7 @@ const StackImpl = <T extends StackElement = "div">(
     as,
     className,
     gap = "0",
+    padding,
     paddingInline,
     paddingBlock,
     paddingInlineStart,
@@ -65,6 +68,7 @@ const StackImpl = <T extends StackElement = "div">(
     ref,
     className: cn(layoutStyles.layout, styles.stack, className),
     "data-gap": gap,
+    "data-padding": padding,
     "data-padding-inline": paddingInline,
     "data-padding-block": paddingBlock,
     "data-padding-inline-start": paddingInlineStart,

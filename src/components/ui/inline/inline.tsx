@@ -16,6 +16,7 @@ export type InlineProps<T extends InlineElement = "div"> = {
   as?: T;
   gap?: InlineGap;
   rowGap?: InlineGap;
+  padding?: InlinePadding;
   paddingInline?: InlinePadding;
   paddingBlock?: InlinePadding;
   paddingInlineStart?: InlinePadding;
@@ -30,6 +31,7 @@ export type InlineProps<T extends InlineElement = "div"> = {
   | "as"
   | "gap"
   | "rowGap"
+  | "padding"
   | "paddingInline"
   | "paddingBlock"
   | "paddingInlineStart"
@@ -51,6 +53,7 @@ const InlineImpl = <T extends InlineElement = "div">(
     className,
     gap = "0",
     rowGap,
+    padding,
     paddingInline,
     paddingBlock,
     paddingInlineStart,
@@ -72,6 +75,7 @@ const InlineImpl = <T extends InlineElement = "div">(
     className: cn(layoutStyles.layout, styles.inline, className),
     "data-gap": gap,
     "data-row-gap": rowGap,
+    "data-padding": padding,
     "data-padding-inline": paddingInline,
     "data-padding-block": paddingBlock,
     "data-padding-inline-start": paddingInlineStart,
