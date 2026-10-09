@@ -14,11 +14,10 @@ const recipe: RecipeSummary = {
   updatedAt: "2026-09-15T12:00:00.000Z",
 };
 
-test("composes a padded card with a linked recipe list", () => {
+test("renders a linked recipe list", () => {
   render(<RecipeList recipes={[recipe]} />);
 
   const recipeList = screen.getByRole("list", { name: "Recipes" });
-  expect(recipeList.closest('[data-padding="none"]')).toBeTruthy();
   const item = within(recipeList).getByRole("listitem");
   expect(within(item).getByRole("link", { name: "Tomato soup" }).getAttribute("href")).toBe(
     "/recipes/tomato-soup",

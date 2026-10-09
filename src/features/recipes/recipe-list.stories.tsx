@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { Card } from "@/components/ui/card";
+import { Stack } from "@/components/ui/stack";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
 
 import { RecipeList } from "./recipe-list";
@@ -40,6 +42,13 @@ const meta = {
   title: "App/Recipes/RecipeList",
   component: RecipeList,
   args: { recipes },
+  render: (args) => (
+    <Card padding="none">
+      <Stack gap="200" paddingBlock="200" paddingInline="200">
+        <RecipeList {...args} />
+      </Stack>
+    </Card>
+  ),
 } satisfies Meta<typeof RecipeList>;
 
 export default meta;

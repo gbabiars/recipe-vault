@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/ui/card";
 import { TextInput } from "@/components/ui/text-input";
 import { TagFilter } from "./tag-filter";
 import styles from "./recipe-filters.module.css";
@@ -101,23 +100,22 @@ export function RecipeFilters(props: { q?: string; tag?: string | string[] }) {
 
   return (
     <form
+      className={styles.form}
       onKeyDown={handleKeyDown}
       onSubmit={(event) => {
         event.preventDefault();
       }}
     >
-      <Card variant="subtle" className={styles.card}>
-        <div className={styles.fields}>
-          <TextInput
-            name="q"
-            label="Search title"
-            type="search"
-            value={searchText}
-            onValueChange={handleSearchChange}
-          />
-          <TagFilter value={selectedTags} onValueChange={handleTagChange} />
-        </div>
-      </Card>
+      <div className={styles.fields}>
+        <TextInput
+          name="q"
+          label="Search title"
+          type="search"
+          value={searchText}
+          onValueChange={handleSearchChange}
+        />
+        <TagFilter value={selectedTags} onValueChange={handleTagChange} />
+      </div>
     </form>
   );
 }
