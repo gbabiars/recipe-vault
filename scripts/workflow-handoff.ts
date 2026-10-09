@@ -182,9 +182,17 @@ export function validateHandoffs(handoffs: readonly unknown[], runId: string): s
   return errors;
 }
 
-export async function validateWorkflowDirectory(runDir: string): Promise<string[]> {
-  const runId = path.basename(runDir);
+export async function validateWorkflowDirectory(
+  runDir: string,
+  workflowsRoot = path.resolve("workflows"),
+): Promise<string[]> {
+  const realWorkflowsRoot = await realpath(workflowsRoot);
   const realRunDir = await realpath(runDir);
+  if (path.dirname(realRunDir) !== realWorkflowsRoot) {
+    throw new Error("Workflow run directory must be a direct child of workflows/.");
+  }
+  const runId = path.basename(realRunDir);
+  runDir = realRunDir;
   const handoffDir = path.join(runDir, "handoffs");
   const files = (await readdir(handoffDir)).filter((file) => file.endsWith(".json")).sort();
   const errors: string[] = [];

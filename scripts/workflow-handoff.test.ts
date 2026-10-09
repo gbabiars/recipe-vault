@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
+import { createRequire } from "node:module";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -15,6 +16,7 @@ import {
 } from "./workflow-handoff";
 
 const runId = "rv-123-import-recipes";
+const require = createRequire(import.meta.url);
 const specContent = "# Spec\n\nRevision: 1\n";
 const planContent = "# Plan\n\nRevision: 1\n";
 const sha256 = (content: string) => createHash("sha256").update(content).digest("hex");
@@ -164,10 +166,10 @@ test("checks artifact revision in a run directory", async () => {
       path.join(runDir, "handoffs", "0002-plan-to-implementation.json"),
       JSON.stringify(plan),
     );
-    assert.deepEqual(await validateWorkflowDirectory(runDir), []);
+    assert.deepEqual(await validateWorkflowDirectory(runDir, root), []);
     await writeFile(path.join(runDir, "plan.md"), "# Changed plan\n\nRevision: 1\n");
     assert.ok(
-      (await validateWorkflowDirectory(runDir)).some((error) =>
+      (await validateWorkflowDirectory(runDir, root)).some((error) =>
         error.includes("content does not match"),
       ),
     );
@@ -176,12 +178,12 @@ test("checks artifact revision in a run directory", async () => {
       path.join(runDir, "handoffs", "0003-wrong-name.json"),
       JSON.stringify(handoff(3, "implementation", "verify-fix", { artifacts: ["missing.md"] })),
     );
-    const artifactErrors = await validateWorkflowDirectory(runDir);
+    const artifactErrors = await validateWorkflowDirectory(runDir, root);
     assert.ok(artifactErrors.some((error) => error.includes("expected filename")));
     assert.ok(artifactErrors.some((error) => error.includes("referenced artifact is missing")));
     await writeFile(path.join(runDir, "plan.md"), "# Plan\n\nRevision: 2\n");
     assert.ok(
-      (await validateWorkflowDirectory(runDir)).some((error) =>
+      (await validateWorkflowDirectory(runDir, root)).some((error) =>
         error.includes("revision does not match"),
       ),
     );
@@ -192,7 +194,8 @@ test("checks artifact revision in a run directory", async () => {
 
 test("CLI validates a workflow directory when run through tsx", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "recipe-workflow-cli-"));
-  const runDir = path.join(root, runId);
+  const workflowsRoot = path.join(root, "workflows");
+  const runDir = path.join(workflowsRoot, runId);
   const handoffDir = path.join(runDir, "handoffs");
   try {
     await mkdir(handoffDir, { recursive: true });
@@ -208,15 +211,27 @@ test("CLI validates a workflow directory when run through tsx", async () => {
       process.execPath,
       [
         "--import",
-        "tsx",
+        require.resolve("tsx"),
         fileURLToPath(new URL("./validate-workflow.ts", import.meta.url)),
         runDir,
       ],
-      { cwd: process.cwd(), encoding: "utf8" },
+      { cwd: root, encoding: "utf8" },
     );
 
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /Valid workflow handoffs/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("rejects workflow directories outside the workflows root", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "recipe-workflow-outside-"));
+  try {
+    await assert.rejects(
+      validateWorkflowDirectory(root, path.resolve("workflows")),
+      /direct child of workflows/,
+    );
   } finally {
     await rm(root, { recursive: true, force: true });
   }

@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
-import { execFileSync } from "node:child_process";
+import { readFileSync, realpathSync } from "node:fs";
+import path from "node:path";
 
 const messageFile = process.argv[2];
 
@@ -8,10 +8,26 @@ if (!messageFile) {
   process.exit(1);
 }
 
-const message = execFileSync("git", ["stripspace", "--strip-comments"], {
-  input: readFileSync(messageFile, "utf8"),
-  encoding: "utf8",
-});
+let gitDir = path.resolve(".git");
+try {
+  const gitFile = readFileSync(gitDir, "utf8");
+  const match = /^gitdir: (.+)$/m.exec(gitFile);
+  if (match?.[1]) gitDir = path.resolve(path.dirname(gitDir), match[1]);
+} catch {
+  // A regular .git directory is expected for the common checkout case.
+}
+
+const expectedMessageFile = path.join(realpathSync(gitDir), "COMMIT_EDITMSG");
+if (realpathSync(messageFile) !== expectedMessageFile) {
+  console.error("Expected Git's COMMIT_EDITMSG file.");
+  process.exit(1);
+}
+
+const message = readFileSync(expectedMessageFile, "utf8")
+  .split("\n")
+  .filter((line) => !line.startsWith("#"))
+  .join("\n")
+  .trim();
 const lines = message.split("\n");
 const subject = lines[0] ?? "";
 const subjectPattern =

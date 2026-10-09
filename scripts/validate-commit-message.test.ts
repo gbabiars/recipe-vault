@@ -1,22 +1,23 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
-const hook = fileURLToPath(new URL("../.githooks/commit-msg", import.meta.url));
-const repoRoot = fileURLToPath(new URL("..", import.meta.url));
+const validator = fileURLToPath(new URL("./validate-commit-message.mjs", import.meta.url));
 
 function checkMessage(message: string) {
   const directory = mkdtempSync(join(tmpdir(), "recipe-vault-commit-"));
-  const messageFile = join(directory, "COMMIT_EDITMSG");
+  const gitDir = join(directory, ".git");
+  const messageFile = join(gitDir, "COMMIT_EDITMSG");
 
   try {
+    mkdirSync(gitDir);
     writeFileSync(messageFile, message);
-    return spawnSync(hook, [messageFile], {
-      cwd: repoRoot,
+    return spawnSync(process.execPath, [validator, messageFile], {
+      cwd: directory,
       encoding: "utf8",
     });
   } finally {
@@ -67,5 +68,23 @@ test("rejects default merge and revert messages", () => {
   ]) {
     const result = checkMessage(message);
     assert.equal(result.status, 1, message);
+  }
+});
+
+test("rejects a commit message path outside Git's metadata directory", () => {
+  const directory = mkdtempSync(join(tmpdir(), "recipe-vault-commit-path-"));
+  const gitDir = join(directory, ".git");
+  const unrelatedFile = join(directory, "unrelated.txt");
+  try {
+    mkdirSync(gitDir);
+    writeFileSync(unrelatedFile, "untrusted content");
+    const result = spawnSync(process.execPath, [validator, unrelatedFile], {
+      cwd: directory,
+      encoding: "utf8",
+    });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Expected Git's COMMIT_EDITMSG file/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
   }
 });
