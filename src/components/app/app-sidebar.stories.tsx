@@ -24,9 +24,9 @@ export const Recipes: Story = {};
 export const RecipeDetail: Story = { args: { pathname: "/recipes/example" } };
 export const Tags: Story = { args: { pathname: "/tags" } };
 export const Settings: Story = { args: { pathname: "/settings" } };
-export const Profile: Story = { args: { pathname: "/user-profile" } };
+export const Profile: Story = { args: { pathname: "/settings/profile" } };
 export const ProfileWithImage: Story = {
-  args: { pathname: "/user-profile", userImageUrl: profileImageFixtureUrl },
+  args: { pathname: "/settings/profile", userImageUrl: profileImageFixtureUrl },
 };
 export const Collapsed: Story = {
   args: { collapsed: true, onToggleCollapse: () => {} },

@@ -31,7 +31,7 @@ test("private sidebar navigation and sign out", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
 
   await page.getByRole("link", { name: "Profile" }).click();
-  await expect(page).toHaveURL(/\/user-profile$/);
+  await expect(page).toHaveURL(/\/settings\/profile$/);
   await expect(settings).toHaveClass(/active/);
 
   await page.setViewportSize({ width: 767, height: 800 });

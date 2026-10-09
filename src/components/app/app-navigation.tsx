@@ -37,7 +37,7 @@ export function AppNavigation({
 }: AppNavigationProps) {
   const recipesActive = pathname === "/recipes" || pathname.startsWith("/recipes/");
   const tagsActive = pathname === "/tags" || pathname.startsWith("/tags/");
-  const settingsActive = pathname === "/settings" || pathname.startsWith("/user-profile");
+  const settingsActive = pathname === "/settings" || pathname.startsWith("/settings/");
   const accountMenuTriggerClassName = settingsActive
     ? `${styles.accountMenuTrigger} ${styles.active}`
     : styles.accountMenuTrigger;

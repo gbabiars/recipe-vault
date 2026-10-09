@@ -14,7 +14,7 @@ export default function SettingsPage() {
               <List aria-label="Settings">
                 <ListItem
                   title="Profile"
-                  href="/user-profile"
+                  href="/settings/profile"
                   description="Manage your account details."
                 />
               </List>

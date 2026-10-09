@@ -20,7 +20,7 @@ export default async function UserProfilePage() {
       />
       <PageContent>
         <Card as="section" padding="large">
-          <UserProfile path="/user-profile" routing="path" />
+          <UserProfile path="/settings/profile" routing="path" />
         </Card>
       </PageContent>
     </PageLayout>

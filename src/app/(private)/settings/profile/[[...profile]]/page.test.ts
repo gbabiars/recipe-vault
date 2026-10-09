@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-test("the private user-profile route remains available", async () => {
+test("the private settings profile route remains available", async () => {
   const { existsSync, readFileSync } = await import("node:fs");
   const profilePage = new URL("./page.tsx", import.meta.url);
   assert.equal(existsSync(profilePage), true);

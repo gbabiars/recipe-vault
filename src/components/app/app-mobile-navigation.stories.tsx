@@ -46,7 +46,7 @@ export const Recipes: Story = {
 };
 
 export const Profile: Story = {
-  args: { pathname: "/user-profile", userImageUrl: profileImageFixtureUrl },
+  args: { pathname: "/settings/profile", userImageUrl: profileImageFixtureUrl },
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Open menu" }));
     const dialog = within(document.body).getByRole("dialog", { name: "Menu" });

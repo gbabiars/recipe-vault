@@ -11,7 +11,9 @@ test("renders profile destination in a named settings list", () => {
 
   const settingsList = screen.getByRole("list", { name: "Settings" });
   expect(settingsList.querySelectorAll("li")).toHaveLength(1);
-  expect(screen.getByRole("link", { name: "Profile" }).getAttribute("href")).toBe("/user-profile");
+  expect(screen.getByRole("link", { name: "Profile" }).getAttribute("href")).toBe(
+    "/settings/profile",
+  );
   expect(screen.getByText("Manage your account details.")).toBeTruthy();
   expect(screen.queryByRole("link", { name: /MCP keys/i })).toBeNull();
 });

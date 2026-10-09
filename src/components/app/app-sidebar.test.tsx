@@ -38,8 +38,8 @@ test.each([
   ["/tags", false, false, true],
   ["/tags/example", false, false, true],
   ["/settings", false, true, false],
-  ["/user-profile", false, true, false],
-  ["/user-profile/security", false, true, false],
+  ["/settings/profile", false, true, false],
+  ["/settings/profile/security", false, true, false],
   ["/", false, false, false],
   ["/recipes-archive", false, false, false],
 ] as const)("sidebar states on %s", (pathname, recipesActive, settingsAreaActive, tagsActive) => {
