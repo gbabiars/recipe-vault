@@ -42,6 +42,7 @@ test("renders one vertical div with default gap and alignment", () => {
   expect(stack.children).toHaveLength(2);
   expect(stack.classList.contains(styles.stack)).toBe(true);
   expect(stack.getAttribute("data-gap")).toBe("0");
+  expect(stack.getAttribute("data-padding")).toBeNull();
   expect(stack.getAttribute("data-padding-inline")).toBeNull();
   expect(stack.getAttribute("data-padding-block")).toBeNull();
   expect(stack.getAttribute("data-padding-inline-start")).toBeNull();
@@ -100,6 +101,30 @@ test.each(paddings)("maps paddingInline %s to both inline sides", (padding: Stac
   expect(stack.getAttribute("data-padding-inline")).toBe(padding);
   expect(computed.paddingInlineStart).toBe(pixels(rem));
   expect(computed.paddingInlineEnd).toBe(pixels(rem));
+});
+
+test.each(paddings)("maps padding %s to all sides", (padding: StackPadding, rem) => {
+  render(<Stack padding={padding} data-testid="stack" />);
+
+  const stack = screen.getByTestId("stack");
+  const computed = getComputedStyle(stack);
+
+  expect(stack.getAttribute("data-padding")).toBe(padding);
+  expect(computed.paddingInlineStart).toBe(pixels(rem));
+  expect(computed.paddingInlineEnd).toBe(pixels(rem));
+  expect(computed.paddingBlockStart).toBe(pixels(rem));
+  expect(computed.paddingBlockEnd).toBe(pixels(rem));
+});
+
+test("axis and side padding override padding", () => {
+  render(<Stack padding="400" paddingInline="200" paddingBlockEnd="100" data-testid="stack" />);
+
+  const computed = getComputedStyle(screen.getByTestId("stack"));
+
+  expect(computed.paddingInlineStart).toBe(pixels(1));
+  expect(computed.paddingInlineEnd).toBe(pixels(1));
+  expect(computed.paddingBlockStart).toBe(pixels(2));
+  expect(computed.paddingBlockEnd).toBe(pixels(0.5));
 });
 
 test.each(paddings)("maps paddingBlock %s to both block sides", (padding: StackPadding, rem) => {
