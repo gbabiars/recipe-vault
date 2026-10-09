@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { RecipeIngredientsCard } from "./recipe-detail-cards";
 
 const meta = {
-  title: "App/Recipes/RecipeIngredientsCard",
+  title: "App/Recipes/Detail/RecipeIngredientsCard",
   component: RecipeIngredientsCard,
   args: {
     ingredients: [

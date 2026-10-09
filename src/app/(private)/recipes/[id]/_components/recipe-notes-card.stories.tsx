@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { RecipeNotesCard } from "./recipe-detail-cards";
 
 const meta = {
-  title: "App/Recipes/RecipeNotesCard",
+  title: "App/Recipes/Detail/RecipeNotesCard",
   component: RecipeNotesCard,
   args: {
     notes: "Use ripe tomatoes for the best flavor.\nAdd fresh basil just before serving.",

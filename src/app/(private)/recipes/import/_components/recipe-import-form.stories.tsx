@@ -12,7 +12,7 @@ const pending: RecipeImporter = () =>
   });
 
 const meta = {
-  title: "App/Recipes/RecipeImportForm",
+  title: "App/Recipes/Import/RecipeImportForm",
   component: RecipeImportForm,
   parameters: { layout: "padded", nextjs: { appDirectory: true } },
   args: { importRecipe: success },

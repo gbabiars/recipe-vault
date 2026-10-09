@@ -3,7 +3,7 @@ import type { RecipeFormState } from "../../_lib/recipe-form-state";
 import { RecipeDeleteCard } from "./recipe-detail-cards";
 
 const meta = {
-  title: "App/Recipes/RecipeDeleteCard",
+  title: "App/Recipes/Detail/RecipeDeleteCard",
   component: RecipeDeleteCard,
   args: {
     recipeId: "story-recipe",

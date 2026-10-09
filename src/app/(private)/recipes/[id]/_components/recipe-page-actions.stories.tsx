@@ -4,7 +4,7 @@ import { ToastProvider } from "@/components/ui/toast";
 import { RecipePageActionsView } from "./recipe-page-actions";
 
 const meta = {
-  title: "App/Recipes/RecipePageActionsView",
+  title: "App/Recipes/Detail/RecipePageActionsView",
   component: RecipePageActionsView,
   decorators: [
     (Story) => (

@@ -21,7 +21,7 @@ const recipe: Recipe = {
 };
 
 const meta = {
-  title: "App/Recipes/RecipeDetailsCard",
+  title: "App/Recipes/Detail/RecipeDetailsCard",
   component: RecipeDetailsCard,
   args: { recipe },
   decorators: [
