@@ -1,12 +1,12 @@
 import * as React from "react";
 import { cn } from "cn";
 
-import type { LayoutAlign, LayoutGap, LayoutJustify } from "../layout";
+import type { LayoutAlign, LayoutJustify, LayoutSpace } from "../layout";
 import layoutStyles from "../layout.module.css";
 import styles from "./stack.module.css";
 
-export type StackGap = LayoutGap;
-export type StackPadding = LayoutGap;
+export type StackGap = LayoutSpace;
+export type StackPadding = LayoutSpace;
 export type StackAlign = LayoutAlign;
 export type StackJustify = LayoutJustify;
 

@@ -32,7 +32,7 @@ The exported TypeScript types remain the authority for exact prop signatures.
 | Render supporting text                     | `Text`                                                                                                 | [Text](text/text.mdx), [stories](text/text.stories.tsx)                                                                                                                                                                            | Recipe summaries and metadata                                                   |
 | Collect long text                          | `Textarea`                                                                                             | [Textarea](textarea/textarea.mdx), [stories](textarea/textarea.stories.tsx)                                                                                                                                                        | Recipe notes                                                                    |
 
-`layout.ts` also exports `LayoutGap`, `LayoutAlign`, and `LayoutJustify` types
+`layout.ts` also exports `LayoutSpace`, `LayoutAlign`, and `LayoutJustify` types
 used by layout components. See [token usage](tokens.mdx) for their relationship
 to CSS tokens.
 

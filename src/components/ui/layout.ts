@@ -1,4 +1,4 @@
-export type LayoutGap =
+export type LayoutSpace =
   | "0"
   | "025"
   | "050"

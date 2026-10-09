@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "cn";
 
-import type { LayoutGap } from "../layout";
+import type { LayoutSpace } from "../layout";
 import layoutStyles from "../layout.module.css";
 import styles from "./grid.module.css";
 
@@ -15,15 +15,15 @@ export type ResponsiveGridSpan = GridSpan | { base: GridSpan; sm?: GridSpan; md?
 type GridLayoutProps<T extends GridElement> = {
   as?: T;
   columns?: GridColumns;
-  gap?: LayoutGap;
-  rowGap?: LayoutGap;
-  columnGap?: LayoutGap;
-  paddingInline?: LayoutGap;
-  paddingBlock?: LayoutGap;
-  paddingInlineStart?: LayoutGap;
-  paddingInlineEnd?: LayoutGap;
-  paddingBlockStart?: LayoutGap;
-  paddingBlockEnd?: LayoutGap;
+  gap?: LayoutSpace;
+  rowGap?: LayoutSpace;
+  columnGap?: LayoutSpace;
+  paddingInline?: LayoutSpace;
+  paddingBlock?: LayoutSpace;
+  paddingInlineStart?: LayoutSpace;
+  paddingInlineEnd?: LayoutSpace;
+  paddingBlockStart?: LayoutSpace;
+  paddingBlockEnd?: LayoutSpace;
 };
 
 export type GridProps<T extends GridElement = "div"> = GridLayoutProps<T> &
@@ -37,7 +37,7 @@ type GridStyle = React.CSSProperties & {
   "--grid-template-columns"?: string;
 };
 
-function templateColumns(columns: GridColumns, columnGap: LayoutGap): string {
+function templateColumns(columns: GridColumns, columnGap: LayoutSpace): string {
   if (typeof columns === "number") {
     return `repeat(${columns}, minmax(0, 1fr))`;
   }
