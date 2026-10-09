@@ -1,0 +1,28 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as Stories from "./box.stories";
+
+<Meta of={Stories} />
+
+# Box
+
+## Purpose and choice
+
+Provides the layout primitive for adding tokenized padding to a container. Use
+Box when one or more padding props are needed; otherwise prefer a native element
+such as `div` or `section` directly. Use Stack, Inline, or Grid when children
+need a specific layout.
+
+## Variants and composition
+
+Padding props use spacing keys. `padding` sets all sides; axis and side props
+override it. `as` lets the padded container retain meaningful element semantics,
+such as `<Box as="section" padding="300">…</Box>`.
+
+## Content and accessibility
+
+Choose an element that fits the content, such as `section` for a named region.
+Box does not add an accessible name or landmark by itself.
+
+## Story
+
+<Canvas of={Stories.Padded} />
