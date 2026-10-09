@@ -227,9 +227,11 @@ test("CLI validates a workflow directory when run through tsx", async () => {
 
 test("rejects workflow directories outside the workflows root", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "recipe-workflow-outside-"));
+  const workflowsRoot = path.join(root, "workflows");
+  await mkdir(workflowsRoot);
   try {
     await assert.rejects(
-      validateWorkflowDirectory(root, path.resolve("workflows")),
+      validateWorkflowDirectory(root, workflowsRoot),
       /direct child of workflows/,
     );
   } finally {
