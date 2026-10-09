@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { getRouter } from "@storybook/nextjs-vite/navigation.mock";
 import { expect, fn, userEvent } from "storybook/test";
 import { RecipeImportForm, type RecipeImporter } from "./recipe-import-form";
-import { RecipeImportError } from "./import-recipe-from-api";
+import { RecipeImportError } from "../_lib/import-recipe-from-api";
 
 const success: RecipeImporter = async () => ({ id: "new-recipe" });
 const pendingControl: { finish: (result: { id: string }) => void } = { finish: () => undefined };

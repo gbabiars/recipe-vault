@@ -35,7 +35,7 @@ vault. Keep the application deployable and add product behavior only when reques
 
 - Keep route components and route handlers in `src/app` thin. Validate external
   inputs before invoking domain services.
-- Put recipe UI and feature composition in `src/features/recipes`.
+- Collocate recipe UI and feature composition in private folders beside the routes that use them under `src/app/(private)/recipes` and `src/app/(private)/tags`. Put UI shared by several recipe pages at their nearest common route parent.
 - Put recipe-domain services, transformations, and authorization policy in
   `src/lib/recipes`.
 - Put database repositories and Supabase access adapters in `src/lib/db`.

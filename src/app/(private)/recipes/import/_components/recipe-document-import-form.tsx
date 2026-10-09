@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
-import { RecipeImportError } from "./import-recipe-from-api";
-import { importRecipeDocumentFromApi } from "./import-recipe-document-from-api";
+import { RecipeImportError } from "../_lib/import-recipe-from-api";
+import { importRecipeDocumentFromApi } from "../_lib/import-recipe-document-from-api";
 
 export type RecipeDocumentImporter = (file: File) => Promise<{ id: string }>;
 

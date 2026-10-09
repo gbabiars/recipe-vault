@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { deleteRecipeAction } from "./actions";
-import { emptyRecipeFormState } from "./recipe-form-state";
+import { deleteRecipeAction } from "./recipe-actions";
+import { emptyRecipeFormState } from "../_lib/recipe-form-state";
 
 test("delete action requires an explicit confirmation", async () => {
   const form = new FormData();

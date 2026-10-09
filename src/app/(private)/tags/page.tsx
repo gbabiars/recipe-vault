@@ -1,10 +1,6 @@
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
-import { TagCatalog } from "@/features/recipes/tag-catalog";
-import {
-  parseTagPageCursors,
-  tagPageHref,
-  TAG_CATALOG_PAGE_SIZE,
-} from "@/features/recipes/tag-pagination";
+import { TagCatalog } from "./_components/tag-catalog";
+import { parseTagPageCursors, tagPageHref, TAG_CATALOG_PAGE_SIZE } from "./_lib/tag-pagination";
 import { requireUser } from "@/lib/auth/require-user";
 import { getTagService } from "@/lib/recipes";
 import type { TagInventoryPage } from "@/lib/db/tag-repository";

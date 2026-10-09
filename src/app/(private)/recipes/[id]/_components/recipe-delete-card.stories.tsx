@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import type { RecipeFormState } from "./recipe-form-state";
+import type { RecipeFormState } from "../../_lib/recipe-form-state";
 import { RecipeDeleteCard } from "./recipe-detail-cards";
 
 const meta = {

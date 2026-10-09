@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckboxInput } from "@/components/ui/checkbox";
-import { emptyRecipeFormState, type RecipeFormState } from "./recipe-form-state";
+import { emptyRecipeFormState, type RecipeFormState } from "../../_lib/recipe-form-state";
 import { Inline } from "@/components/ui/inline";
 import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";

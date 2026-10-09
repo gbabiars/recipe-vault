@@ -5,7 +5,7 @@ import {
   RecipeDocumentImportForm,
   type RecipeDocumentImporter,
 } from "./recipe-document-import-form";
-import { RecipeImportError } from "./import-recipe-from-api";
+import { RecipeImportError } from "../_lib/import-recipe-from-api";
 
 const pdf = new File(["%PDF-1.7"], "tomato-soup.pdf", { type: "application/pdf" });
 const success: RecipeDocumentImporter = async () => ({ id: "new-recipe" });

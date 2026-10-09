@@ -76,8 +76,8 @@ to CSS tokens.
   contain a list when it needs a grouped surface; arrange its title, summary,
   metadata, and chips with `Stack` and `Inline`. See [list](list/list.mdx),
   [card](card/card.mdx), and the existing
-  [recipe list](../../features/recipes/recipe-list.stories.tsx) and
-  [recipe list item](../../features/recipes/recipe-list-item.stories.tsx) stories.
+  [recipe list](<../../app/(private)/recipes/_components/recipe-list.stories.tsx>) and
+  [recipe list item](<../../app/(private)/recipes/_components/recipe-list-item.stories.tsx>) stories.
 
 ## Open questions
 

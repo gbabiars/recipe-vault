@@ -4,10 +4,10 @@ import { redirect } from "next/navigation";
 import type { RecipeCreateInput } from "@/lib/validation/recipe";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
-import { formOptional, parseRecipeFormData } from "./recipe-form-data";
-import type { RecipeFormState } from "./recipe-form-state";
+import { formOptional, parseRecipeFormData } from "../_lib/recipe-form-data";
+import type { RecipeFormState } from "../_lib/recipe-form-state";
 
-export type { RecipeFormState } from "./recipe-form-state";
+export type { RecipeFormState } from "../_lib/recipe-form-state";
 
 function validationState(error: unknown): RecipeFormState {
   if (!(error instanceof Error) || !("issues" in error))

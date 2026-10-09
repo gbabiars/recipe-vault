@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/toast";
-import { emptyRecipeFormState, type RecipeFormState } from "./recipe-form-state";
+import { emptyRecipeFormState, type RecipeFormState } from "../../_lib/recipe-form-state";
 
 export type DeleteRecipeAction = (
   state: RecipeFormState,

@@ -7,7 +7,7 @@ import { TooltipProvider } from "../src/components/ui/tooltip";
 import "../src/app/globals.css";
 import "./preview.css";
 
-sb.mock(import("../src/features/recipes/actions.ts"), () => ({
+sb.mock(import("../src/app/(private)/recipes/_actions/recipe-actions.ts"), () => ({
   saveRecipeAction: fn(),
 }));
 const preview: Preview = {

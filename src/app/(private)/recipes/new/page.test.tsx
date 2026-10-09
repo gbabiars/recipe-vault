@@ -3,7 +3,9 @@ import { expect, test, vi } from "vitest";
 import NewRecipePage from "./page";
 
 vi.mock("@/lib/auth/require-user", () => ({ requireUser: async () => ({ id: "user-1" }) }));
-vi.mock("@/features/recipes/actions", () => ({ saveRecipeAction: async () => ({ errors: {} }) }));
+vi.mock("@/app/(private)/recipes/_actions/recipe-actions", () => ({
+  saveRecipeAction: async () => ({ errors: {} }),
+}));
 
 test("shows the recipe form with a recipes breadcrumb", async () => {
   render(await NewRecipePage());

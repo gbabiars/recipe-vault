@@ -1,9 +1,14 @@
-# Recipe feature boundary
+# Recipe route UI
 
-This directory contains private recipe UI composition: recipe lists and items, detail cards, client forms, and server actions.
-Forms convert `FormData` to the canonical validation wire format; pages stay in
-`src/app/(private)` and compose these feature components. The route group's layout
-owns the shared private shell; its navigation lives in `src/components/app`.
+Recipe UI lives beside the route segments that use it. The `recipes/_components`
+and `recipes/_lib` folders hold the list and the form shared by new and edit pages;
+`recipes/_actions` holds save and delete server actions. Detail UI belongs to
+`recipes/[id]/_components`, and import forms and API adapters belong to
+`recipes/import/_components` and `recipes/import/_lib`. The tag catalog and its
+pagination live beside `tags/page.tsx`. Route pages compose these files and stay
+thin. Form helpers convert `FormData` to the canonical validation wire format.
+The route group's layout owns the shared private shell; its navigation lives in
+`src/components/app`.
 
 `TagCatalog` renders the private tag inventory as a grouped list inside one
 card. Tag names link to the matching recipe filter; optional descriptions,

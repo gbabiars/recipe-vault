@@ -1,7 +1,7 @@
 import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
-import { RecipeImportPageForm } from "@/features/recipes/recipe-import-form";
-import { RecipeDocumentImportPageForm } from "@/features/recipes/recipe-document-import-form";
+import { RecipeImportPageForm } from "./_components/recipe-import-form";
+import { RecipeDocumentImportPageForm } from "./_components/recipe-document-import-form";
 import { Stack } from "@/components/ui/stack";
 import { requireUser } from "@/lib/auth/require-user";
 

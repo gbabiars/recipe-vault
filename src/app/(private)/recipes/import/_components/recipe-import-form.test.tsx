@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { RecipeImportForm, type RecipeImporter } from "./recipe-import-form";
-import { RecipeImportError } from "./import-recipe-from-api";
+import { RecipeImportError } from "../_lib/import-recipe-from-api";
 
 const push = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));

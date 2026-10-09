@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Stack } from "@/components/ui/stack";
 import { TextInput } from "@/components/ui/text-input";
 import { Text } from "@/components/ui/text";
-import { importRecipeFromApi, RecipeImportError } from "./import-recipe-from-api";
+import { importRecipeFromApi, RecipeImportError } from "../_lib/import-recipe-from-api";
 
 export type RecipeImporter = (url: string) => Promise<{ id: string }>;
 

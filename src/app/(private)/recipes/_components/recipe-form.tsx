@@ -11,10 +11,10 @@ import { TextInput } from "@/components/ui/text-input";
 import { Textarea } from "@/components/ui/textarea";
 import type { Recipe } from "@/lib/db/recipe-repository";
 import { tagNameSchema } from "@/lib/validation/recipe";
-import { deserializeCommaDelimitedLabels } from "./recipe-form-data";
+import { deserializeCommaDelimitedLabels } from "../_lib/recipe-form-data";
 import styles from "./recipe-form.module.css";
-import { emptyRecipeFormState } from "./recipe-form-state";
-import type { RecipeFormState } from "./recipe-form-state";
+import { emptyRecipeFormState } from "../_lib/recipe-form-state";
+import type { RecipeFormState } from "../_lib/recipe-form-state";
 
 type IngredientRow = { amount?: string; ingredientName?: string; notes?: string };
 type StepRow = { instruction?: string; durationMinutes?: number };

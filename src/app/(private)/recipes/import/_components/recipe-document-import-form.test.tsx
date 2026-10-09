@@ -4,7 +4,7 @@ import {
   RecipeDocumentImportForm,
   type RecipeDocumentImporter,
 } from "./recipe-document-import-form";
-import { RecipeImportError } from "./import-recipe-from-api";
+import { RecipeImportError } from "../_lib/import-recipe-from-api";
 
 const push = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));

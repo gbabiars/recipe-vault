@@ -195,17 +195,17 @@ PDFs are not supported. Documents are processed in memory and are not stored.
 
 ## Architecture
 
-| Location                  | Responsibility                                                    |
-| ------------------------- | ----------------------------------------------------------------- |
-| `src/app`                 | Thin pages, API routes, OAuth metadata, and MCP route handlers.   |
-| `src/components/app`      | Shared private sidebar, navigation, brand, and providers.         |
-| `src/features/recipes`    | Recipe UI and feature composition.                                |
-| `src/lib/auth`            | Clerk identity, OAuth verification, and Supabase clients.         |
-| `src/lib/db`              | Recipe persistence and Supabase access.                           |
-| `src/lib/launchdarkly.ts` | Server-side LaunchDarkly context signing.                         |
-| `src/lib/recipes`         | Ownership-aware domain services.                                  |
-| `src/lib/validation`      | Shared input schemas.                                             |
-| `src/mcp`                 | MCP transport composition, principals, scopes, and tool adapters. |
+| Location                                                 | Responsibility                                                    |
+| -------------------------------------------------------- | ----------------------------------------------------------------- |
+| `src/app`                                                | Thin pages, API routes, OAuth metadata, and MCP route handlers.   |
+| `src/components/app`                                     | Shared private sidebar, navigation, brand, and providers.         |
+| `src/app/(private)/recipes` and `src/app/(private)/tags` | Colocated recipe and tag UI, forms, and route actions.            |
+| `src/lib/auth`                                           | Clerk identity, OAuth verification, and Supabase clients.         |
+| `src/lib/db`                                             | Recipe persistence and Supabase access.                           |
+| `src/lib/launchdarkly.ts`                                | Server-side LaunchDarkly context signing.                         |
+| `src/lib/recipes`                                        | Ownership-aware domain services.                                  |
+| `src/lib/validation`                                     | Shared input schemas.                                             |
+| `src/mcp`                                                | MCP transport composition, principals, scopes, and tool adapters. |
 
 ## Design token follow-up
 

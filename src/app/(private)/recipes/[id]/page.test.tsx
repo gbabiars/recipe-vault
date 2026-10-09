@@ -24,7 +24,7 @@ vi.mock("@/lib/auth/require-user", () => ({ requireUser: async () => ({ id: "use
 vi.mock("@/lib/recipes", () => ({
   getRecipeService: async () => ({ get: async () => recipe }),
 }));
-vi.mock("@/features/recipes/actions", () => ({
+vi.mock("@/app/(private)/recipes/_actions/recipe-actions", () => ({
   deleteRecipeAction: async () => ({ errors: {} }),
 }));
 

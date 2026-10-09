@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseRecipeFormData } from "../../features/recipes/recipe-form-data";
+import { parseRecipeFormData } from "../../app/(private)/recipes/_lib/recipe-form-data";
 import { RecipeService } from "./recipe-service";
 
 function validForm() {

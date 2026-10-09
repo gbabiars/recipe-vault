@@ -7,9 +7,9 @@ import {
   RecipeIngredientsCard,
   RecipeMethodCard,
   RecipeNotesCard,
-} from "@/features/recipes/recipe-detail-cards";
-import { deleteRecipeAction } from "@/features/recipes/actions";
-import { RecipePageActions } from "@/features/recipes/recipe-page-actions";
+} from "./_components/recipe-detail-cards";
+import { deleteRecipeAction } from "../_actions/recipe-actions";
+import { RecipePageActions } from "./_components/recipe-page-actions";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 
