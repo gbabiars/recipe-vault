@@ -75,7 +75,7 @@ export const Loading: Story = {
   },
 };
 
-export const Error: Story = {
+export const Error/* NOSONAR: intentional Storybook error-state story name. */ : Story = {
   args: {
     state: "error",
   },
