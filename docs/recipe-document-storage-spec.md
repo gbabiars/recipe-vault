@@ -54,6 +54,11 @@ plus `cookMinutes`.
 at most 64 characters and use the existing recipe tag rules: lowercase ASCII
 letters and digits, spaces, underscores, or hyphens; no leading or trailing
 whitespace; and one space between words. Duplicate names are removed.
+Recipe documents are the source of tag names. A tag exists for an owner exactly
+when at least one of that owner's recipes contains its name. Tags have no
+independent ID, description, or unused state. The tag inventory and usage counts
+are derived from the owner's recipe documents.
+
 `sourceUrl` is an optional HTTP(S) URL of at most 2,000 characters for the
 recipe's source. A recipe created without a web source omits it.
 
@@ -157,25 +162,71 @@ recipes
 | Open a recipe                      | Primary key plus `owner_id`; return its JSONB document               |
 | List recent recipes                | Index on `(owner_id, updated_at, id)`                                |
 | Search title as the app does today | Derived `title_text` with a suitable substring-search index          |
-| Filter by tag                      | Existing owner-scoped tag associations                               |
+| Filter by tag                      | Match a name in `document.tags` within the owner’s recipes           |
+| List tags and usage counts         | Expand and group `document.tags` from the owner’s recipes            |
 | Search ingredient names later      | Add a targeted search projection when its matching rules are defined |
 
-This avoids a blanket index over every JSON value. Postgres can index JSONB containment, but title substring and text search use different indexes; targeted projections make the intended search behavior clearer. [PostgreSQL JSON indexing](https://www.postgresql.org/docs/current/datatype-json.html#JSON-INDEXING), [Supabase full-text search](https://supabase.com/docs/guides/database/full-text-search).
+For an exact tag filter, use JSONB containment on `document -> 'tags'`, with an
+owner predicate. Add a targeted GIN expression index on that array when query
+plans show it is needed; keep the owner-leading list index for recent recipes.
+The tag inventory uses the distinct names and counts from the owner's documents.
+This avoids a blanket index over every JSON value. Postgres can index JSONB
+containment, but title substring and text search use different indexes;
+targeted projections make the intended search behavior clearer.
+[PostgreSQL JSON indexing](https://www.postgresql.org/docs/current/datatype-json.html#JSON-INDEXING),
+[Supabase full-text search](https://supabase.com/docs/guides/database/full-text-search).
 
-**Tags need special handling.** Recipe Vault already has tag IDs, descriptions, unused tags, and merge behavior. I would retain that owner-scoped catalog and its associations. `document.tags` would be the readable name projection in the recipe document. Recipe saves, tag renames, and merges must update the associations and document together in one transaction. That preserves those existing features without asking JSON alone to represent an unused tag.
+The document is the only durable tag source. A recipe save changes its own
+`tags` array. A global rename or merge replaces a canonical source name in all
+of the owner's affected recipe documents and removes duplicates; each changed
+recipe gets a new revision. Concurrent recipe edits use revision checks so an
+older copy cannot restore a renamed tag. Recipe writes and bulk replacements
+serialize for one owner during a replacement. After it commits, a user can add
+the old name again: there is no persistent alias registry. Deleting a recipe or
+removing its last use of a name removes that name from the inventory automatically. There is no
+separate tag catalog, association table, or cached tag projection to maintain.
+
+Today the app stores tag IDs, descriptions, and unused tags. Those cannot be
+represented by `tags: string[]`. Before removing the old tables, inventory and
+archive each owner's tag IDs, names, descriptions, and recipe/tag links,
+including unused tags; the new product does not expose that metadata.
+Tag-facing UI and MCP contracts must use names and usage counts rather than IDs
+or an `unused` filter. The current `delete_unused_tag` operation disappears; an
+unused tag has no document to remove it from.
+
+An owner-scoped consumer can derive the inventory and merge names through the
+recipe domain service:
+
+```ts
+const page = await tagService.listFromRecipes(ownerId, {
+  sort: "name_asc",
+  limit: 25,
+});
+const usage = page.tags[0]?.usageCount;
+
+await tagService.replaceNameInRecipes(ownerId, {
+  sourceName: "quick meals",
+  targetName: "weeknight",
+});
+```
 
 ## Incremental implementation plan
 
-1. **Audit existing recipes and define the conversion.** Map `summary → description`, `servings → yield`, ingredient rows → ordered array, steps → instruction strings, recipe notes → an array, and missing equipment → `[]`. Count records with no servings and steps with `durationMinutes`; those values have no lossless destination in the agreed schema. Settle their handling before backfill. Do not invent a yield.
+1. **Audit existing recipes and define the conversion.** Map `summary → description`, `servings → yield`, ingredient rows → ordered array, steps → instruction strings, recipe notes → an array, and missing equipment → `[]`. Inventory recipes without servings, steps with `durationMinutes`, tag descriptions, and unused tags. Do not invent a yield or silently discard tag metadata.
 
 2. **Add document storage beside the current model.** Add the JSONB field and metadata while retaining existing columns and tables. Validate document structure at the application boundary and keep `id` and `owner_id` database-controlled. Preserve RLS and the verified MCP credential boundary.
 
-3. **Backfill and compare.** Convert existing recipes in batches. Compare every converted document with its source rows, including ingredient order, step order, tags, notes, and source URL. Keep old reads available until the comparison passes.
+3. **Backfill and compare.** Convert existing recipes in batches. Compare every converted document with its source rows, including ingredient order, step order, canonical tag names, notes, and source URL. Keep old reads available until the comparison passes; export tag metadata that has no document representation.
 
-4. **Move reads, then writes.** Change the repository to return documents. Change create/update to validate and save the whole document and tag associations transactionally. Use `revision` to reject an edit based on an older copy. Update web, API, import, and MCP consumers through the recipe service.
+4. **Move reads, then writes.** Change the repository to return documents. Change create/update to validate and save the whole document. Derive tag filtering and inventory from documents, and implement name-based bulk rename/merge. Use `revision` to reject an edit based on an older copy. Update web, API, import, and MCP consumers through the recipe service.
 
-5. **Add only the indexes needed for current queries.** Preserve title substring search, tag filtering, and recent ordering. Check representative query plans. Define ingredient or broader full-text search as a separate product decision, then add its projection and index.
+5. **Add only the indexes needed for current queries.** Preserve title substring search, document-tag filtering, and recent ordering. Check representative query plans and add an expression index for tag containment when warranted. Define ingredient or broader full-text search as a separate product decision, then add its projection and index.
 
-6. **Remove the old recipe representation after verification.** Run focused migration and RLS tests, API and MCP tests, and checks for the affected UI. Have an independent reviewer trace owner binding, tag synchronization, and service-role access before removing old storage.
+6. **Remove the old recipe and tag representation after verification.** Run focused migration and RLS tests, API and MCP tests, and checks for the affected UI. Have an independent reviewer trace owner binding, document-based tag operations, and service-role access before removing old storage.
 
-The **schema is agreed**. The storage design above remains proposed. Existing recipes without servings require a real yield before cutover, and existing per-step durations will be appended to instruction text. The HTTP API and MCP recipe contracts will change together at cutover. The detailed [implementation plan](recipe-document-implementation-plan.md) records the steps and checks. No database or application migration has started.
+The **schema is agreed**, including document-sourced tags. The storage design
+above remains proposed. Existing recipes without servings require a real yield
+before cutover, and existing per-step durations will be appended to instruction
+text. HTTP API and MCP recipe and tag contracts will change together at cutover.
+The detailed [implementation plan](recipe-document-implementation-plan.md)
+records the steps and checks. No database or application migration has started.
