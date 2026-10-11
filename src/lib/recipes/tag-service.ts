@@ -23,14 +23,6 @@ export class TagService {
     return this.tags.listFromDocuments(ownerId, options);
   }
 
-  deleteUnused(ownerId: string, tagId: string) {
-    return this.tags.deleteUnused(ownerId, tagId);
-  }
-
-  merge(ownerId: string, sourceTagId: string, targetTagId: string) {
-    return this.tags.merge(ownerId, sourceTagId, targetTagId);
-  }
-
   replaceNameInRecipes(
     ownerId: string,
     input: ReplaceDocumentTagNameInput,
@@ -55,14 +47,6 @@ export class OwnerBoundTagService {
 
   listFromRecipes(options: DocumentTagInventoryOptions) {
     return this.tags.listFromRecipes(this.ownerId, options);
-  }
-
-  deleteUnused(tagId: string) {
-    return this.tags.deleteUnused(this.ownerId, tagId);
-  }
-
-  merge(sourceTagId: string, targetTagId: string) {
-    return this.tags.merge(this.ownerId, sourceTagId, targetTagId);
   }
 
   replaceNameInRecipes(input: ReplaceDocumentTagNameInput) {

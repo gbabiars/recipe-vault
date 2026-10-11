@@ -105,46 +105,6 @@ test("tag repository passes a before cursor for reverse keyset pagination", asyn
   ]);
 });
 
-test("tag repository passes owner and stable ID to the guarded delete RPC", async () => {
-  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
-  const repository = new TagRepository({
-    rpc: async (name: string, args: Record<string, unknown>) => {
-      calls.push({ name, args });
-      return { data: false, error: null };
-    },
-  } as never);
-
-  assert.equal(await repository.deleteUnused("owner-a", secondTag.id), false);
-  assert.deepEqual(calls, [
-    {
-      name: "recipe_vault_delete_unused_tag",
-      args: { target_owner_id: "owner-a", target_tag_id: secondTag.id },
-    },
-  ]);
-});
-
-test("tag repository passes both explicitly selected IDs and owner to merge RPC", async () => {
-  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
-  const repository = new TagRepository({
-    rpc: async (name: string, args: Record<string, unknown>) => {
-      calls.push({ name, args });
-      return { data: true, error: null };
-    },
-  } as never);
-
-  assert.equal(await repository.merge("owner-a", firstTag.id, secondTag.id), true);
-  assert.deepEqual(calls, [
-    {
-      name: "recipe_vault_merge_tags",
-      args: {
-        target_owner_id: "owner-a",
-        source_tag_id: firstTag.id,
-        target_tag_id: secondTag.id,
-      },
-    },
-  ]);
-});
-
 test("document tag inventory passes an owner, filters, and usage/name cursor", async () => {
   const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
   const repository = new TagRepository({
