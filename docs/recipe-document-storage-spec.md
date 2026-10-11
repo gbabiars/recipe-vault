@@ -1,6 +1,6 @@
 # Recipe document schema and storage plan
 
-Status: the logical recipe schema is agreed. The JSONB storage design and migration plan are proposed; no database or application migration has started.
+Status: the logical recipe schema is agreed, and the JSONB storage design is implemented. The cutover migration and SQL checks have been applied and exercised only against local Supabase; no production migration has been run.
 
 ## Agreed recipe schema
 
@@ -176,7 +176,7 @@ function RecipeExcerpt({ recipe }: { recipe: RecipeDocument }) {
 
 ## Storage design: one document, targeted projections
 
-The proposed Postgres row is:
+The implemented Postgres row is:
 
 ```text
 recipes
@@ -261,9 +261,9 @@ await tagService.replaceNameInRecipes(ownerId, {
 6. **Remove the old recipe and tag representation after verification.** Run focused migration and RLS tests, API and MCP tests, and checks for the affected UI. Have an independent reviewer trace owner binding, document-based tag operations, and service-role access before removing old storage.
 
 The **schema is agreed**, including optional yield and document-sourced tags.
-The storage design above remains proposed. Existing recipes without servings
-will omit `yield`, and existing per-step durations will be appended to
-instruction text. HTTP API and MCP recipe and tag contracts will change
-together at cutover.
+Existing recipes without servings will omit `yield`, and existing per-step
+durations will be appended to instruction text. HTTP API and MCP recipe and tag
+contracts will change together at cutover.
 The detailed [implementation plan](recipe-document-implementation-plan.md)
-records the steps and checks. No database or application migration has started.
+records the steps and checks. The implementation is present; cutover verification
+has run only on local Supabase, and no production migration has been run.

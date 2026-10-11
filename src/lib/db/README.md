@@ -1,61 +1,40 @@
 # Database boundary
 
-`recipe-repository.ts` is the application adapter for recipe, ingredient, and step
-queries. It accepts the authenticated owner ID explicitly and normally uses the
-request-scoped Clerk session JWT, so every browser/API query remains protected by
-the caller's JWT and database RLS. Application features must not query Supabase
-directly.
+`recipe-repository.ts` is the application adapter for recipe persistence. It
+accepts the authenticated owner ID explicitly and uses the request-scoped Clerk
+session JWT for browser/API access, so database RLS remains the enforcement
+boundary. Application features must not query Supabase directly. Document reads
+and writes use the complete JSONB recipe and its separate revision; a database
+RPC performs atomic create, revision-checked replacement, or deletion.
 
-`recordAudit` invokes the narrowly scoped `recipe_vault_record_audit_event` database
-function. It accepts Clerk string IDs, requires an owned target recipe, and records
-request ID and method—never headers, credentials, or recipe content. The verified
-MCP adapter is the only server-side service-role caller; it binds the verified Clerk
-user and checks the tool scope before creating this repository.
+`tag-repository.ts` owns document-derived tag inventory and name replacement.
+`listFromDocuments(ownerId, options)` invokes
+`recipe_vault_list_document_tag_inventory` and returns canonical names with
+exact recipe usage counts. `replaceDocumentTagName(ownerId, sourceName,
+targetName)` invokes the owner-bound `recipe_vault_replace_document_tag` RPC;
+it replaces names across affected documents atomically and collapses duplicates.
+The document arrays are the only tag source in the target model. There is no
+separate tags or recipe-tags table as an application data source.
 
-Tags live in owner-scoped `tags` and `recipe_tags` tables. The stable tag ID and
-association rows are authoritative; `recipes.tags` remains a database-maintained
-compatibility projection for existing recipe API readers and filters. A recipe
-insert or update that supplies the legacy array normalizes names, resolves or
-creates tags with a unique owner/name constraint, and replaces associations in
-one transaction. Tag rename and delete refresh affected recipe arrays; deletion
-cascades associations, never recipes. Application recipe create/update uses
-`recipe_vault_write_recipe` so recipe fields, details, and tags commit or roll
-back together. Ingredient amounts are nullable text; the writer accepts the same
-optional free-text amount used by the recipe input contract. Association rows have
-no direct authenticated write grant.
+The repository retains a legacy tag `list` method for compatibility, but its
+`deleteUnused` and ID-based `merge` methods have been removed. The database
+retains the old inventory, delete, and merge functions and tables as transition
+history/read-only soak storage. The cutover migration revokes the legacy recipe
+writer, unused-tag deletion, ID-based merge RPCs, and direct DML on legacy
+recipe, child, and tag tables. Removing old storage and functions is a separate
+future migration. Do not wire new application behavior to legacy tag storage.
 
-`RecipeRepository.listTags(ownerId, search)` reads up to 25 owned tag names in
-alphabetical order for the existing HTTP endpoint. An empty search lists the
-first 25; nonempty search matches a literal substring case-insensitively. The
-caller's JWT and RLS still enforce ownership.
+`recordAudit` invokes the narrowly scoped
+`recipe_vault_record_audit_event` database function. It accepts Clerk string
+IDs, requires an owned target recipe, and records request ID and method, never
+headers, credentials, or recipe content. The verified MCP adapter is the only
+server-side service-role caller. It binds the verified Clerk user and checks
+tool scope before creating the server-only Supabase client. Its owner-bound
+recipe service can use document RPCs with the service-role client; never expose
+that credential to a browser, route input, or MCP tool argument.
 
-`tag-repository.ts` owns aggregate tag inventory reads for the application and MCP. Its
-`TagRepository.list(ownerId, options)` calls the stable
-`recipe_vault_list_tag_inventory` RPC, which counts distinct associated recipes
-and applies owner, search, usage, sort, and keyset cursor predicates in one
-query. It supports `after` and `before` cursors; the reverse query selects the
-nearest preceding page and returns its rows in normal sort order, with the
-lookahead row last so `hasMore` remains directional. It also returns the
-optional nullable free-text tag description; a
-database `NULL` maps to an omitted `description` property. The RPC is
-`SECURITY INVOKER`, has an empty search path, and can be executed by
-`authenticated` and `service_role`. An
-authenticated request uses its session JWT, so the existing owner RLS policies
-filter both tags and associations. The verified MCP adapter still supplies its
-bound owner ID while using its server-only `service_role` client.
-
-`TagRepository.deleteUnused(ownerId, tagId)` calls the restricted
-`recipe_vault_delete_unused_tag` RPC. It locks the owned tag row before
-rechecking recipe associations, so an in-flight association cannot race the
-zero-usage check. It returns `false` for both used tags and missing/unowned IDs
-to avoid revealing another owner's tag existence. The RPC preserves the
-existing tag-deletion trigger behavior and is executable only by `service_role`.
-
-`TagRepository.merge(ownerId, sourceTagId, targetTagId)` calls the restricted
-`recipe_vault_merge_tags` RPC. It locks both owned tag rows in ascending UUID
-order, which serializes against FK-backed association writes and prevents
-reverse-direction merges from acquiring the pair in opposite orders. The RPC
-deletes overlapping source links before retargeting remaining links, then removes
-the source tag in the same transaction. Existing `recipe_tags` triggers refresh
-only affected `recipes.tags` projections; ingredients and other recipe fields
-are left alone. Same, missing, and unowned IDs return the same false result.
+The backfill and reconciliation utility reads the legacy recipe and child rows
+to convert and compare them with documents. It is a migration tool, not an
+application query path. The [recipe document cutover runbook](../../../docs/recipe-document-cutover-runbook.md)
+describes the pause, final refresh and reconciliation, cutover gate, and
+rollback boundary.

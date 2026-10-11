@@ -1,71 +1,55 @@
 # Recipe library boundary
 
-`recipe-service.ts` provides the ownership-aware recipe command/query surface used by the web UI and `/api/v1`.
-`index.ts` composes it with the request-scoped repository. Future application APIs must
-reuse this service rather than reaching into Supabase from routes. Updates are patches: the service first obtains the owned recipe, merges the patch, and revalidates the full canonical recipe before persistence.
+`recipe-service.ts` provides the owner-aware recipe command/query surface used
+by the web UI, HTTP API, and MCP adapters. `index.ts` composes it with the
+request-scoped repository. Application routes must use these services rather
+than reaching into Supabase. Recipe create and replacement validate the complete
+document; replacement checks the expected revision and returns a conflict when
+the stored revision has changed. Ownership comes from authenticated Clerk
+identity, never from a document or request field.
 
 Recipe tag names are canonical lowercase ASCII with surrounding whitespace
-removed and repeated internal ASCII spaces collapsed to one. The recipe input
-schema removes duplicates after normalization. Tags with distinct canonical
-names remain distinct. The database applies the
-same tag rule to legacy array writes and existing data during backfill.
+removed and repeated internal ASCII spaces collapsed. Duplicate names are
+removed after normalization. Tags are stored in each recipe document's
+`tags: string[]`; they are not a separate durable catalog. `TagService.listFromRecipes(ownerId,
+options)` returns only `{ name, usageCount }` values derived from that owner's
+documents. `TagService.replaceNameInRecipes(ownerId, { sourceName, targetName
+})` performs an owner-scoped atomic name replacement, deduplicating a recipe's
+array if the target name is already present. Removing a name from its last
+recipe removes it from inventory.
 
-Recipe listing filters by canonical tag name. `RecipeService.listTags(ownerId,
-search)` exposes the bounded owned tag catalog to the authenticated API.
-
-`TagService.list(ownerId, options)` provides exact usage counts, optional tag
-descriptions, filters, deterministic sorting, and forward (`after`) and reverse
-(`before`) keyset pagination for tag inventory. Descriptions are omitted when
-the database value is `NULL`. The private `/tags` page uses the authenticated
-session client, shows all owner tags in name order, and requests 25 tags per
-page. Invalid URL cursors restart at the first page. The MCP adapter receives
-only `OwnerBoundTagService`, whose `list(options)` call derives the owner from
-verified authentication. `OwnerBoundTagService.deleteUnused(tagId)`
-uses that same bound owner and refuses deletion unless the database confirms the
-tag still has zero recipe associations at deletion time.
-`OwnerBoundTagService.merge(sourceTagId, targetTagId)` consolidates only the two
-explicitly selected IDs under the same verified owner; it never performs name
-matching.
-
-An authenticated application consumer can read descriptions through the same
-inventory service:
+An authenticated consumer can list the derived inventory and replace a name
+through the same domain service:
 
 ```ts
-const page = await tagService.list(user.id, {
-  usage: "all",
+const page = await tagService.listFromRecipes(user.id, {
   sort: "name_asc",
   limit: 25,
 });
-const description = page.tags[0]?.description;
-```
-
-The application can seek to the page immediately before a visible tag by
-passing that tag as the `before` cursor:
-
-```ts
-const previousPage = await tagService.list(user.id, {
-  usage: "all",
-  sort: "name_asc",
-  limit: 25,
-  before: {
-    usageCount: currentPage.tags[0].usageCount,
-    name: currentPage.tags[0].name,
-    id: currentPage.tags[0].id,
-  },
+await tagService.replaceNameInRecipes(user.id, {
+  sourceName: "weeknight dinners",
+  targetName: "weeknight",
 });
 ```
 
-Website import uses `readSource(url)` to fetch bounded HTTP HTML after checking each
-DNS destination and redirect. `importRecipeInput(url)` extracts a canonical recipe
-through AI Gateway and validates it before the API calls `RecipeService.create`.
-The submitted URL remains the recipe's source URL.
-Sites that reject automated HTTP requests return `access_denied` so the form can
-explain that another source or manual entry is needed.
+The old `TagService.list` path remains in application code for legacy
+compatibility, but it is not part of the document-based application or MCP
+contract. Unused-tag deletion and ID-based merge methods have been removed from
+the application service. Their revoked database RPCs and the normalized tag
+tables remain only as transition history/read-only soak storage pending a
+separate cleanup migration.
 
-PDF import reads bounded embedded text in memory, then uses the same AI
-extraction and canonical validation as website import. The first complete
-recipe in document order is selected, with no source URL attached.
-PDF.js runs as an external Node package so its worker loads beside the library
-instead of from a Next.js server chunk. Reader failures are classified into
-file format, damaged structure, encryption, and server reader errors without
-returning PDF.js exception text to the client.
+Website import uses `readSource(url)` to fetch bounded HTTP HTML after checking
+each DNS destination and redirect. `importRecipeDocumentContent(url)` extracts
+and validates a document before it is saved by the recipe service. The submitted
+URL is retained as `sourceUrl` when supplied. Sites that reject automated HTTP
+requests return `access_denied` so the form can explain that another source or
+manual entry is needed.
+
+PDF import reads bounded embedded text in memory, then uses the same document
+extraction and validation as website import. The first complete recipe in
+document order is selected; no yield is invented. PDF.js runs as an external
+Node package so its worker loads beside the library instead of from a Next.js
+server chunk. Reader failures are classified into file format, damaged
+structure, encryption, and server reader errors without returning PDF.js
+exception text to the client.
