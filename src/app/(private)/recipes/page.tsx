@@ -10,7 +10,7 @@ import { RecipeList } from "./_components/recipe-list";
 import { RecipesHeaderActions } from "./_components/recipes-header-actions";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
-import type { RecipeSummary } from "@/lib/db/recipe-repository";
+import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
 
 export default async function RecipesPage({
   searchParams,
@@ -45,12 +45,21 @@ export default async function RecipesPage({
 
 async function RecipeResults({ q, tags }: { q?: string; tags: string[] }) {
   const user = await requireUser();
-  let recipes: RecipeSummary[];
+  let documentSummaries: RecipeDocumentListSummary[];
   let error: string | undefined;
   try {
-    recipes = await (await getRecipeService()).list(user.id, q?.trim(), tags);
+    const page = await (
+      await getRecipeService()
+    ).listDocumentPage(user.id, {
+      search: q?.trim() || undefined,
+      tags,
+      page: 1,
+      // Match the previous unpaged list's PostgREST default row cap.
+      pageSize: 1000,
+    });
+    documentSummaries = page.items;
   } catch {
-    recipes = [];
+    documentSummaries = [];
     error = "Recipes could not be loaded. Refresh the page to try again.";
   }
   return (
@@ -61,7 +70,7 @@ async function RecipeResults({ q, tags }: { q?: string; tags: string[] }) {
             {error}
           </Text>
         </Card>
-      ) : recipes.length === 0 ? (
+      ) : documentSummaries.length === 0 ? (
         <Card as="section" padding="large">
           <Stack gap="150">
             <Heading as="h2" level={3}>
@@ -78,7 +87,7 @@ async function RecipeResults({ q, tags }: { q?: string; tags: string[] }) {
           </Stack>
         </Card>
       ) : (
-        <RecipeList recipes={recipes} />
+        <RecipeList documentSummaries={documentSummaries} />
       )}
     </>
   );

@@ -15,7 +15,9 @@ Pass one or more focusable buttons as `trigger`. For triggers elsewhere in the t
 
 `confirmVariant="danger"` identifies a destructive action. Cancel receives initial focus. The cancel button and Escape call `onCancel`; the backdrop does not dismiss the dialog. `onConfirm` runs only for the confirmation button.
 
-For asynchronous work, control `open` with `onOpenChange` and close only when the caller is ready. In uncontrolled use, confirmation closes immediately after invoking `onConfirm`. The component does not manage pending state or prevent duplicate requests.
+For asynchronous work, control `open` with `onOpenChange` and close only when the caller is ready. In uncontrolled use, confirmation closes immediately after invoking `onConfirm`.
+
+When a controlled confirmation is pending, pass `pending`. This keeps Escape and Cancel from closing the dialog, disables Cancel, and disables the confirm action while it displays its pending state.
 
 ```tsx
 <AlertDialog

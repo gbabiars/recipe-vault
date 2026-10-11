@@ -1,59 +1,87 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { ToastProvider } from "@/components/ui/toast";
-import type { Recipe } from "@/lib/db/recipe-repository";
+import type { RecipeDocumentSnapshot } from "@/lib/db/recipe-repository";
 import RecipePage from "./page";
 
-const recipe: Recipe = {
-  id: "recipe-1",
-  ownerId: "user-1",
-  title: "Tomato soup",
-  summary: "Fresh basil soup",
-  tags: [],
-  notes: "A note",
-  ingredients: [{ displayOrder: 1, amount: "2 cups", ingredientName: "tomatoes" }],
-  steps: [{ stepOrder: 1, instruction: "Simmer." }],
-  createdAt: "2026-09-01T12:00:00.000Z",
-  updatedAt: "2026-09-01T12:00:00.000Z",
+const snapshot: RecipeDocumentSnapshot = {
+  recipe: {
+    id: "recipe-1",
+    title: "Garlic fried rice",
+    description: "A quick dinner made with cold rice.",
+    yield: { amount: 4, unit: "servings" },
+    time: { prepMinutes: 15, cookMinutes: 12, totalMinutes: 27 },
+    ingredients: [{ name: "cooked white rice", amount: "6 cups", note: "cooled" }],
+    equipment: [{ name: "wok" }],
+    instructions: ["Heat the wok.", "Fry the rice."],
+    notes: ["Work in batches."],
+    tags: ["rice", "weeknight"],
+  },
+  revision: 9,
 };
 
-const push = vi.hoisted(() => vi.fn());
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+const { getDocumentMock, pushMock } = vi.hoisted(() => ({
+  getDocumentMock: vi.fn(),
+  pushMock: vi.fn(),
+}));
 
 vi.mock("@/lib/auth/require-user", () => ({ requireUser: async () => ({ id: "user-1" }) }));
 vi.mock("@/lib/recipes", () => ({
-  getRecipeService: async () => ({ get: async () => recipe }),
+  getRecipeService: async () => ({ getDocument: getDocumentMock }),
 }));
-vi.mock("@/app/(private)/recipes/_actions/recipe-actions", () => ({
-  deleteRecipeAction: async () => ({ errors: {} }),
+vi.mock("@/app/(private)/recipes/_actions/recipe-document-actions", () => ({
+  deleteRecipeDocumentAction: async () => ({ status: "deleted" }),
+}));
+vi.mock("next/navigation", () => ({
+  notFound: () => {
+    throw new Error("NOT_FOUND");
+  },
+  useRouter: () => ({ push: pushMock }),
 }));
 
-test("shows cards in order with Notes when present", async () => {
+test("loads the owner-scoped document and renders its metadata and ordered detail cards", async () => {
+  getDocumentMock.mockResolvedValue(snapshot);
   render(
     <ToastProvider>
-      {await RecipePage({ params: Promise.resolve({ id: recipe.id }) })}
+      {await RecipePage({ params: Promise.resolve({ id: snapshot.recipe.id }) })}
     </ToastProvider>,
   );
-  expect(
-    screen.getByRole("heading", { level: 1, name: "Tomato soup" }).getAttribute("data-level"),
-  ).toBe("2");
-  expect(screen.getByText("Fresh basil soup").getAttribute("data-size")).toBe("medium");
+
+  expect(getDocumentMock).toHaveBeenCalledWith("user-1", "recipe-1");
+  expect(screen.getByRole("heading", { level: 1, name: "Garlic fried rice" })).toBeTruthy();
+  expect(screen.getByText("A quick dinner made with cold rice.")).toBeTruthy();
+  expect(screen.getByText("4 servings")).toBeTruthy();
+  expect(screen.getByText("rice")).toBeTruthy();
+  expect(screen.getByText("weeknight")).toBeTruthy();
   expect(
     screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
-  ).toEqual(["Details", "Ingredients", "Method", "Notes"]);
-  expect(screen.getByRole("button", { name: "Actions" })).toBeTruthy();
+  ).toEqual(["Details", "Ingredients", "Equipment", "Method", "Notes"]);
+  const breadcrumbs = screen.getByRole("navigation", { name: "Breadcrumbs" });
+  expect(within(breadcrumbs).getByRole("link", { name: "Recipes" })).toHaveAttribute(
+    "href",
+    "/recipes",
+  );
 });
 
-test("omits Notes when the recipe has none", async () => {
-  recipe.notes = undefined;
+test("renders optional yield by omission when the source does not state it", async () => {
+  getDocumentMock.mockResolvedValueOnce({
+    ...snapshot,
+    recipe: { ...snapshot.recipe, yield: undefined },
+  });
   render(
     <ToastProvider>
-      {await RecipePage({ params: Promise.resolve({ id: recipe.id }) })}
+      {await RecipePage({ params: Promise.resolve({ id: snapshot.recipe.id }) })}
     </ToastProvider>,
   );
-  expect(screen.queryByRole("heading", { name: "Notes" })).toBeNull();
-  expect(
-    screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
-  ).toEqual(["Details", "Ingredients", "Method"]);
-  recipe.notes = "A note";
+
+  expect(screen.queryByText("Yield")).toBeNull();
+  expect(screen.getByRole("heading", { level: 1, name: "Garlic fried rice" })).toBeTruthy();
+});
+
+test("uses not-found when no document belongs to the current user", async () => {
+  getDocumentMock.mockResolvedValueOnce(null);
+  await expect(RecipePage({ params: Promise.resolve({ id: "missing" }) })).rejects.toThrow(
+    "NOT_FOUND",
+  );
+  expect(getDocumentMock).toHaveBeenCalledWith("user-1", "missing");
 });

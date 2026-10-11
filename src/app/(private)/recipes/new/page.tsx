@@ -1,6 +1,5 @@
 import { requireUser } from "@/lib/auth/require-user";
-import { RecipeForm } from "../_components/recipe-form";
-import { saveRecipeAction } from "../_actions/recipe-actions";
+import { RecipeDocumentEditor } from "../_components/recipe-document-editor";
 import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
 export default async function NewRecipePage() {
@@ -16,7 +15,7 @@ export default async function NewRecipePage() {
         }
       />
       <PageContent>
-        <RecipeForm saveAction={saveRecipeAction} />
+        <RecipeDocumentEditor returnTo="/recipes" />
       </PageContent>
     </PageLayout>
   );

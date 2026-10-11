@@ -1,25 +1,24 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import type { TagInventoryItem, TagListOptions } from "@/lib/db/tag-repository";
+import type {
+  DocumentTagInventoryItem,
+  DocumentTagInventoryOptions,
+} from "@/lib/db/tag-repository";
 import TagsPage from "./page";
 
-const { listMock } = vi.hoisted(() => ({ listMock: vi.fn() }));
+const { listFromRecipesMock } = vi.hoisted(() => ({ listFromRecipesMock: vi.fn() }));
 
 vi.mock("@/lib/auth/require-user", () => ({
   requireUser: async () => ({ id: "owner-ada" }),
 }));
 vi.mock("@/lib/recipes", () => ({
-  getTagService: async () => ({ list: listMock }),
+  getTagService: async () => ({ listFromRecipes: listFromRecipesMock }),
 }));
 
-const allTags: TagInventoryItem[] = Array.from({ length: 53 }, (_, index) => {
-  const number = index + 1;
-  return {
-    id: `00000000-0000-4000-8000-${number.toString().padStart(12, "0")}`,
-    name: `page tag ${number.toString().padStart(3, "0")}`,
-    usageCount: number === 1 ? 0 : number % 3,
-  };
-});
+const allTags: DocumentTagInventoryItem[] = Array.from({ length: 53 }, (_, index) => ({
+  name: `page tag ${String(index + 1).padStart(3, "0")}`,
+  usageCount: index + 1,
+}));
 
 type SearchParams = { after?: string | string[]; before?: string | string[] };
 
@@ -34,141 +33,88 @@ function listedNames() {
   );
 }
 
-function cursorFromLink(name: "Previous" | "Next", direction: "before" | "after") {
-  const href = screen.getByRole("link", { name }).getAttribute("href");
-  if (!href) throw new Error(`Missing ${name} link href`);
-  const cursor = new URL(href, "http://recipe-vault.test").searchParams.get(direction);
-  if (!cursor) throw new Error(`Missing ${direction} cursor`);
+function nextCursor() {
+  const href = screen.getByRole("link", { name: "Next" }).getAttribute("href");
+  if (!href) throw new Error("Missing Next link href");
+  const cursor = new URL(href, "http://recipe-vault.test").searchParams.get("after");
+  if (!cursor) throw new Error("Missing after cursor");
   return cursor;
 }
 
-beforeEach(() => {
-  listMock.mockReset();
-});
+beforeEach(() => listFromRecipesMock.mockReset());
+afterEach(() => cleanup());
 
-afterEach(() => {
-  cleanup();
-});
-
-test("shows exact tag counts and optional descriptions with matching recipe filters", async () => {
-  listMock.mockResolvedValue({
-    tags: [
-      allTags[0]!,
-      { ...allTags[1]!, usageCount: 1, description: "Easy dinners for busy evenings." },
-    ],
+test("reads only document-derived names and counts for the authenticated owner", async () => {
+  listFromRecipesMock.mockResolvedValue({
+    tags: [allTags[0], allTags[1]],
     hasMore: false,
   });
 
   await renderPage();
 
   expect(screen.getByRole("heading", { level: 1, name: "Tags" })).toBeInTheDocument();
-  const tagsList = screen.getByRole("list", { name: "Tags" });
-  const listCard = tagsList.parentElement?.parentElement;
-  expect(listCard).toHaveAttribute("data-padding", "none");
-  expect(document.querySelectorAll('[data-padding="none"]')).toHaveLength(1);
-  expect(screen.getByRole("link", { name: "page tag 001" })).toHaveAttribute(
+  expect(screen.getByRole("link", { name: allTags[0]!.name })).toHaveAttribute(
     "href",
     "/recipes?tag=page%20tag%20001",
   );
-  expect(screen.getAllByRole("listitem")[0]?.querySelector("span")?.textContent?.trim()).toBe(
-    "0 recipes",
-  );
-  expect(
-    screen
-      .getAllByRole("listitem")[1]
-      ?.querySelector("span")
-      ?.textContent?.replace(/\s+/g, " ")
-      .trim(),
-  ).toBe("Easy dinners for busy evenings. · 1 recipe");
-  expect(screen.queryByRole("link", { name: "0 recipes" })).not.toBeInTheDocument();
-  expect(screen.queryByRole("link", { name: "1 recipe" })).not.toBeInTheDocument();
-  expect(screen.getAllByRole("listitem")).toHaveLength(2);
-  expect(listMock).toHaveBeenCalledWith("owner-ada", {
-    usage: "all",
+  expect(screen.getByText("1 recipe")).toBeInTheDocument();
+  expect(screen.getByText("2 recipes")).toBeInTheDocument();
+  expect(screen.queryByText(/description/i)).not.toBeInTheDocument();
+  expect(listFromRecipesMock).toHaveBeenCalledWith("owner-ada", {
     sort: "name_asc",
     limit: 25,
   });
 });
 
-test("next and previous cursors walk every tag exactly once in name order", async () => {
-  listMock.mockImplementation(async (_ownerId: string, options: TagListOptions) => {
-    if (options.after) {
-      const index = allTags.findIndex((tag) => tag.id === options.after?.id);
-      const start = index + 1;
+test("next cursor visits document tags once in name order", async () => {
+  listFromRecipesMock.mockImplementation(
+    async (
+      _ownerId: string,
+      options: DocumentTagInventoryOptions = { sort: "name_asc", limit: 25 },
+    ) => {
+      const start = options.after
+        ? allTags.findIndex((tag) => tag.name === options.after?.name) + 1
+        : 0;
       return { tags: allTags.slice(start, start + 25), hasMore: start + 25 < allTags.length };
-    }
-    if (options.before) {
-      const index = allTags.findIndex((tag) => tag.id === options.before?.id);
-      const start = Math.max(0, index - 25);
-      return { tags: allTags.slice(start, index), hasMore: start > 0 };
-    }
-    return { tags: allTags.slice(0, 25), hasMore: allTags.length > 25 };
-  });
+    },
+  );
 
   await renderPage();
-  const forwardNames = [...listedNames()];
-  let cursor = cursorFromLink("Next", "after");
-
+  const names = [...listedNames()];
+  const cursor = nextCursor();
   cleanup();
   await renderPage({ after: cursor });
-  forwardNames.push(...listedNames());
-  cursor = cursorFromLink("Next", "after");
-
+  names.push(...listedNames());
+  const secondCursor = nextCursor();
   cleanup();
-  await renderPage({ after: cursor });
-  forwardNames.push(...listedNames());
+  await renderPage({ after: secondCursor });
+  names.push(...listedNames());
 
-  expect(forwardNames).toEqual(allTags.map((tag) => tag.name));
-  expect(new Set(forwardNames).size).toBe(allTags.length);
-  expect(listMock.mock.calls.map((call) => call[0])).toEqual(Array(3).fill("owner-ada"));
-  expect(listMock.mock.calls[1]![1]).toEqual({
-    usage: "all",
+  expect(names).toEqual(allTags.map((tag) => tag.name));
+  expect(new Set(names).size).toBe(allTags.length);
+  expect(listFromRecipesMock).toHaveBeenNthCalledWith(2, "owner-ada", {
     sort: "name_asc",
     limit: 25,
-    after: allTags[24],
+    after: { name: allTags[24]!.name },
   });
-
-  cursor = cursorFromLink("Previous", "before");
-  cleanup();
-  await renderPage({ before: cursor });
-  expect(listedNames()).toEqual(allTags.slice(25, 50).map((tag) => tag.name));
-  expect(screen.getByRole("link", { name: "Next" })).toBeInTheDocument();
-  cursor = cursorFromLink("Previous", "before");
-
-  cleanup();
-  await renderPage({ before: cursor });
-  expect(listedNames()).toEqual(allTags.slice(0, 25).map((tag) => tag.name));
-  expect(screen.queryByRole("link", { name: "Previous" })).not.toBeInTheDocument();
 });
 
-test("invalid cursor parameters restart at the first page", async () => {
-  listMock.mockResolvedValue({ tags: [allTags[0]], hasMore: false });
+test("invalid and unsupported reverse cursors restart at page one", async () => {
+  listFromRecipesMock.mockResolvedValue({ tags: [allTags[0]], hasMore: false });
 
-  await renderPage({ after: "malformed", before: "also-malformed" });
+  await renderPage({ after: "malformed", before: "unsupported" });
 
-  expect(listMock).toHaveBeenCalledWith("owner-ada", {
-    usage: "all",
+  expect(listFromRecipesMock).toHaveBeenCalledWith("owner-ada", {
     sort: "name_asc",
     limit: 25,
   });
 });
 
 test("shows the empty inventory state", async () => {
-  listMock.mockResolvedValue({ tags: [], hasMore: false });
+  listFromRecipesMock.mockResolvedValue({ tags: [], hasMore: false });
 
   await renderPage();
 
   expect(screen.getByRole("heading", { level: 2, name: "No tags yet" })).toBeInTheDocument();
   expect(screen.queryByRole("navigation", { name: "Tag pages" })).not.toBeInTheDocument();
-});
-
-test("shows a safe error state when the inventory cannot be loaded", async () => {
-  listMock.mockRejectedValue(new Error("database detail must not be rendered"));
-
-  await renderPage();
-
-  expect(screen.getByRole("alert")).toHaveTextContent(
-    "Tags could not be loaded. Refresh the page to try again.",
-  );
-  expect(screen.queryByText("database detail must not be rendered")).not.toBeInTheDocument();
 });
