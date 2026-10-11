@@ -28,6 +28,64 @@ test("owner-bound tag service supplies its verified owner to the repository", as
   assert.equal(requestedOwner, "verified-owner");
 });
 
+test("document tag inventory delegates owner, search, sort, cursor, and page size", async () => {
+  const calls: Array<{ ownerId: string; options: Record<string, unknown> }> = [];
+  const expectedPage = {
+    tags: [{ name: "weeknight", usageCount: 3 }],
+    hasMore: false,
+  };
+  const repository = {
+    listFromDocuments: async (ownerId: string, options: Record<string, unknown>) => {
+      calls.push({ ownerId, options });
+      return expectedPage;
+    },
+  } as unknown as TagRepository;
+  const service = new TagService(repository);
+  const options = {
+    search: " week ",
+    sort: "usage_desc" as const,
+    limit: 10,
+    after: { name: "dinner", usageCount: 4 },
+  };
+
+  assert.equal(await service.listFromRecipes("owner-a", options), expectedPage);
+  assert.deepEqual(calls, [{ ownerId: "owner-a", options }]);
+});
+
+test("owner-bound document tag inventory uses its verified owner", async () => {
+  const calls: Array<{ ownerId: string; options: Record<string, unknown> }> = [];
+  const expectedPage = {
+    tags: [{ name: "dinner", usageCount: 2 }],
+    hasMore: true,
+  };
+  const repository = {
+    listFromDocuments: async (ownerId: string, options: Record<string, unknown>) => {
+      calls.push({ ownerId, options });
+      return expectedPage;
+    },
+  } as unknown as TagRepository;
+  const service = new OwnerBoundTagService("verified-owner", new TagService(repository));
+  const options = { sort: "name_asc" as const, limit: 25 };
+
+  assert.equal(await service.listFromRecipes(options), expectedPage);
+  assert.deepEqual(calls, [{ ownerId: "verified-owner", options }]);
+  assert.deepEqual(Object.keys(expectedPage.tags[0]), ["name", "usageCount"]);
+});
+
+test("document tag inventory errors propagate through the service", async () => {
+  const repository = {
+    listFromDocuments: async () => {
+      throw new Error("Could not load tags.");
+    },
+  } as unknown as TagRepository;
+  const service = new TagService(repository);
+
+  await assert.rejects(
+    service.listFromRecipes("owner-a", { sort: "name_asc", limit: 25 }),
+    /Could not load tags/,
+  );
+});
+
 test("owner-bound tag service never accepts an owner from delete input", async () => {
   const calls: Array<Record<string, unknown>> = [];
   const repository = new TagRepository({

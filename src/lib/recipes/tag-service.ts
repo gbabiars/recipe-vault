@@ -1,5 +1,6 @@
 import {
   TagRepository,
+  type DocumentTagInventoryOptions,
   type TagListOptions,
   type DocumentTagNameReplacementResult,
 } from "@/lib/db/tag-repository";
@@ -15,6 +16,11 @@ export class TagService {
 
   list(ownerId: string, options: TagListOptions) {
     return this.tags.list(ownerId, options);
+  }
+
+  /** Lists names and usage counts derived from the owner's recipe documents. */
+  listFromRecipes(ownerId: string, options: DocumentTagInventoryOptions) {
+    return this.tags.listFromDocuments(ownerId, options);
   }
 
   deleteUnused(ownerId: string, tagId: string) {
@@ -45,6 +51,10 @@ export class OwnerBoundTagService {
 
   list(options: TagListOptions) {
     return this.tags.list(this.ownerId, options);
+  }
+
+  listFromRecipes(options: DocumentTagInventoryOptions) {
+    return this.tags.listFromRecipes(this.ownerId, options);
   }
 
   deleteUnused(tagId: string) {
