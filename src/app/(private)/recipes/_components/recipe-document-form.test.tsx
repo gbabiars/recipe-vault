@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
+import { userEvent } from "vitest/browser";
 import { RecipeDocumentForm, type RecipeDocumentSaveAction } from "./recipe-document-form";
 import type { RecipeDocumentContent } from "@/lib/validation/recipe-document";
 
@@ -16,11 +17,12 @@ test("creates a complete document with optional fields and no yield", async () =
   fill("Title", "Quick pickled onions");
   fill("Description", "Tangy onions for tacos.");
   fill("Ingredient name", "red onion");
-  fill("Amount (optional)", "1");
-  fill("Preparation note (optional)", "thinly sliced");
+  fill("Amount", "1");
+  fill("Preparation note", "thinly sliced");
   fill("Direction", "Put the onion in a jar.");
-  fill("Tags", "condiments");
-  fill("Source URL (optional)", "https://example.com/onions");
+  await userEvent.type(screen.getByRole("combobox", { name: "Tags" }), "condiments");
+  await userEvent.click(await screen.findByRole("option", { name: /Create “condiments”/ }));
+  fill("Source URL", "https://example.com/onions");
   fireEvent.click(screen.getByRole("button", { name: "Add equipment" }));
   fill("Equipment name", "jar");
   fireEvent.click(screen.getByRole("button", { name: "Add note" }));
@@ -80,7 +82,7 @@ test("keeps a blank optional yield valid", async () => {
   fill("Title", "Rice");
   fill("Ingredient name", "rice");
   fill("Direction", "Cook the rice.");
-  fill("Yield unit (optional)", "");
+  fill("Yield unit", "");
 
   fireEvent.click(screen.getByRole("button", { name: "Create recipe" }));
   await waitFor(() => expect(saveRecipe).toHaveBeenCalledTimes(1));

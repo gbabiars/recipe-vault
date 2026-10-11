@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ComboboxField, type ComboboxOption } from "@/components/ui/combobox";
 import { Heading } from "@/components/ui/heading";
 import { Inline } from "@/components/ui/inline";
 import { Stack } from "@/components/ui/stack";
@@ -10,10 +12,12 @@ import { Text } from "@/components/ui/text";
 import { TextInput } from "@/components/ui/text-input";
 import { Textarea } from "@/components/ui/textarea";
 import type { RecipeDocumentContent } from "@/lib/validation/recipe-document";
+import { tagNameSchema } from "@/lib/validation/recipe";
 import {
   parseRecipeDocumentFormData,
   type RecipeDocumentFormErrors,
 } from "../_lib/recipe-document-form-data";
+import styles from "./recipe-document-form.module.css";
 
 type RecipeDocumentEdit = {
   id: string;
@@ -45,6 +49,7 @@ type EquipmentValue = RecipeDocumentContent["equipment"][number];
 
 const blankIngredient: IngredientValue = { name: "" };
 const blankEquipment: EquipmentValue = { name: "" };
+const commonRecipeTags = ["dinner", "soup", "weeknight"];
 
 function blankContent(): RecipeDocumentContent {
   return {
@@ -82,7 +87,9 @@ export function RecipeDocumentForm({
   const [content, setContent] = useState<RecipeDocumentContent>(
     () => recipe?.content ?? blankContent(),
   );
-  const [tagsInput, setTagsInput] = useState(() => content.tags.join(", "));
+  const tagOptions: ComboboxOption[] = [...new Set([...commonRecipeTags, ...content.tags])].map(
+    (value) => ({ value, label: value, icon: Tag }),
+  );
   const [ingredients, setIngredients] = useState<IngredientValue[]>(content.ingredients);
   const [equipment, setEquipment] = useState<EquipmentValue[]>(content.equipment);
   const [instructions, setInstructions] = useState<string[]>(content.instructions);
@@ -184,11 +191,12 @@ export function RecipeDocumentForm({
             error={errorFor(errors, "description")}
             onValueChange={(description) => setFieldValue("description", description)}
           />
-          <Inline gap="100" wrap>
+          <div className={styles.formGrid}>
             <TextInput
               name="yieldAmount"
-              label="Yield amount (optional)"
+              label="Yield amount"
               type="number"
+              required={content.yield !== undefined}
               min={0}
               step="any"
               value={content.yield?.amount ?? ""}
@@ -197,7 +205,8 @@ export function RecipeDocumentForm({
             />
             <TextInput
               name="yieldUnit"
-              label="Yield unit (optional)"
+              label="Yield unit"
+              required={content.yield !== undefined}
               maxLength={64}
               value={content.yield?.unit ?? ""}
               error={errorFor(errors, "yield.unit")}
@@ -233,18 +242,24 @@ export function RecipeDocumentForm({
               error={errorFor(errors, "time.totalMinutes")}
               onValueChange={(value) => setTime("totalMinutes", value)}
             />
-          </Inline>
-          <Textarea
+          </div>
+          <ComboboxField
             name="tags"
             label="Tags"
-            helpText="Separate tags with commas or line breaks."
-            value={tagsInput}
+            placeholder="Search or add tags"
+            helpText="Choose a suggestion or add a tag."
+            multiple
+            defaultValue={content.tags}
+            options={tagOptions}
+            createOption={(query) => {
+              const result = tagNameSchema.safeParse(query);
+              return result.success ? { value: result.data, label: result.data, icon: Tag } : null;
+            }}
             error={errorFor(errors, "tags")}
-            onValueChange={setTagsInput}
           />
           <TextInput
             name="sourceUrl"
-            label="Source URL (optional)"
+            label="Source URL"
             type="url"
             maxLength={2_000}
             value={content.sourceUrl ?? ""}
@@ -268,47 +283,55 @@ export function RecipeDocumentForm({
           </Inline>
           <input type="hidden" name="ingredientCount" value={ingredients.length} />
           {ingredients.map((ingredient, index) => (
-            <fieldset key={index}>
+            <fieldset className={styles.repeatRow} key={index}>
               <legend>Ingredient {index + 1}</legend>
-              <Stack gap="100">
-                <TextInput
-                  name={`ingredient.${index}.name`}
-                  label="Ingredient name"
-                  required
-                  maxLength={200}
-                  value={ingredient.name}
-                  error={errorFor(errors, `ingredients.${index}.name`)}
-                  onValueChange={(name) => updateRow(ingredients, setIngredients, index, { name })}
-                />
-                <TextInput
-                  name={`ingredient.${index}.amount`}
-                  label="Amount (optional)"
-                  maxLength={128}
-                  value={ingredient.amount ?? ""}
-                  error={errorFor(errors, `ingredients.${index}.amount`)}
-                  onValueChange={(amount) =>
-                    updateRow(ingredients, setIngredients, index, { amount: amount || undefined })
-                  }
-                />
-                <TextInput
-                  name={`ingredient.${index}.note`}
-                  label="Preparation note (optional)"
-                  maxLength={1_000}
-                  value={ingredient.note ?? ""}
-                  error={errorFor(errors, `ingredients.${index}.note`)}
-                  onValueChange={(note) =>
-                    updateRow(ingredients, setIngredients, index, { note: note || undefined })
-                  }
-                />
-                {ingredients.length > 1 && (
-                  <Button
-                    label={`Remove ingredient ${index + 1}`}
-                    type="button"
-                    variant="subtle"
-                    onClick={() => setIngredients(ingredients.filter((_, row) => row !== index))}
+              <div className={styles.ingredientGrid}>
+                <div className={styles.ingredientName}>
+                  <TextInput
+                    name={`ingredient.${index}.name`}
+                    label="Ingredient name"
+                    required
+                    maxLength={200}
+                    value={ingredient.name}
+                    error={errorFor(errors, `ingredients.${index}.name`)}
+                    onValueChange={(name) =>
+                      updateRow(ingredients, setIngredients, index, { name })
+                    }
                   />
-                )}
-              </Stack>
+                </div>
+                <div className={styles.ingredientAmount}>
+                  <TextInput
+                    name={`ingredient.${index}.amount`}
+                    label="Amount"
+                    maxLength={128}
+                    value={ingredient.amount ?? ""}
+                    error={errorFor(errors, `ingredients.${index}.amount`)}
+                    onValueChange={(amount) =>
+                      updateRow(ingredients, setIngredients, index, { amount: amount || undefined })
+                    }
+                  />
+                </div>
+                <div className={styles.ingredientNotes}>
+                  <TextInput
+                    name={`ingredient.${index}.note`}
+                    label="Preparation note"
+                    maxLength={1_000}
+                    value={ingredient.note ?? ""}
+                    error={errorFor(errors, `ingredients.${index}.note`)}
+                    onValueChange={(note) =>
+                      updateRow(ingredients, setIngredients, index, { note: note || undefined })
+                    }
+                  />
+                </div>
+              </div>
+              {ingredients.length > 1 && (
+                <Button
+                  label={`Remove ingredient ${index + 1}`}
+                  type="button"
+                  variant="subtle"
+                  onClick={() => setIngredients(ingredients.filter((_, row) => row !== index))}
+                />
+              )}
             </fieldset>
           ))}
           {errors.ingredients && <Text appearance="error">{errors.ingredients}</Text>}
@@ -329,7 +352,7 @@ export function RecipeDocumentForm({
           </Inline>
           <input type="hidden" name="equipmentCount" value={equipment.length} />
           {equipment.map((item, index) => (
-            <fieldset key={index}>
+            <fieldset className={styles.repeatRow} key={index}>
               <legend>Equipment {index + 1}</legend>
               <Stack gap="100">
                 <TextInput
@@ -343,7 +366,7 @@ export function RecipeDocumentForm({
                 />
                 <TextInput
                   name={`equipment.${index}.note`}
-                  label="Equipment note (optional)"
+                  label="Equipment note"
                   maxLength={1_000}
                   value={item.note ?? ""}
                   error={errorFor(errors, `equipment.${index}.note`)}
@@ -377,7 +400,7 @@ export function RecipeDocumentForm({
           </Inline>
           <input type="hidden" name="instructionCount" value={instructions.length} />
           {instructions.map((instruction, index) => (
-            <fieldset key={index}>
+            <fieldset className={styles.repeatRow} key={index}>
               <legend>Instruction {index + 1}</legend>
               <Stack gap="100">
                 <Textarea
@@ -415,12 +438,13 @@ export function RecipeDocumentForm({
           </Inline>
           <input type="hidden" name="noteCount" value={notes.length} />
           {notes.map((note, index) => (
-            <fieldset key={index}>
+            <fieldset className={styles.repeatRow} key={index}>
               <legend>Note {index + 1}</legend>
               <Stack gap="100">
                 <Textarea
                   name={`note.${index}`}
                   label="Recipe note"
+                  required
                   value={note}
                   error={errorFor(errors, `notes.${index}`)}
                   onValueChange={(value) =>

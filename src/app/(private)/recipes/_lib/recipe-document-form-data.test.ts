@@ -56,6 +56,19 @@ test("parses ordered document content, free-text amounts, and omitted yield", ()
   });
 });
 
+test("parses repeated tag values from the combobox", () => {
+  const form = validForm();
+  form.delete("tags");
+  form.append("tags", " Soup ");
+  form.append("tags", "Weeknight");
+  form.append("tags", "soup");
+
+  const result = parseRecipeDocumentFormData(form);
+
+  assert.equal(result.success, true);
+  if (result.success) assert.deepEqual(result.data.tags, ["soup", "weeknight"]);
+});
+
 test("reports incomplete yield and invalid times instead of coercing them", () => {
   const form = validForm();
   form.set("yieldAmount", "3");

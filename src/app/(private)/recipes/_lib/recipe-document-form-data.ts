@@ -90,8 +90,9 @@ export function parseRecipeDocumentFormData(formData: FormData): RecipeDocumentF
       field(formData, `instruction.${index}`),
     ),
     notes: Array.from({ length: noteCount }, (_, index) => field(formData, `note.${index}`)),
-    tags: field(formData, "tags")
-      .split(/[\n,]/)
+    tags: formData
+      .getAll("tags")
+      .flatMap((tag) => (typeof tag === "string" ? tag.split(/[\n,]/) : []))
       .map((tag) => tag.trim())
       .filter(Boolean),
     ...(sourceUrl === undefined ? {} : { sourceUrl }),

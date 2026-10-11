@@ -1,0 +1,48 @@
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem 1rem;
+}
+
+.ingredientGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem 1rem;
+}
+
+.ingredientName,
+.ingredientAmount {
+  grid-column: span 2;
+}
+
+.ingredientNotes {
+  grid-column: 1 / -1;
+}
+
+.repeatRow {
+  display: grid;
+  gap: 0.85rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: 0.4rem;
+  margin: 0.85rem 0;
+  padding: 0.75rem;
+  min-width: 0;
+}
+
+.repeatRow legend {
+  font-weight: 700;
+  padding: 0 0.25rem;
+}
+
+@media (--viewport-below-sm) {
+  .formGrid,
+  .ingredientGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ingredientName,
+  .ingredientAmount,
+  .ingredientNotes {
+    grid-column: 1;
+  }
+}
