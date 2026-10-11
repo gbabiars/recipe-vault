@@ -9,7 +9,7 @@ type RecipeDocument = {
   id: string; // Unique and immutable
   title: string;
   description: string;
-  yield: {
+  yield?: {
     amount: number;
     unit: string;
   };
@@ -35,7 +35,9 @@ type RecipeDocument = {
 ```
 
 A recipe's `id` is unique and immutable. A complete recipe has a nonempty title,
-a positive yield amount, at least one ingredient, and at least one instruction.
+at least one ingredient, and at least one instruction. Omit `yield` when the
+source does not state it; do not store `null` or infer a serving count. When
+present, `yield` has a positive amount and a nonempty unit.
 Array position supplies ingredient, equipment, instruction, and note order.
 Equipment, notes, and tags can be empty arrays.
 
@@ -126,16 +128,50 @@ rules.
 }
 ```
 
-A consumer reads either document the same way:
+### Example: a recipe with no stated yield
+
+```json
+{
+  "id": "a75a85ad-7881-48a8-bd79-322087325b3c",
+  "title": "Quick pickled onions",
+  "description": "A small jar of tangy onions for tacos and salads.",
+  "time": { "prepMinutes": 10 },
+  "ingredients": [
+    { "name": "red onion", "amount": "1", "note": "thinly sliced" },
+    { "name": "vinegar", "amount": "1/2 cup" },
+    { "name": "salt", "amount": "1 teaspoon" }
+  ],
+  "equipment": [{ "name": "jar" }],
+  "instructions": [
+    "Put the onion in the jar.",
+    "Stir the vinegar and salt together, then pour over the onion.",
+    "Refrigerate until the onion softens."
+  ],
+  "notes": [],
+  "tags": ["condiments"]
+}
+```
+
+A consumer handles recipes with or without a stated yield:
 
 ```tsx
-<h1>{recipe.title}</h1>
-<p>{recipe.yield.amount} {recipe.yield.unit}</p>
-<ol>
-  {recipe.instructions.map((instruction, index) => (
-    <li key={index}>{instruction}</li>
-  ))}
-</ol>
+function RecipeExcerpt({ recipe }: { recipe: RecipeDocument }) {
+  return (
+    <>
+      <h1>{recipe.title}</h1>
+      {recipe.yield && (
+        <p>
+          {recipe.yield.amount} {recipe.yield.unit}
+        </p>
+      )}
+      <ol>
+        {recipe.instructions.map((instruction, index) => (
+          <li key={index}>{instruction}</li>
+        ))}
+      </ol>
+    </>
+  );
+}
 ```
 
 ## Storage design: one document, targeted projections
@@ -212,7 +248,7 @@ await tagService.replaceNameInRecipes(ownerId, {
 
 ## Incremental implementation plan
 
-1. **Audit existing recipes and define the conversion.** Map `summary → description`, `servings → yield`, ingredient rows → ordered array, steps → instruction strings, recipe notes → an array, and missing equipment → `[]`. Inventory recipes without servings, steps with `durationMinutes`, tag descriptions, and unused tags. Do not invent a yield or silently discard tag metadata.
+1. **Audit existing recipes and define the conversion.** Map `summary → description`, known positive `servings → yield`, ingredient rows → ordered array, steps → instruction strings, recipe notes → an array, and missing equipment → `[]`. Omit `yield` when servings are absent. Inspect nonpositive legacy values; inventory steps with `durationMinutes`, tag descriptions, and unused tags. Do not invent a yield or silently discard tag metadata.
 
 2. **Add document storage beside the current model.** Add the JSONB field and metadata while retaining existing columns and tables. Validate document structure at the application boundary and keep `id` and `owner_id` database-controlled. Preserve RLS and the verified MCP credential boundary.
 
@@ -224,9 +260,10 @@ await tagService.replaceNameInRecipes(ownerId, {
 
 6. **Remove the old recipe and tag representation after verification.** Run focused migration and RLS tests, API and MCP tests, and checks for the affected UI. Have an independent reviewer trace owner binding, document-based tag operations, and service-role access before removing old storage.
 
-The **schema is agreed**, including document-sourced tags. The storage design
-above remains proposed. Existing recipes without servings require a real yield
-before cutover, and existing per-step durations will be appended to instruction
-text. HTTP API and MCP recipe and tag contracts will change together at cutover.
+The **schema is agreed**, including optional yield and document-sourced tags.
+The storage design above remains proposed. Existing recipes without servings
+will omit `yield`, and existing per-step durations will be appended to
+instruction text. HTTP API and MCP recipe and tag contracts will change
+together at cutover.
 The detailed [implementation plan](recipe-document-implementation-plan.md)
 records the steps and checks. No database or application migration has started.

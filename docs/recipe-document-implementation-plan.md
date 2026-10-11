@@ -1,6 +1,6 @@
 # Recipe document implementation plan
 
-Revision: 2
+Revision: 3
 
 Status: proposed implementation plan. The
 [recipe document schema and storage proposal](recipe-document-storage-spec.md)
@@ -22,10 +22,11 @@ order; the target does not store ingredient or instruction order numbers.
 
 ## Agreed migration decisions and rollout assumption
 
-1. **Missing legacy yield:** Existing `servings` is nullable, while the agreed
-   document requires a positive yield. Inventory affected recipe IDs and
-   obtain real yields before cutover. Do not assign a made-up value or add an
-   incomplete-draft exception.
+1. **Missing legacy yield:** Existing `servings` is nullable. Omit `yield` when
+   no amount is known. Convert a positive serving count to
+   `{ amount: servings, unit: "servings" }`. Inspect nonpositive legacy values
+   and omit them only when the source truly has no stated yield; never invent
+   one. If `yield` is present, its amount and unit must be valid.
 2. **Legacy step duration:** The target has instruction strings without a
    duration field. Append ` (Duration: N minutes)` to an instruction with a
    non-null duration of `N`, including zero. Convert from the original row so
@@ -33,7 +34,7 @@ order; the target does not store ingredient or instruction order numbers.
 3. **External contract:** Current `/api/v1` and MCP recipe contracts cannot
    represent non-serving yields, equipment, or multiple recipe notes. Change
    the existing HTTP and MCP recipe contracts in one coordinated cutover. New
-   writes require a real yield; no compatibility default is invented.
+   writes may omit `yield`; no compatibility default is invented.
 4. **Cutover writes (plan assumption):** Use a short recipe-write pause for the final
    backfill and application cutover. This avoids a lasting pair of competing
    recipe representations. Reads remain available during the pause.
@@ -75,15 +76,15 @@ complete validated content. The existing `/api/v1` and MCP recipe contracts
 change together at cutover; the new HTTP write is a full-document replacement
 with a required revision.
 
-| Existing HTTP route         | Cutover contract                                                                           |
-| --------------------------- | ------------------------------------------------------------------------------------------ |
-| `GET /api/v1/recipes/:id`   | Return `{ recipe, revision }`                                                              |
-| `POST /api/v1/recipes`      | Accept the complete document content without `id`; the server assigns `id` and owner       |
-| `PUT /api/v1/recipes/:id`   | Replace the complete document with `expectedRevision`; return a conflict on stale revision |
-| `PATCH /api/v1/recipes/:id` | Remove the old partial-update contract at coordinated cutover                              |
+| Existing HTTP route         | Cutover contract                                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `GET /api/v1/recipes/:id`   | Return `{ recipe, revision }`                                                                                |
+| `POST /api/v1/recipes`      | Accept the complete document content without `id`; `yield` may be omitted; the server assigns `id` and owner |
+| `PUT /api/v1/recipes/:id`   | Replace the complete document with `expectedRevision`; return a conflict on stale revision                   |
+| `PATCH /api/v1/recipes/:id` | Remove the old partial-update contract at coordinated cutover                                                |
 
 The list response will use a document-derived summary. The existing MCP
-`save_recipe` input will require the new yield and accept equipment and notes;
+`save_recipe` input will allow yield to be absent and accept equipment and notes;
 read and search tools will expose the new document shape. Document the breaking
 contract before cutover.
 
@@ -120,8 +121,9 @@ recipe contract.
   without logging recipe content.
 - Define pure conversion from the old read model: `summary` becomes
   `description` (empty string when absent); a positive `servings` becomes
-  `{ amount: servings, unit: "servings" }`; scalar recipe `notes` becomes `[]`
-  or a one-item array; ingredient and step rows follow their existing order;
+  `{ amount: servings, unit: "servings" }` and absent servings omit `yield`;
+  scalar recipe `notes` becomes `[]` or a one-item array; ingredient and step
+  rows follow their existing order;
   equipment becomes `[]`; canonical tag names and source URL retain their
   current values. Archive the old tag owner, ID, name, and description records,
   plus recipe/tag links, outside the product before removing their tables;
@@ -136,9 +138,10 @@ rows and a verified archive of tag metadata that the document cannot represent.
 ### 2. Add document validation and repository contracts
 
 - Add the agreed create/read document schema in `src/lib/validation`; validate
-  complete documents at application boundaries. Replace the old timing rule
-  that requires total time to exceed prep plus cook, because the agreed schema
-  treats total time as independent elapsed time.
+  complete documents at application boundaries. Accept an omitted `yield`,
+  reject `null`, and require a positive amount and nonempty unit when present.
+  Replace the old timing rule that requires total time to exceed prep plus
+  cook, because the agreed schema treats total time as independent elapsed time.
 - Add a document mapper and the new service/repository methods under
   `src/lib/recipes` and `src/lib/db`. Keep owner binding in service calls.
 - Define document-derived tag service results as `{ name, usageCount }`, with
@@ -155,7 +158,8 @@ consuming calls above before implementing their signatures.
 - Add nullable `recipes.document jsonb` and `revision` in an additive
   migration. Keep the current columns and child tables during backfill.
 - Add a database-side JSON Schema constraint for the complete nested document,
-  using the Supabase-supported `pg_jsonschema` extension. It must check yield,
+  using the Supabase-supported `pg_jsonschema` extension. It must allow `yield`
+  to be absent while checking its fields when present, as well as checking
   ingredient/equipment objects, instruction and note arrays, tags, optional
   time fields, and source URL, not just top-level keys. Test representative
   documents against both this constraint and application validation so they
@@ -181,7 +185,8 @@ consuming calls above before implementing their signatures.
 direct-document-write denial, and representative `EXPLAIN` plans for title
 substring and owner-scoped tag queries. Call the database writer
 directly with malformed nested fields, missing required arrays, and invalid
-yield values; each must fail without changing data.
+present yield values; each must fail without changing data. A valid document
+without `yield` must succeed.
 
 ### 4. Backfill and verify documents
 
@@ -254,15 +259,16 @@ bypass write scope.
 ### 7. Prepare each application consumer
 
 - Update the private detail and list views to render document fields, including
-  non-serving yields, equipment, and note arrays. Change the `/tags` page to
-  show document-derived names and counts without IDs, descriptions, or unused
-  tags. Verify component tests and affected Storybook stories.
+  absent or non-serving yields, equipment, and note arrays. Change the `/tags`
+  page to show document-derived names and counts without IDs, descriptions, or
+  unused tags. Verify component tests and affected Storybook stories.
 - Update the private create/edit form and server actions to submit complete
-  documents and expected revisions. Verify create, edit, stale conflict, and
+  documents and expected revisions. Let users leave yield blank; omit the field
+  on submission. Verify create and edit with no yield, stale conflict, and
   deletion interactions in the browser component project.
 - Update website and PDF extraction/adapters to produce the new validated
-  content without inventing a yield. Verify source URL preservation, bounded
-  extraction failures, and recipes with no source URL.
+  content without inventing a yield. Verify omitted yield, source URL
+  preservation, bounded extraction failures, and recipes with no source URL.
 - Stage these paths on the branch without deploying their new write behavior
   until the coordinated cutover; test each against the document repository
   locally.
@@ -273,7 +279,7 @@ consumer change.
 ### 8. Prepare HTTP and MCP contracts, then cut over together
 
 - Update the existing HTTP route handlers and MCP recipe tool schemas to the
-  new document contract, including the required yield and revision conflict.
+  new document contract, including optional yield and revision conflict.
   Replace tag inventory, name replacement, and pagination contracts; remove
   unused-tag deletion. Verify scope enforcement and owner binding on all MCP
   tools.
