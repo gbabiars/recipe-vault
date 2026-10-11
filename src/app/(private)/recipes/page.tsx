@@ -23,21 +23,23 @@ export default async function RecipesPage({
     <PageLayout>
       <PageHeader title="Your recipes" actions={<RecipesHeaderActions />} />
       <PageContent>
-        <Card padding="none">
-          <Stack gap="200" paddingBlock="200" paddingInline="200">
-            <RecipeFilters q={q} tag={tags} />
-            <Suspense
-              key={JSON.stringify([q, tags])}
-              fallback={
-                <Text as="p" aria-live="polite">
-                  Loading your recipes…
-                </Text>
-              }
-            >
-              <RecipeResults q={q} tags={tags} />
-            </Suspense>
-          </Stack>
-        </Card>
+        <Stack gap="200">
+          <RecipeFilters q={q} tag={tags} />
+          <Card padding="none">
+            <Stack paddingBlock="200" paddingInline="200">
+              <Suspense
+                key={JSON.stringify([q, tags])}
+                fallback={
+                  <Text as="p" aria-live="polite">
+                    Loading your recipes…
+                  </Text>
+                }
+              >
+                <RecipeResults q={q} tags={tags} />
+              </Suspense>
+            </Stack>
+          </Card>
+        </Stack>
       </PageContent>
     </PageLayout>
   );
