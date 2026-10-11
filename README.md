@@ -31,36 +31,35 @@ change the Clerk instance's sign-up policy.
 The authenticated API is under `/api/v1`. Identity always comes from Clerk and
 never from a request owner field.
 
-| Method   | Path                  | Behavior                                                                 |
-| -------- | --------------------- | ------------------------------------------------------------------------ |
-| `GET`    | `/api/v1/recipes`     | Paginated owned summaries with search and filters.                       |
-| `GET`    | `/api/v1/tags`        | First 25 owned tag names, or a `search` substring match, alphabetically. |
-| `POST`   | `/api/v1/recipes`     | Creates an owned recipe.                                                 |
-| `GET`    | `/api/v1/recipes/:id` | Returns one owned complete recipe.                                       |
-| `PATCH`  | `/api/v1/recipes/:id` | Validates and applies a partial update.                                  |
-| `DELETE` | `/api/v1/recipes/:id` | Deletes an owned recipe.                                                 |
+| Method   | Path                  | Behavior                                                                  |
+| -------- | --------------------- | ------------------------------------------------------------------------- |
+| `GET`    | `/api/v1/recipes`     | Paginated owned summaries with search and filters.                        |
+| `GET`    | `/api/v1/tags`        | Paginated owned tag names and usage counts derived from recipe documents. |
+| `POST`   | `/api/v1/recipes`     | Creates an owned recipe document.                                         |
+| `GET`    | `/api/v1/recipes/:id` | Returns one owned document and its revision.                              |
+| `PUT`    | `/api/v1/recipes/:id` | Replaces the complete document using an expected revision.                |
+| `DELETE` | `/api/v1/recipes/:id` | Deletes an owned recipe using an expected revision.                       |
 
-The tag endpoint returns `{ data: [{ name }], meta: { requestId } }` with a
-private `no-store` response. An empty or omitted `search` lists the first 25.
+The HTTP recipe contract is a coordinated breaking change: `PATCH` is removed,
+`PUT` replaces the entire validated document, and reads include a revision for
+optimistic concurrency. Recipe documents contain `id`, `title`, `description`,
+optional `yield` (`amount` and `unit`), `time`, ordered `ingredients` (each with
+`name` and optional text `amount` and `note`), `equipment`, ordered string
+`instructions`, `notes`, `tags`, and optional `sourceUrl`. The server assigns
+the ID and binds ownership from Clerk. A missing yield is valid; it is never
+invented during conversion or import.
 
-Recipe `tags: string[]` remains the API format. Tag IDs and associations live
-in owner-scoped database tables; the array is a synchronized compatibility
-projection until recipe readers and writers move to the new model. The tag
-migration backfills existing arrays using lowercase names, trimmed surrounding
-whitespace, and one space for repeated internal spaces. Similar names are kept
-separate. Recipe writes are atomic database transactions, including tag creation
-and ingredient and step changes. The MCP exposes owner-scoped tag inventory and
-tag maintenance operations; a dedicated tag-management UI remains future work.
-Apply the tag migration before deploying the application code that calls the new
-recipe write function. The migration retains the array and installs its sync
-triggers, so older application instances can continue writing during rollout.
+Tags are canonical names stored in each recipe's `tags` array. Inventory,
+search filters, and usage counts are derived from the authenticated owner's
+documents; there is no separate tag table in the target model. Replacing a tag
+name updates affected documents atomically, and deleting the last recipe that
+uses a name removes it from inventory. `GET /api/v1/tags` returns paginated
+`{ name, usageCount }` items with optional literal substring search.
 
-Recipe ingredients use `displayOrder`, `ingredientName`, optional free-text
-`amount` (up to 128 trimmed characters), and optional `notes`. Amounts can
-preserve source wording such as `1 1/2 cups` or `to taste`.
-Apply the ingredient amount migration before deploying application code that
-uses this contract; it converts existing quantity/unit values before dropping
-those columns.
+The coordinated cutover sequence, migration commands, rollback boundary, and
+production status are documented in the [recipe document cutover runbook](docs/recipe-document-cutover-runbook.md).
+The approved schema and storage decisions are in the
+[recipe document specification](docs/recipe-document-storage-spec.md).
 
 Successful writes record safe audit events. Recipe bodies, cookies,
 credentials, and request headers are never placed in audit metadata or
@@ -75,14 +74,17 @@ client compatibility), and the standard OAuth metadata endpoints:
 - `/.well-known/oauth-protected-resource/mcp`
 - `/.well-known/oauth-authorization-server`
 
-The server exposes `list_tags`, `delete_unused_tag`, `merge_tags`,
-`search_recipes`, `get_recipe`, and create-only `save_recipe`. Read tools require
-`recipes:read`; tag maintenance and save require `recipes:write`. `list_tags`
-returns each owned tag's ID, name, and exact associated-recipe count, with
-literal search, used/unused filtering, usage sorting, and cursor pagination.
-An agent can remove an unused tag by ID or merge an explicitly selected source
-tag into a target; merge preserves recipe associations, deduplicates recipes
-that already have both, and never guesses similar names.
+The server exposes `list_tags`, `replace_tag_name`, `search_recipes`,
+`get_recipe`, `save_recipe`, and `replace_recipe`. Read tools require
+`recipes:read`; mutations require `recipes:write`. `list_tags` returns only
+document-derived names and exact recipe usage counts, with literal search,
+usage or name sorting, and cursor pagination. `replace_tag_name` replaces an
+explicitly selected canonical name in the authenticated user's recipe documents
+and deduplicates names where the target already exists. There are no tag IDs,
+descriptions, unused tags, or separate tag table in the target model.
+
+MCP recipe tools use the full recipe document. `save_recipe` creates a document;
+`replace_recipe` replaces one using its expected revision. Yield is optional.
 
 For MCP Apps-capable hosts, `get_recipe` also renders a portable, read-only
 recipe view after the model searches for and selects a recipe ID. The same tool

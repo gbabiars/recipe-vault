@@ -15,12 +15,11 @@ test("renders display-only recipe cards with optional recipe details", () => {
         {
           id: recipeId,
           title: "Tomato soup",
-          summary: "A simple soup with basil.",
-          prepTimeMinutes: 10,
-          cookTimeMinutes: 20,
-          totalTimeMinutes: 30,
-          servings: 4,
+          description: "A simple soup with basil.",
+          time: { prepMinutes: 10, cookMinutes: 20, totalMinutes: 30 },
+          yield: { amount: 4, unit: "servings" },
           tags: ["soup", "vegetarian"],
+          revision: 3,
         },
       ]}
     />,
@@ -30,7 +29,7 @@ test("renders display-only recipe cards with optional recipe details", () => {
   expect(screen.getByRole("heading", { name: "Tomato soup", level: 2 })).toBeInTheDocument();
   expect(screen.getByText("A simple soup with basil.")).toBeInTheDocument();
   expect(
-    screen.getByText("Prep: 10 min · Cook: 20 min · Total: 30 min · Serves: 4"),
+    screen.getByText("Prep: 10 min · Cook: 20 min · Total: 30 min · Yield: 4 servings"),
   ).toBeInTheDocument();
   expect(screen.getByText("soup")).toBeInTheDocument();
   expect(screen.getByText("vegetarian")).toBeInTheDocument();
@@ -40,16 +39,46 @@ test("renders display-only recipe cards with optional recipe details", () => {
   expect(screen.queryByRole("button")).toBeNull();
 });
 
+test("accepts the document search_recipes structured payload", () => {
+  const state = getRecipeSearchViewState({
+    recipes: [
+      {
+        id: recipeId,
+        title: "Crispy tofu bowls",
+        description: "A weeknight bowl with gingery sauce.",
+        time: { prepMinutes: 15, cookMinutes: 20, totalMinutes: 35 },
+        yield: { amount: 2, unit: "bowls" },
+        tags: ["dinner", "vegetarian"],
+        revision: 7,
+      },
+    ],
+  });
+
+  expect(state.state).toBe("recipes");
+  render(<RecipeSearchView {...state} />);
+  expect(screen.getByRole("heading", { name: "Crispy tofu bowls", level: 2 })).toBeInTheDocument();
+  expect(screen.getByText("A weeknight bowl with gingery sauce.")).toBeInTheDocument();
+  expect(
+    screen.getByText("Prep: 15 min · Cook: 20 min · Total: 35 min · Yield: 2 bowls"),
+  ).toBeInTheDocument();
+  expect(screen.getByText("vegetarian")).toBeInTheDocument();
+  expect(screen.queryByText(recipeId)).toBeNull();
+  expect(screen.queryByText("7")).toBeNull();
+  expect(screen.queryByRole("button")).toBeNull();
+});
+
 test("renders a minimal result without blank metadata or tags", () => {
   render(
     <RecipeSearchView
       state="recipes"
-      recipes={[{ id: recipeId, title: "Plain rice", tags: [] }]}
+      recipes={[
+        { id: recipeId, title: "Plain rice", description: "", time: {}, tags: [], revision: 1 },
+      ]}
     />,
   );
 
   expect(screen.getByRole("heading", { name: "Plain rice", level: 2 })).toBeInTheDocument();
-  expect(screen.queryByText(/Prep:|Cook:|Total:|Serves:/u)).toBeNull();
+  expect(screen.queryByText(/Prep:|Cook:|Total:|Yield:/u)).toBeNull();
   expect(screen.queryByRole("list", { name: "Tags for Plain rice" })).toBeNull();
 });
 
@@ -71,6 +100,9 @@ test("maps malformed or private fields in a tool payload to the error view", () 
       {
         id: recipeId,
         title: "Tomato soup",
+        description: "",
+        time: {},
+        revision: 1,
         tags: [],
         ownerId: "private-owner",
         createdAt: "2026-10-01T12:00:00.000Z",
@@ -93,7 +125,9 @@ test("uses different canvas tokens for light and dark host themes", () => {
   render(
     <RecipeSearchView
       state="recipes"
-      recipes={[{ id: recipeId, title: "Plain rice", tags: [] }]}
+      recipes={[
+        { id: recipeId, title: "Plain rice", description: "", time: {}, tags: [], revision: 1 },
+      ]}
     />,
   );
   const card = screen.getByRole("listitem");

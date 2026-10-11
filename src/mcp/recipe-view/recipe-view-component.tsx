@@ -7,26 +7,11 @@ import { Inline } from "../../components/ui/inline/inline";
 import { PageContent, PageHeader, PageLayout } from "../../components/ui/page-layout/page-layout";
 import { Stack } from "../../components/ui/stack/stack";
 import { Text } from "../../components/ui/text/text";
+import type { RecipeDocument } from "@/lib/validation/recipe-document";
 
 import "./recipe-view.css";
 
-export type RecipeViewData = {
-  title: string;
-  summary?: string;
-  prepTimeMinutes?: number;
-  cookTimeMinutes?: number;
-  totalTimeMinutes?: number;
-  servings?: number;
-  tags: string[];
-  ingredients: Array<{
-    amount?: string;
-    ingredientName: string;
-    notes?: string;
-  }>;
-  steps: Array<{ instruction: string; durationMinutes?: number }>;
-  notes?: string;
-  sourceUrl?: string;
-};
+export type RecipeViewData = RecipeDocument;
 
 export type RecipeViewProps =
   | { state: "loading" }
@@ -64,17 +49,17 @@ function RecipeDetailCard({ title, children }: { title: string; children: ReactN
 }
 
 function RecipeDetails({ recipe }: { recipe: RecipeViewData }) {
-  const timing = [
-    recipe.prepTimeMinutes === undefined ? undefined : `Prep: ${recipe.prepTimeMinutes} min`,
-    recipe.cookTimeMinutes === undefined ? undefined : `Cook: ${recipe.cookTimeMinutes} min`,
-    recipe.totalTimeMinutes === undefined ? undefined : `Total: ${recipe.totalTimeMinutes} min`,
-    recipe.servings === undefined ? undefined : `Serves: ${recipe.servings}`,
+  const metadata = [
+    recipe.time.prepMinutes === undefined ? undefined : `Prep: ${recipe.time.prepMinutes} min`,
+    recipe.time.cookMinutes === undefined ? undefined : `Cook: ${recipe.time.cookMinutes} min`,
+    recipe.time.totalMinutes === undefined ? undefined : `Total: ${recipe.time.totalMinutes} min`,
+    recipe.yield === undefined ? undefined : `Yield: ${recipe.yield.amount} ${recipe.yield.unit}`,
   ].filter((detail): detail is string => detail !== undefined);
 
   return (
     <main className="recipe-view">
       <PageLayout>
-        <PageHeader title={recipe.title} description={recipe.summary} />
+        <PageHeader title={recipe.title} description={recipe.description || undefined} />
         <PageContent>
           <Stack gap="200">
             {recipe.tags.length > 0 && (
@@ -92,20 +77,20 @@ function RecipeDetails({ recipe }: { recipe: RecipeViewData }) {
               </Inline>
             )}
 
-            {timing.length > 0 && (
+            {metadata.length > 0 && (
               <Text as="p" appearance="secondary">
-                {timing.join(" · ")}
+                {metadata.join(" · ")}
               </Text>
             )}
 
             <RecipeDetailCard title="Ingredients">
               <ul className="recipe-view__list">
                 {recipe.ingredients.map((ingredient, index) => {
-                  const name = `${ingredient.amount ? `${ingredient.amount} ` : ""}${ingredient.ingredientName}`;
-                  const label = ingredient.notes ? `${name} (${ingredient.notes})` : name;
+                  const name = `${ingredient.amount ? `${ingredient.amount} ` : ""}${ingredient.name}`;
+                  const label = ingredient.note ? `${name} (${ingredient.note})` : name;
 
                   return (
-                    <li key={`${index}:${ingredient.ingredientName}`}>
+                    <li key={`${index}:${ingredient.name}`}>
                       <Text>{label}</Text>
                     </li>
                   );
@@ -113,23 +98,38 @@ function RecipeDetails({ recipe }: { recipe: RecipeViewData }) {
               </ul>
             </RecipeDetailCard>
 
-            <RecipeDetailCard title="Steps">
+            <RecipeDetailCard title="Instructions">
               <ol className="recipe-view__list">
-                {recipe.steps.map((step, index) => (
-                  <li key={`${index}:${step.instruction}`}>
-                    <Text>
-                      {step.instruction}
-                      {step.durationMinutes !== undefined && ` (${step.durationMinutes} min)`}
-                    </Text>
+                {recipe.instructions.map((instruction, index) => (
+                  <li key={`${index}:${instruction}`}>
+                    <Text>{instruction}</Text>
                   </li>
                 ))}
               </ol>
             </RecipeDetailCard>
 
-            {recipe.notes && (
+            {recipe.equipment.length > 0 && (
+              <RecipeDetailCard title="Equipment">
+                <ul className="recipe-view__list">
+                  {recipe.equipment.map((item, index) => (
+                    <li key={`${index}:${item.name}`}>
+                      <Text>{item.note ? `${item.name} (${item.note})` : item.name}</Text>
+                    </li>
+                  ))}
+                </ul>
+              </RecipeDetailCard>
+            )}
+
+            {recipe.notes.length > 0 && (
               <RecipeDetailCard title="Notes">
                 <div className="recipe-view__notes">
-                  <Text as="p">{recipe.notes}</Text>
+                  <ul className="recipe-view__list">
+                    {recipe.notes.map((note, index) => (
+                      <li key={`${index}:${note}`}>
+                        <Text>{note}</Text>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </RecipeDetailCard>
             )}

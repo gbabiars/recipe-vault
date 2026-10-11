@@ -23,12 +23,31 @@ export type TagInventoryItem = {
 };
 export type TagInventoryPage = { tags: TagInventoryItem[]; hasMore: boolean };
 
+export type DocumentTagSortOrder = "name_asc" | "usage_desc" | "usage_asc";
+export type DocumentTagCursor = { name: string; usageCount?: number };
+export type DocumentTagInventoryOptions = {
+  search?: string;
+  sort: DocumentTagSortOrder;
+  limit: number;
+  after?: DocumentTagCursor;
+};
+export type DocumentTagInventoryItem = { name: string; usageCount: number };
+export type DocumentTagInventoryPage = {
+  tags: DocumentTagInventoryItem[];
+  hasMore: boolean;
+};
+export type DocumentTagNameReplacementResult =
+  | { status: "replaced"; changedRecipes: number }
+  | { status: "source_missing" };
+
 type DatabaseTagInventory = {
   id: string;
   name: string;
   usage_count: number | string;
   description: string | null;
 };
+
+type DatabaseDocumentTagInventory = { name: string; usage_count: number | string };
 
 /** Owns aggregate tag queries, including the explicit owner filter in the RPC. */
 export class TagRepository {
@@ -66,22 +85,73 @@ export class TagRepository {
     return { tags, hasMore: rows.length > options.limit };
   }
 
-  async deleteUnused(ownerId: string, tagId: string): Promise<boolean> {
-    const { data, error } = await this.client.rpc("recipe_vault_delete_unused_tag", {
+  /** Reads names and counts derived only from the owner's recipe documents. */
+  async listFromDocuments(
+    ownerId: string,
+    options: DocumentTagInventoryOptions,
+  ): Promise<DocumentTagInventoryPage> {
+    if (
+      (options.sort === "name_asc" && options.after?.usageCount !== undefined) ||
+      (options.sort !== "name_asc" && options.after && options.after.usageCount === undefined)
+    ) {
+      throw new Error("Could not load tags.");
+    }
+    const { data, error } = await this.client.rpc("recipe_vault_list_document_tag_inventory", {
       target_owner_id: ownerId,
-      target_tag_id: tagId,
+      target_search: options.search?.trim() || null,
+      target_sort: options.sort,
+      after_usage_count: options.after?.usageCount ?? null,
+      after_name: options.after?.name ?? null,
+      target_limit: options.limit + 1,
     });
-    if (error || typeof data !== "boolean") throw new Error("Could not delete tag.");
-    return data;
+    if (error || !Array.isArray(data)) throw new Error("Could not load tags.");
+
+    const rows = data as DatabaseDocumentTagInventory[];
+    const tags = rows.slice(0, options.limit).map((row) => {
+      const usageCount = Number(row.usage_count);
+      if (typeof row.name !== "string" || !Number.isSafeInteger(usageCount) || usageCount < 1)
+        throw new Error("Could not load tags.");
+      return { name: row.name, usageCount };
+    });
+    return { tags, hasMore: rows.length > options.limit };
   }
 
-  async merge(ownerId: string, sourceTagId: string, targetTagId: string): Promise<boolean> {
-    const { data, error } = await this.client.rpc("recipe_vault_merge_tags", {
+  /** Returns recipe IDs whose document tags contain this exact canonical name. */
+  async listRecipeIdsWithDocumentTag(ownerId: string, tagName: string): Promise<string[]> {
+    const { data, error } = await this.client.rpc("recipe_vault_list_recipe_ids_by_document_tag", {
       target_owner_id: ownerId,
-      source_tag_id: sourceTagId,
-      target_tag_id: targetTagId,
+      target_tag_name: tagName,
     });
-    if (error || typeof data !== "boolean") throw new Error("Could not merge tags.");
-    return data;
+    if (error || !Array.isArray(data)) throw new Error("Could not filter recipes by tag.");
+    return data.map((row: { recipe_id?: unknown }) => {
+      if (typeof row.recipe_id !== "string") throw new Error("Could not filter recipes by tag.");
+      return row.recipe_id;
+    });
+  }
+
+  /** Renames or merges one canonical name across the owner's recipe documents. */
+  async replaceDocumentTagName(
+    ownerId: string,
+    sourceName: string,
+    targetName: string,
+  ): Promise<DocumentTagNameReplacementResult> {
+    const { data, error } = await this.client.rpc("recipe_vault_replace_document_tag", {
+      target_owner_id: ownerId,
+      source_name: sourceName,
+      target_name: targetName,
+    });
+    if (error || !Array.isArray(data) || data.length !== 1) {
+      throw new Error("Could not rename tag.");
+    }
+
+    const row = data[0] as { status?: unknown; changed_recipes?: unknown };
+    if (row.status === "source_missing" && Number(row.changed_recipes) === 0) {
+      return { status: "source_missing" };
+    }
+    const changedRecipes = Number(row.changed_recipes);
+    if (row.status !== "replaced" || !Number.isSafeInteger(changedRecipes) || changedRecipes < 1) {
+      throw new Error("Could not rename tag.");
+    }
+    return { status: "replaced", changedRecipes };
   }
 }

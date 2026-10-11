@@ -4,14 +4,14 @@ import { expect, test, vi } from "vitest";
 import RecipesPage from "./page";
 
 const { listMock, replaceMock } = vi.hoisted(() => ({
-  listMock: vi.fn(async () => []),
+  listMock: vi.fn(async () => ({ items: [], total: 0 })),
   replaceMock: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/require-user", () => ({ requireUser: async () => ({ id: "user-1" }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: replaceMock }) }));
 vi.mock("@/lib/recipes", () => ({
-  getRecipeService: async () => ({ list: listMock }),
+  getRecipeService: async () => ({ listDocumentPage: listMock }),
 }));
 
 test("ignores a saved dietary filter and preserves search and repeated tag values", async () => {
@@ -34,7 +34,12 @@ test("ignores a saved dietary filter and preserves search and repeated tag value
   expect(formData.get("q")).toBe("soup");
   expect(formData.getAll("tag")).toEqual(["quick", "vegetarian"]);
   await waitFor(() =>
-    expect(listMock).toHaveBeenCalledWith("user-1", "soup", ["quick", "vegetarian"]),
+    expect(listMock).toHaveBeenCalledWith("user-1", {
+      search: "soup",
+      tags: ["quick", "vegetarian"],
+      page: 1,
+      pageSize: 1000,
+    }),
   );
   const loading = screen.getByText("Loading your recipes…");
   expect(

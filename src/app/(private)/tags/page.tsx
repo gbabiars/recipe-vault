@@ -1,9 +1,13 @@
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
-import { TagCatalog } from "./_components/tag-catalog";
-import { parseTagPageCursors, tagPageHref, TAG_CATALOG_PAGE_SIZE } from "./_lib/tag-pagination";
+import { DocumentTagCatalog } from "./_components/tag-catalog";
+import {
+  DOCUMENT_TAG_CATALOG_PAGE_SIZE,
+  documentTagPageHref,
+  parseDocumentTagCursor,
+} from "./_lib/document-tag-pagination";
 import { requireUser } from "@/lib/auth/require-user";
 import { getTagService } from "@/lib/recipes";
-import type { TagInventoryPage } from "@/lib/db/tag-repository";
+import type { DocumentTagInventoryPage } from "@/lib/db/tag-repository";
 
 export default async function TagsPage({
   searchParams,
@@ -11,39 +15,33 @@ export default async function TagsPage({
   searchParams: Promise<{ after?: string | string[]; before?: string | string[] }>;
 }) {
   const user = await requireUser();
-  const cursors = parseTagPageCursors(await searchParams);
-  let inventory: TagInventoryPage = { tags: [], hasMore: false };
+  const cursors = parseDocumentTagCursor(await searchParams);
+  let inventory: DocumentTagInventoryPage = { tags: [], hasMore: false };
   let error = false;
 
   try {
     inventory = await (
       await getTagService()
-    ).list(user.id, {
-      usage: "all",
+    ).listFromRecipes(user.id, {
       sort: "name_asc",
-      limit: TAG_CATALOG_PAGE_SIZE,
+      limit: DOCUMENT_TAG_CATALOG_PAGE_SIZE,
       ...cursors,
     });
   } catch {
     error = true;
   }
 
-  const firstTag = inventory.tags[0];
   const lastTag = inventory.tags.at(-1);
-  const hasPrevious = Boolean(firstTag && (cursors.before ? inventory.hasMore : cursors.after));
-  const hasNext = Boolean(lastTag && (cursors.before || inventory.hasMore));
+  const hasNext = Boolean(lastTag && inventory.hasMore);
 
   return (
     <PageLayout>
       <PageHeader title="Tags" />
       <PageContent>
-        <TagCatalog
+        <DocumentTagCatalog
           tags={inventory.tags}
           error={error}
-          previousHref={
-            !error && hasPrevious && firstTag ? tagPageHref("before", firstTag) : undefined
-          }
-          nextHref={!error && hasNext && lastTag ? tagPageHref("after", lastTag) : undefined}
+          nextHref={!error && hasNext && lastTag ? documentTagPageHref(lastTag) : undefined}
         />
       </PageContent>
     </PageLayout>

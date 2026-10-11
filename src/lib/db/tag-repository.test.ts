@@ -105,42 +105,158 @@ test("tag repository passes a before cursor for reverse keyset pagination", asyn
   ]);
 });
 
-test("tag repository passes owner and stable ID to the guarded delete RPC", async () => {
+test("document tag inventory passes an owner, filters, and usage/name cursor", async () => {
   const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
   const repository = new TagRepository({
     rpc: async (name: string, args: Record<string, unknown>) => {
       calls.push({ name, args });
-      return { data: false, error: null };
+      return {
+        data: [
+          { name: "dinner", usage_count: "4" },
+          { name: "lunch", usage_count: 3 },
+          { name: "weeknight", usage_count: 2 },
+        ],
+        error: null,
+      };
     },
   } as never);
 
-  assert.equal(await repository.deleteUnused("owner-a", secondTag.id), false);
+  const page = await repository.listFromDocuments("owner-a", {
+    search: "  night ",
+    sort: "usage_desc",
+    limit: 2,
+    after: { usageCount: 4, name: "dinner" },
+  });
+
+  assert.deepEqual(page, {
+    tags: [
+      { name: "dinner", usageCount: 4 },
+      { name: "lunch", usageCount: 3 },
+    ],
+    hasMore: true,
+  });
   assert.deepEqual(calls, [
     {
-      name: "recipe_vault_delete_unused_tag",
-      args: { target_owner_id: "owner-a", target_tag_id: secondTag.id },
+      name: "recipe_vault_list_document_tag_inventory",
+      args: {
+        target_owner_id: "owner-a",
+        target_search: "night",
+        target_sort: "usage_desc",
+        after_usage_count: 4,
+        after_name: "dinner",
+        target_limit: 3,
+      },
     },
   ]);
 });
 
-test("tag repository passes both explicitly selected IDs and owner to merge RPC", async () => {
+test("document tag inventory maps only canonical name and positive usage count", async () => {
+  const repository = new TagRepository({
+    rpc: async () => ({ data: [{ name: "dinner", usage_count: 0 }], error: null }),
+  } as never);
+
+  await assert.rejects(
+    repository.listFromDocuments("owner-a", { sort: "name_asc", limit: 25 }),
+    /Could not load tags/,
+  );
+});
+
+test("document tag filtering passes the explicit owner and exact name", async () => {
+  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+  const recipeId = "00000000-0000-4000-8000-000000000010";
+  const repository = new TagRepository({
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      calls.push({ name, args });
+      return { data: [{ recipe_id: recipeId }], error: null };
+    },
+  } as never);
+
+  assert.deepEqual(await repository.listRecipeIdsWithDocumentTag("owner-a", "dinner"), [recipeId]);
+  assert.deepEqual(calls, [
+    {
+      name: "recipe_vault_list_recipe_ids_by_document_tag",
+      args: { target_owner_id: "owner-a", target_tag_name: "dinner" },
+    },
+  ]);
+});
+
+test("document tag name sorting accepts a name-only cursor", async () => {
   const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
   const repository = new TagRepository({
     rpc: async (name: string, args: Record<string, unknown>) => {
       calls.push({ name, args });
-      return { data: true, error: null };
+      return { data: [], error: null };
     },
   } as never);
 
-  assert.equal(await repository.merge("owner-a", firstTag.id, secondTag.id), true);
+  await repository.listFromDocuments("owner-a", {
+    sort: "name_asc",
+    limit: 25,
+    after: { name: "dinner" },
+  });
+  assert.equal(calls[0].args.after_usage_count, null);
+  assert.equal(calls[0].args.after_name, "dinner");
+});
+
+test("document tag usage sorting requires the usage/name cursor pair", async () => {
+  const repository = new TagRepository({
+    rpc: async () => {
+      throw new Error("Invalid cursors must not reach the database");
+    },
+  } as never);
+
+  await assert.rejects(
+    repository.listFromDocuments("owner-a", {
+      sort: "usage_desc",
+      limit: 25,
+      after: { name: "dinner" },
+    }),
+    /Could not load tags/,
+  );
+});
+
+test("document tag name replacement passes explicit owner and canonical names", async () => {
+  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+  const repository = new TagRepository({
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      calls.push({ name, args });
+      return { data: [{ status: "replaced", changed_recipes: "3" }], error: null };
+    },
+  } as never);
+
+  assert.deepEqual(await repository.replaceDocumentTagName("owner-a", "quick meals", "weeknight"), {
+    status: "replaced",
+    changedRecipes: 3,
+  });
   assert.deepEqual(calls, [
     {
-      name: "recipe_vault_merge_tags",
+      name: "recipe_vault_replace_document_tag",
       args: {
         target_owner_id: "owner-a",
-        source_tag_id: firstTag.id,
-        target_tag_id: secondTag.id,
+        source_name: "quick meals",
+        target_name: "weeknight",
       },
     },
   ]);
+});
+
+test("document tag name replacement maps a missing source without exposing IDs", async () => {
+  const repository = new TagRepository({
+    rpc: async () => ({ data: [{ status: "source_missing", changed_recipes: 0 }], error: null }),
+  } as never);
+
+  assert.deepEqual(await repository.replaceDocumentTagName("owner-a", "quick meals", "weeknight"), {
+    status: "source_missing",
+  });
+});
+
+test("document tag name replacement rejects malformed RPC results", async () => {
+  const repository = new TagRepository({
+    rpc: async () => ({ data: [{ status: "replaced", changed_recipes: 0 }], error: null }),
+  } as never);
+
+  await assert.rejects(
+    repository.replaceDocumentTagName("owner-a", "quick meals", "weeknight"),
+    /Could not rename tag/,
+  );
 });

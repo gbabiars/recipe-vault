@@ -1,8 +1,10 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
 import type { Recipe } from "@/lib/db/recipe-repository";
+import type { RecipeDocumentContent } from "@/lib/validation/recipe-document";
 import {
   RecipeDeleteCard,
+  RecipeDocumentDetailCards,
   RecipeDetailsCard,
   RecipeIngredientsCard,
   RecipeMethodCard,
@@ -97,4 +99,71 @@ test("notes preserve line breaks and delete card renders the shared form", () =>
     screen.getByRole("checkbox", { name: "I understand this permanently deletes the recipe." }),
   ).toBeTruthy();
   expect(document.querySelector('input[name="recipeId"]')?.getAttribute("value")).toBe(recipe.id);
+});
+
+const recipeDocument: RecipeDocumentContent = {
+  title: "Orange shortbread",
+  description: "Crisp cookies with orange zest.",
+  yield: { amount: 24, unit: "cookies" },
+  time: { cookMinutes: 18 },
+  ingredients: [
+    { name: "unsalted butter", amount: "1 cup", note: "softened" },
+    { name: "flour", amount: "2 cups" },
+    { name: "orange zest", amount: "zest of 1 orange" },
+  ],
+  equipment: [{ name: "baking sheet" }, { name: "parchment paper", note: "optional" }],
+  instructions: ["Cream the butter.", "Shape and chill the dough.", "Bake until golden."],
+  notes: ["The dough can be chilled overnight.", "Cool before storing."],
+  tags: ["baking", "cookies"],
+  sourceUrl: "https://example.com/orange-shortbread",
+};
+
+test("document detail composition renders yield, textual ingredient notes, equipment, and ordered arrays", () => {
+  render(<RecipeDocumentDetailCards recipe={recipeDocument} />);
+
+  expect(screen.getByText("24 cookies")).toBeTruthy();
+  expect(screen.getByText("18 minutes")).toBeTruthy();
+  expect(screen.getByRole("link", { name: "View original source" }).getAttribute("href")).toBe(
+    recipeDocument.sourceUrl,
+  );
+  expect(screen.getByText("baking")).toBeTruthy();
+  expect(screen.getByText("cookies")).toBeTruthy();
+  expect(screen.getAllByRole("listitem").map((item) => item.textContent)).toEqual([
+    "1 cup unsalted butter — softened",
+    "2 cups flour",
+    "zest of 1 orange orange zest",
+    "baking sheet",
+    "parchment paper — optional",
+    "Cream the butter.",
+    "Shape and chill the dough.",
+    "Bake until golden.",
+    "The dough can be chilled overnight.",
+    "Cool before storing.",
+  ]);
+  expect(screen.getAllByRole("list").map((list) => list.tagName)).toEqual(["UL", "UL", "OL", "UL"]);
+});
+
+test("document details omit unknown yield, source, equipment, notes, and tags", () => {
+  const { container } = render(
+    <RecipeDocumentDetailCards
+      recipe={{
+        title: "Quick pickled onions",
+        description: "",
+        time: { prepMinutes: 10 },
+        ingredients: [{ name: "red onion", amount: "1", note: "thinly sliced" }],
+        equipment: [],
+        instructions: ["Put the onion in a jar."],
+        notes: [],
+        tags: [],
+      }}
+    />,
+  );
+
+  expect(screen.getByText("10 minutes")).toBeTruthy();
+  expect(screen.queryByText("Yield")).toBeNull();
+  expect(screen.queryByRole("link", { name: "View original source" })).toBeNull();
+  expect(screen.queryByText("Equipment")).toBeNull();
+  expect(screen.queryByText("Notes")).toBeNull();
+  expect(screen.queryByText("baking")).toBeNull();
+  expect(container.querySelectorAll("section")).toHaveLength(3);
 });

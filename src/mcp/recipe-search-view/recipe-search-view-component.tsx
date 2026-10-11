@@ -10,12 +10,14 @@ import "./recipe-search-view.css";
 
 function RecipeResultCard({ recipe }: { recipe: RecipeSearchResult }) {
   const metadata = [
-    recipe.prepTimeMinutes === undefined ? undefined : "Prep: " + recipe.prepTimeMinutes + " min",
-    recipe.cookTimeMinutes === undefined ? undefined : "Cook: " + recipe.cookTimeMinutes + " min",
-    recipe.totalTimeMinutes === undefined
+    recipe.time.prepMinutes === undefined ? undefined : "Prep: " + recipe.time.prepMinutes + " min",
+    recipe.time.cookMinutes === undefined ? undefined : "Cook: " + recipe.time.cookMinutes + " min",
+    recipe.time.totalMinutes === undefined
       ? undefined
-      : "Total: " + recipe.totalTimeMinutes + " min",
-    recipe.servings === undefined ? undefined : "Serves: " + recipe.servings,
+      : "Total: " + recipe.time.totalMinutes + " min",
+    recipe.yield === undefined
+      ? undefined
+      : "Yield: " + recipe.yield.amount + " " + recipe.yield.unit,
   ].filter((detail): detail is string => detail !== undefined);
 
   return (
@@ -25,9 +27,9 @@ function RecipeResultCard({ recipe }: { recipe: RecipeSearchResult }) {
           <Heading as="h2" level={5}>
             {recipe.title}
           </Heading>
-          {recipe.summary && (
+          {recipe.description && (
             <Text as="p" size="large">
-              {recipe.summary}
+              {recipe.description}
             </Text>
           )}
         </Stack>

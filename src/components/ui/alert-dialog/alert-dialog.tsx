@@ -34,6 +34,8 @@ export type AlertDialogProps = {
   cancelLabel?: string;
   confirmLabel?: string;
   confirmVariant?: "primary" | "danger";
+  /** Keeps the dialog open and disables its actions while confirmation is pending. */
+  pending?: boolean;
   /** One or more nearby, focusable buttons that forward DOM props and refs. */
   trigger?: React.ReactElement | React.ReactElement[];
   /** Connects detached triggers or allows imperative opening. */
@@ -53,6 +55,7 @@ export function AlertDialog({
   cancelLabel = "Cancel",
   confirmLabel = "Confirm",
   confirmVariant = "primary",
+  pending = false,
   trigger,
   handle,
   open,
@@ -63,6 +66,7 @@ export function AlertDialog({
   const actionsRef = React.useRef<BaseAlertDialog.Root.Actions>(null);
 
   const confirm = () => {
+    if (pending) return;
     const result = onConfirm();
     if (open === undefined) actionsRef.current?.close();
     void result;
@@ -75,6 +79,7 @@ export function AlertDialog({
       triggerId={triggerId}
       actionsRef={actionsRef}
       onOpenChange={(nextOpen, details) => {
+        if (pending && !nextOpen) return;
         if (!nextOpen && (details.reason === "close-press" || details.reason === "escape-key")) {
           onCancel?.();
         }
@@ -107,9 +112,21 @@ export function AlertDialog({
               </Stack>
               <Inline gap="100" justify="end">
                 <BaseAlertDialog.Close
-                  render={<Button ref={cancelRef} label={cancelLabel} variant="default" />}
+                  render={
+                    <Button
+                      ref={cancelRef}
+                      label={cancelLabel}
+                      variant="default"
+                      disabled={pending}
+                    />
+                  }
                 />
-                <Button label={confirmLabel} variant={confirmVariant} onClick={confirm} />
+                <Button
+                  label={confirmLabel}
+                  variant={confirmVariant}
+                  pending={pending}
+                  onClick={confirm}
+                />
               </Inline>
             </Stack>
           </BaseAlertDialog.Popup>
