@@ -31,7 +31,9 @@ const meta = {
 
 export default meta;
 
-type Story = StoryObj<typeof meta>;
+// Explicit story args keep Storybook's inference from collapsing the component's
+// mutually exclusive legacy/document props to `never`.
+type Story = StoryObj<{ recipe: RecipeSummary }>;
 
 export const WithDetails: Story = {};
 
