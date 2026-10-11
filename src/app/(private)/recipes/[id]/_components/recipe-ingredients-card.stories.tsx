@@ -7,9 +7,9 @@ const meta = {
   component: RecipeIngredientsCard,
   args: {
     ingredients: [
-      { displayOrder: 1, amount: "2 cups", ingredientName: "tomatoes", notes: "chopped" },
-      { displayOrder: 2, amount: "1 tbsp", ingredientName: "olive oil" },
-      { displayOrder: 3, amount: "4 leaves", ingredientName: "fresh basil" },
+      { amount: "2 cups", name: "tomatoes", note: "chopped" },
+      { amount: "1 tbsp", name: "olive oil" },
+      { amount: "4 leaves", name: "fresh basil" },
     ],
   },
   decorators: [

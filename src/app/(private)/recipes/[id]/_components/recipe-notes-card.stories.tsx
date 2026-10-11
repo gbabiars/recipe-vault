@@ -6,7 +6,7 @@ const meta = {
   title: "App/Recipes/Detail/RecipeNotesCard",
   component: RecipeNotesCard,
   args: {
-    notes: "Use ripe tomatoes for the best flavor.\nAdd fresh basil just before serving.",
+    notes: ["Use ripe tomatoes for the best flavor.", "Add fresh basil just before serving."],
   },
   decorators: [
     (Story) => (

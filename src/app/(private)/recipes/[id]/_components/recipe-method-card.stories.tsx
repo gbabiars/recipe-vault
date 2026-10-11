@@ -6,10 +6,10 @@ const meta = {
   title: "App/Recipes/Detail/RecipeMethodCard",
   component: RecipeMethodCard,
   args: {
-    steps: [
-      { stepOrder: 1, instruction: "Warm the olive oil in a large pot.", durationMinutes: 2 },
-      { stepOrder: 2, instruction: "Add tomatoes and simmer until soft.", durationMinutes: 20 },
-      { stepOrder: 3, instruction: "Stir in fresh basil and serve." },
+    instructions: [
+      "Warm the olive oil in a large pot. (Duration: 2 minutes)",
+      "Add tomatoes and simmer until soft. (Duration: 20 minutes)",
+      "Stir in fresh basil and serve.",
     ],
   },
   decorators: [
