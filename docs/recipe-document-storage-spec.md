@@ -1,4 +1,6 @@
-Here is the combined proposal: the **agreed recipe document**, two examples, and an implementation plan for **option 2: JSONB with targeted search projections**. The logical schema is recorded in [recipe-document-schema.md](recipe-document-schema.md).
+# Recipe document schema and storage plan
+
+Status: the logical recipe schema is agreed. The JSONB storage design and migration plan are proposed; no database or application migration has started.
 
 ## Agreed recipe schema
 
@@ -32,7 +34,32 @@ type RecipeDocument = {
 };
 ```
 
-A complete recipe has a nonempty title, positive yield, at least one ingredient, and at least one instruction. Array position supplies order. `amount` keeps the author’s wording; an omitted amount means none was stated. Unknown times and `sourceUrl` are omitted. Equipment, notes, and tags can be empty arrays.
+A recipe's `id` is unique and immutable. A complete recipe has a nonempty title,
+a positive yield amount, at least one ingredient, and at least one instruction.
+Array position supplies ingredient, equipment, instruction, and note order.
+Equipment, notes, and tags can be empty arrays.
+
+An ingredient's `amount` preserves the recipe's exact wording, including ranges
+and phrases such as "to taste." An absent `amount` means no amount was stated.
+Its `note` describes preparation or condition, such as "minced" or "cooled."
+Ingredient names describe the food in the form used, such as "cooked white rice."
+Recipe-level tips belong in `notes`; actionable directions belong in
+`instructions`.
+
+Time values are nonnegative whole minutes and may be omitted when unknown.
+`totalMinutes` is elapsed start-to-finish time and need not equal `prepMinutes`
+plus `cookMinutes`.
+
+`tags` is always present and may be empty. It accepts up to 32 names. Names are
+at most 64 characters and use the existing recipe tag rules: lowercase ASCII
+letters and digits, spaces, underscores, or hyphens; no leading or trailing
+whitespace; and one space between words. Duplicate names are removed.
+`sourceUrl` is an optional HTTP(S) URL of at most 2,000 characters for the
+recipe's source. A recipe created without a web source omits it.
+
+Ownership and storage metadata are outside the logical recipe document. The
+storage design must preserve the application's private, owner-bound access
+rules.
 
 ### Example: a meal
 
@@ -54,10 +81,7 @@ A complete recipe has a nonempty title, positive yield, at least one ingredient,
     { "name": "soy sauce", "amount": "1–2 tablespoons" },
     { "name": "salt", "amount": "to taste" }
   ],
-  "equipment": [
-    { "name": "wok", "note": "A large skillet also works." },
-    { "name": "spatula" }
-  ],
+  "equipment": [{ "name": "wok", "note": "A large skillet also works." }, { "name": "spatula" }],
   "instructions": [
     "Break up any clumps of rice.",
     "Heat the wok and add the oil.",
@@ -65,9 +89,7 @@ A complete recipe has a nonempty title, positive yield, at least one ingredient,
     "Add the rice and stir-fry until hot and lightly toasted.",
     "Add soy sauce and season to taste."
   ],
-  "notes": [
-    "Work in two batches if the wok is crowded."
-  ],
+  "notes": ["Work in two batches if the wok is crowded."],
   "tags": ["rice", "weeknight"],
   "sourceUrl": "https://example.com/garlic-fried-rice"
 }
@@ -88,18 +110,13 @@ A complete recipe has a nonempty title, positive yield, at least one ingredient,
     { "name": "orange zest", "amount": "zest of 1 orange" },
     { "name": "salt", "amount": "a pinch" }
   ],
-  "equipment": [
-    { "name": "baking sheet" },
-    { "name": "parchment paper" }
-  ],
+  "equipment": [{ "name": "baking sheet" }, { "name": "parchment paper" }],
   "instructions": [
     "Cream the butter, then mix in the remaining ingredients.",
     "Shape the dough and chill until firm.",
     "Slice and bake until the edges are lightly golden."
   ],
-  "notes": [
-    "The dough can be chilled overnight."
-  ],
+  "notes": ["The dough can be chilled overnight."],
   "tags": ["baking", "cookies"]
 }
 ```
@@ -135,13 +152,13 @@ recipes
 
 **One owned recipe takes one row read.** For listing, the app can select `id`, `title_text`, `updated_at`, and a few expressions from `document` rather than sending every instruction and ingredient. For editing, it validates and replaces the complete document, conditional on the expected `revision`.
 
-| Query | Proposed path |
-|---|---|
-| Open a recipe | Primary key plus `owner_id`; return its JSONB document |
-| List recent recipes | Index on `(owner_id, updated_at, id)` |
-| Search title as the app does today | Derived `title_text` with a suitable substring-search index |
-| Filter by tag | Existing owner-scoped tag associations |
-| Search ingredient names later | Add a targeted search projection when its matching rules are defined |
+| Query                              | Proposed path                                                        |
+| ---------------------------------- | -------------------------------------------------------------------- |
+| Open a recipe                      | Primary key plus `owner_id`; return its JSONB document               |
+| List recent recipes                | Index on `(owner_id, updated_at, id)`                                |
+| Search title as the app does today | Derived `title_text` with a suitable substring-search index          |
+| Filter by tag                      | Existing owner-scoped tag associations                               |
+| Search ingredient names later      | Add a targeted search projection when its matching rules are defined |
 
 This avoids a blanket index over every JSON value. Postgres can index JSONB containment, but title substring and text search use different indexes; targeted projections make the intended search behavior clearer. [PostgreSQL JSON indexing](https://www.postgresql.org/docs/current/datatype-json.html#JSON-INDEXING), [Supabase full-text search](https://supabase.com/docs/guides/database/full-text-search).
 
