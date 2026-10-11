@@ -1,12 +1,11 @@
 export type RecipeSearchResult = {
   id: string;
   title: string;
-  summary?: string;
-  prepTimeMinutes?: number;
-  cookTimeMinutes?: number;
-  totalTimeMinutes?: number;
-  servings?: number;
+  description: string;
+  yield?: { amount: number; unit: string };
+  time: { prepMinutes?: number; cookMinutes?: number; totalMinutes?: number };
   tags: string[];
+  revision: number;
 };
 
 export type RecipeSearchViewState =
@@ -14,19 +13,6 @@ export type RecipeSearchViewState =
   | { state: "error" }
   | { state: "empty" }
   | { state: "recipes"; recipes: RecipeSearchResult[] };
-
-const searchPayloadKeys = ["recipes"];
-const recipeKeys = [
-  "id",
-  "title",
-  "summary",
-  "prepTimeMinutes",
-  "cookTimeMinutes",
-  "totalTimeMinutes",
-  "servings",
-  "tags",
-];
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -43,22 +29,37 @@ function isOptionalNonNegativeInteger(value: unknown) {
 }
 
 function isRecipeSearchResult(value: unknown): value is RecipeSearchResult {
-  if (!isRecord(value) || !hasOnlyKeys(value, recipeKeys)) return false;
+  if (
+    !isRecord(value) ||
+    !hasOnlyKeys(value, ["id", "title", "description", "yield", "time", "tags", "revision"])
+  )
+    return false;
 
+  const recipeYield = value.yield;
+  const time = value.time;
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
   return (
     typeof value.id === "string" &&
     uuidPattern.test(value.id) &&
     typeof value.title === "string" &&
-    (value.summary === undefined || typeof value.summary === "string") &&
-    isOptionalNonNegativeInteger(value.prepTimeMinutes) &&
-    isOptionalNonNegativeInteger(value.cookTimeMinutes) &&
-    isOptionalNonNegativeInteger(value.totalTimeMinutes) &&
-    (value.servings === undefined ||
-      (typeof value.servings === "number" &&
-        Number.isInteger(value.servings) &&
-        value.servings > 0)) &&
+    typeof value.description === "string" &&
+    (recipeYield === undefined ||
+      (isRecord(recipeYield) &&
+        hasOnlyKeys(recipeYield, ["amount", "unit"]) &&
+        typeof recipeYield.amount === "number" &&
+        recipeYield.amount > 0 &&
+        typeof recipeYield.unit === "string" &&
+        recipeYield.unit.length > 0)) &&
+    isRecord(time) &&
+    hasOnlyKeys(time, ["prepMinutes", "cookMinutes", "totalMinutes"]) &&
+    isOptionalNonNegativeInteger(time.prepMinutes) &&
+    isOptionalNonNegativeInteger(time.cookMinutes) &&
+    isOptionalNonNegativeInteger(time.totalMinutes) &&
     Array.isArray(value.tags) &&
-    value.tags.every((tag) => typeof tag === "string")
+    value.tags.every((tag) => typeof tag === "string") &&
+    typeof value.revision === "number" &&
+    Number.isInteger(value.revision) &&
+    value.revision > 0
   );
 }
 
@@ -69,7 +70,7 @@ export function getRecipeSearchViewState(
   if (
     isError ||
     !isRecord(structuredContent) ||
-    !hasOnlyKeys(structuredContent, searchPayloadKeys) ||
+    !hasOnlyKeys(structuredContent, ["recipes"]) ||
     !Array.isArray(structuredContent.recipes) ||
     !structuredContent.recipes.every(isRecipeSearchResult)
   ) {
@@ -77,6 +78,5 @@ export function getRecipeSearchViewState(
   }
 
   if (structuredContent.recipes.length === 0) return { state: "empty" };
-
   return { state: "recipes", recipes: structuredContent.recipes };
 }

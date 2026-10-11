@@ -15,12 +15,11 @@ type Story = StoryObj<typeof meta>;
 const tomatoSoup = {
   id: "00000000-0000-4000-8000-000000000101",
   title: "Sunday tomato soup",
-  summary: "A simple soup with fresh basil and a little cream.",
-  prepTimeMinutes: 15,
-  cookTimeMinutes: 30,
-  totalTimeMinutes: 45,
-  servings: 4,
+  description: "A simple soup with fresh basil and a little cream.",
+  time: { prepMinutes: 15, cookMinutes: 30, totalMinutes: 45 },
+  yield: { amount: 4, unit: "servings" },
   tags: ["soup", "vegetarian", "weeknight"],
+  revision: 2,
 };
 
 function setDocumentTheme(theme: "light" | "dark") {
@@ -52,7 +51,10 @@ export const Minimal: Story = {
       {
         id: "00000000-0000-4000-8000-000000000102",
         title: "Plain rice",
+        description: "",
+        time: {},
         tags: [],
+        revision: 1,
       },
     ],
   },

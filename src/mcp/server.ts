@@ -81,7 +81,7 @@ function registerRecipeTools(
     {
       title: "List tags",
       description:
-        "List tags owned by the authenticated user with exact recipe usage counts. Filter by used or unused tags, search literal name substrings, and sort by name or usage count.",
+        "List canonical tag names derived from the authenticated user's recipes with exact recipe usage counts. Search literal name substrings and sort by name or usage count.",
       inputSchema: mcpToolSchemas.tags,
       annotations: { readOnlyHint: true },
     },
@@ -91,31 +91,17 @@ function registerRecipeTools(
     },
   );
   server.registerTool(
-    "delete_unused_tag",
+    "replace_tag_name",
     {
-      title: "Delete unused tag",
+      title: "Replace tag name",
       description:
-        "Delete one tag only if it has no recipe associations at deletion time. First call list_tags with usage=unused, then pass a returned tagId. A tag that became used will be kept. Unknown or unowned tag IDs are not distinguished.",
-      inputSchema: mcpToolSchemas.deleteUnusedTag,
+        "Rename or merge a canonical tag name across the authenticated user's recipe documents. If the target name is already present in a recipe, it is kept once.",
+      inputSchema: mcpToolSchemas.replaceTagName,
       annotations: { readOnlyHint: false, idempotentHint: true, destructiveHint: true },
     },
     async (input, extra) => {
       const context = tagToolContext(extra, mcpScopes.write, getTagService);
-      return context ? createTagMcpTools(context).delete_unused_tag(input) : denied();
-    },
-  );
-  server.registerTool(
-    "merge_tags",
-    {
-      title: "Merge tags",
-      description:
-        "Merge one explicitly selected source tag into a distinct target tag owned by the authenticated user. Use IDs returned by list_tags; source associations move to target, duplicate recipe associations collapse, and the source tag is removed. This does not guess similar names or rename tags.",
-      inputSchema: mcpToolSchemas.mergeTags,
-      annotations: { readOnlyHint: false, idempotentHint: true, destructiveHint: true },
-    },
-    async (input, extra) => {
-      const context = tagToolContext(extra, mcpScopes.write, getTagService);
-      return context ? createTagMcpTools(context).merge_tags(input) : denied();
+      return context ? createTagMcpTools(context).replace_tag_name(input) : denied();
     },
   );
   registerAppTool(
@@ -124,7 +110,7 @@ function registerRecipeTools(
     {
       title: "Search recipes",
       description:
-        "Search concise recipe cards from the authenticated user's vault. Use get_recipe with a returned ID to read one complete recipe.",
+        "Search recipe document summaries from the authenticated user's vault. Use get_recipe with a returned ID to read a complete recipe document and revision.",
       inputSchema: mcpToolSchemas.search,
       outputSchema: mcpSearchRecipesOutputSchema,
       annotations: { readOnlyHint: true },
@@ -141,7 +127,7 @@ function registerRecipeTools(
     {
       title: "Get recipe",
       description:
-        "Get one complete recipe owned by the authenticated user. First use search_recipes to find a matching recipe ID; call this only with an ID returned by that search.",
+        "Get one complete recipe document and its revision, owned by the authenticated user. First use search_recipes to find a matching recipe ID.",
       inputSchema: mcpToolSchemas.recipeId,
       outputSchema: mcpGetRecipeOutputSchema,
       annotations: { readOnlyHint: true },
@@ -153,11 +139,25 @@ function registerRecipeTools(
     },
   );
   server.registerTool(
+    "replace_recipe",
+    {
+      title: "Replace recipe",
+      description:
+        "Replace a complete recipe document using the revision returned by get_recipe. A stale revision returns a conflict without overwriting newer content.",
+      inputSchema: mcpToolSchemas.replaceRecipe,
+      annotations: { readOnlyHint: false, idempotentHint: true, destructiveHint: false },
+    },
+    async (input, extra) => {
+      const context = toolContext(extra, mcpScopes.write, getService);
+      return context ? createRecipeMcpTools(context).replace_recipe(input) : denied();
+    },
+  );
+  server.registerTool(
     "save_recipe",
     {
       title: "Save recipe",
       description:
-        "Create a new recipe. This write is non-idempotent and never overwrites a recipe.",
+        "Create a complete recipe document. Yield may be omitted when the source does not state it.",
       inputSchema: mcpToolSchemas.recipe,
       annotations: { readOnlyHint: false, idempotentHint: false, destructiveHint: false },
     },
@@ -169,7 +169,12 @@ function registerRecipeTools(
 }
 
 /** Test adapter that runs the production transport with an already verified principal. */
-export async function handleMcpRequest(client: SupabaseClient, userId: string, request: Request) {
+export async function handleMcpRequest(
+  client: SupabaseClient,
+  userId: string,
+  request: Request,
+  scopes: string[] = [mcpScopes.read, mcpScopes.write],
+) {
   const service = new OwnerBoundRecipeService(
     userId,
     new RecipeService(new RecipeRepository(client)),
@@ -178,7 +183,7 @@ export async function handleMcpRequest(client: SupabaseClient, userId: string, r
   const authInfo = {
     token: "test-token",
     clientId: "test-client",
-    scopes: [mcpScopes.read, mcpScopes.write],
+    scopes,
     extra: { userId, credentialType: "oauth" },
   } satisfies AuthInfo;
   const transport = new WebStandardStreamableHTTPServerTransport({

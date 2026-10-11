@@ -3,26 +3,26 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { RecipeView } from "./recipe-view-component";
 
 const fullRecipe = {
+  id: "00000000-0000-4000-8000-000000000301",
   title: "Sunday tomato soup",
-  summary: "A simple soup with fresh basil and a little cream.",
-  prepTimeMinutes: 15,
-  cookTimeMinutes: 30,
-  totalTimeMinutes: 45,
-  servings: 4,
+  description: "A simple soup with fresh basil and a little cream.",
+  yield: { amount: 4, unit: "servings" },
+  time: { prepMinutes: 15, cookMinutes: 30, totalMinutes: 45 },
   tags: ["soup", "vegetarian", "weeknight"],
   ingredients: [
-    { amount: "2 tbsp", ingredientName: "olive oil" },
-    { amount: "1 large", ingredientName: "yellow onion", notes: "diced" },
-    { amount: "800 g", ingredientName: "whole peeled tomatoes" },
-    { amount: "250 ml", ingredientName: "vegetable stock" },
-    { amount: "to taste", ingredientName: "salt and black pepper" },
+    { amount: "2 tbsp", name: "olive oil" },
+    { amount: "1 large", name: "yellow onion", note: "diced" },
+    { amount: "800 g", name: "whole peeled tomatoes" },
+    { amount: "250 ml", name: "vegetable stock" },
+    { amount: "to taste", name: "salt and black pepper" },
   ],
-  steps: [
-    { instruction: "Soften the onion in olive oil over medium heat.", durationMinutes: 8 },
-    { instruction: "Add tomatoes and stock, then simmer until tender.", durationMinutes: 20 },
-    { instruction: "Blend until smooth and season before serving." },
+  equipment: [{ name: "Large pot" }, { name: "Immersion blender", note: "or countertop blender" }],
+  instructions: [
+    "Soften the onion in olive oil over medium heat. (Duration: 8 minutes)",
+    "Add tomatoes and stock, then simmer until tender. (Duration: 20 minutes)",
+    "Blend until smooth and season before serving.",
   ],
-  notes: "For a richer soup, stir in a splash of cream just before serving.",
+  notes: ["For a richer soup, stir in a splash of cream just before serving."],
   sourceUrl: "https://example.com/recipes/sunday-tomato-soup",
 };
 
@@ -61,10 +61,15 @@ export const MinimalRecipe: Story = {
   args: {
     state: "recipe",
     recipe: {
+      id: "00000000-0000-4000-8000-000000000302",
       title: "Simple toast",
+      description: "",
+      time: {},
       tags: [],
-      ingredients: [{ ingredientName: "bread" }],
-      steps: [{ instruction: "Toast the bread." }],
+      ingredients: [{ name: "bread" }],
+      equipment: [],
+      instructions: ["Toast the bread."],
+      notes: [],
     },
   },
 };

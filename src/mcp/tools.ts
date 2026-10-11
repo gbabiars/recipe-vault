@@ -1,10 +1,14 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import type { Recipe } from "@/lib/db/recipe-repository";
-import type { TagInventoryItem } from "@/lib/db/tag-repository";
+import type { RecipeDocumentContent } from "@/lib/validation/recipe-document";
+import type { DocumentTagInventoryItem } from "@/lib/db/tag-repository";
 import type { OwnerBoundTagService } from "@/lib/recipes/tag-service";
 import type { OwnerBoundRecipeService } from "@/lib/recipes/recipe-service";
-import { recipeCreateInputSchema, recipeIngredientInputSchema } from "@/lib/validation/recipe";
+import {
+  recipeDocumentContentSchema,
+  recipeDocumentSchema,
+} from "@/lib/validation/recipe-document";
+import { tagNameSchema } from "@/lib/validation/recipe";
 import {
   defaultRateLimiter,
   type RateLimiter,
@@ -32,13 +36,10 @@ const searchInputSchema = z
     limit: z.number().int().min(1).max(50).default(20),
   })
   .strict();
-
-const recipeIdInputSchema = z.object({ recipeId: z.string().uuid() }).strict();
-
+const recipeIdInputSchema = z.object({ recipeId: z.uuid() }).strict();
 const tagListInputSchema = z
   .object({
     search: z.string().trim().max(200).optional(),
-    usage: z.enum(["all", "used", "unused"]).default("all"),
     sort: z.enum(["name_asc", "usage_desc", "usage_asc"]).default("name_asc"),
     limit: z.number().int().min(1).max(100).default(50),
     cursor: z
@@ -49,93 +50,46 @@ const tagListInputSchema = z
       .optional(),
   })
   .strict();
-
-const deleteUnusedTagInputSchema = z.object({ tagId: z.string().uuid() }).strict();
-const mergeTagsInputSchema = z
-  .object({
-    sourceTagId: z.string().uuid(),
-    targetTagId: z.string().uuid(),
-  })
+// A wire schema cannot expose Zod's normalization transform to MCP JSON Schema.
+// Accept the shared schema's alphabet here, then normalize with tagNameSchema.
+const tagNameInput = z
+  .string()
+  .regex(/^\s*[a-z0-9][a-z0-9 _-]*\s*$/iu)
+  .max(256);
+const tagNameCanonical = z
+  .string()
+  .regex(/^[a-z0-9][a-z0-9 _-]*$/u)
+  .max(64);
+const replaceTagInputSchema = z
+  .object({ sourceName: tagNameInput, targetName: tagNameInput })
   .strict();
-
 const tagCursorSchema = z
   .object({
     version: z.literal(1),
     fingerprint: z.string().regex(/^[a-f0-9]{64}$/u),
-    usageCount: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
     name: z.string().min(1).max(64),
-    id: z.string().uuid(),
+    usageCount: z.number().int().positive().optional(),
   })
   .strict();
 
-const recipeDisplaySchema = z
-  .object({
-    title: z.string(),
-    summary: z.string().optional(),
-    prepTimeMinutes: z.number().int().nonnegative().optional(),
-    cookTimeMinutes: z.number().int().nonnegative().optional(),
-    totalTimeMinutes: z.number().int().nonnegative().optional(),
-    servings: z.number().int().positive().optional(),
-    tags: z.array(z.string()),
-    ingredients: z.array(recipeIngredientInputSchema.omit({ displayOrder: true })),
-    steps: z.array(
-      z
-        .object({
-          instruction: z.string(),
-          durationMinutes: z.number().int().nonnegative().optional(),
-        })
-        .strict(),
-    ),
-    notes: z.string().optional(),
-    sourceUrl: z.string().url().optional(),
-  })
+const tagNamesInputSchema = z.array(tagNameInput).max(32);
+const tagNamesOutputSchema = z.array(tagNameCanonical).max(32);
+const mcpDocumentInputSchema = recipeDocumentSchema.safeExtend({ tags: tagNamesInputSchema });
+const mcpContentSchema = recipeDocumentContentSchema.safeExtend({ tags: tagNamesInputSchema });
+const mcpDocumentOutputSchema = recipeDocumentSchema.safeExtend({ tags: tagNamesOutputSchema });
+const replaceInputSchema = z
+  .object({ recipe: mcpDocumentInputSchema, expectedRevision: z.number().int().positive() })
   .strict();
-
-export const mcpGetRecipeOutputSchema = z.object({ recipe: recipeDisplaySchema }).strict();
-
-const searchRecipeDisplaySchema = z
-  .object({
-    id: z.string().uuid(),
-    title: z.string(),
-    summary: z.string().optional(),
-    prepTimeMinutes: z.number().int().nonnegative().optional(),
-    cookTimeMinutes: z.number().int().nonnegative().optional(),
-    totalTimeMinutes: z.number().int().nonnegative().optional(),
-    servings: z.number().int().positive().optional(),
-    tags: z.array(z.string()),
-  })
+const listSummarySchema = mcpDocumentOutputSchema
+  .pick({ id: true, title: true, description: true, yield: true, time: true, tags: true })
+  .extend({ revision: z.number().int().positive() })
   .strict();
-
 export const mcpSearchRecipesOutputSchema = z
-  .object({ recipes: z.array(searchRecipeDisplaySchema) })
+  .object({ recipes: z.array(listSummarySchema) })
   .strict();
-
-function displayRecipe(recipe: Recipe) {
-  return mcpGetRecipeOutputSchema.parse({
-    recipe: {
-      title: recipe.title,
-      ...(recipe.summary !== undefined ? { summary: recipe.summary } : {}),
-      ...(recipe.prepTimeMinutes !== undefined ? { prepTimeMinutes: recipe.prepTimeMinutes } : {}),
-      ...(recipe.cookTimeMinutes !== undefined ? { cookTimeMinutes: recipe.cookTimeMinutes } : {}),
-      ...(recipe.totalTimeMinutes !== undefined
-        ? { totalTimeMinutes: recipe.totalTimeMinutes }
-        : {}),
-      ...(recipe.servings !== undefined ? { servings: recipe.servings } : {}),
-      tags: recipe.tags,
-      ingredients: recipe.ingredients.map(({ amount, ingredientName, notes }) => ({
-        ...(amount !== undefined ? { amount } : {}),
-        ingredientName,
-        ...(notes !== undefined ? { notes } : {}),
-      })),
-      steps: recipe.steps.map(({ instruction, durationMinutes }) => ({
-        instruction,
-        ...(durationMinutes !== undefined ? { durationMinutes } : {}),
-      })),
-      ...(recipe.notes !== undefined ? { notes: recipe.notes } : {}),
-      ...(recipe.sourceUrl !== undefined ? { sourceUrl: recipe.sourceUrl } : {}),
-    },
-  });
-}
+export const mcpGetRecipeOutputSchema = z
+  .object({ recipe: mcpDocumentOutputSchema, revision: z.number().int().positive() })
+  .strict();
 
 function text(value: unknown, isError = false) {
   return { content: [{ type: "text" as const, text: JSON.stringify(value) }], isError };
@@ -150,7 +104,7 @@ function allowed(context: { userId: string; limiter?: RateLimiter }, write: bool
 
 function cursorFingerprint(
   userId: string,
-  query: { search?: string; usage: string; sort: string; limit: number },
+  query: { search?: string; sort: string; limit: number },
 ) {
   return createHash("sha256")
     .update(
@@ -158,7 +112,6 @@ function cursorFingerprint(
         version: 1,
         ownerId: userId,
         search: query.search ?? "",
-        usage: query.usage,
         sort: query.sort,
         limit: query.limit,
       }),
@@ -166,125 +119,90 @@ function cursorFingerprint(
     .digest("hex");
 }
 
-function decodeTagCursor(
+function decodeCursor(
   cursor: string,
   fingerprint: string,
-): { usageCount: number; name: string; id: string } | null {
+): { name: string; usageCount?: number } | null {
   try {
-    const json = Buffer.from(cursor, "base64url");
-    if (json.toString("base64url") !== cursor) return null;
-    const parsed = tagCursorSchema.safeParse(JSON.parse(json.toString("utf8")));
+    const parsed = tagCursorSchema.safeParse(
+      JSON.parse(Buffer.from(cursor, "base64url").toString("utf8")),
+    );
     if (!parsed.success || parsed.data.fingerprint !== fingerprint) return null;
     return {
-      usageCount: parsed.data.usageCount,
       name: parsed.data.name,
-      id: parsed.data.id,
+      ...(parsed.data.usageCount === undefined ? {} : { usageCount: parsed.data.usageCount }),
     };
   } catch {
     return null;
   }
 }
 
-function encodeTagCursor(
-  fingerprint: string,
-  tag: Pick<TagInventoryItem, "usageCount" | "name" | "id">,
-) {
-  return Buffer.from(JSON.stringify({ version: 1, fingerprint, ...tag }), "utf8").toString(
-    "base64url",
-  );
+function encodeCursor(fingerprint: string, tag: DocumentTagInventoryItem, sort: string) {
+  return Buffer.from(
+    JSON.stringify({
+      version: 1,
+      fingerprint,
+      name: tag.name,
+      ...(sort === "name_asc" ? {} : { usageCount: tag.usageCount }),
+    }),
+    "utf8",
+  ).toString("base64url");
 }
 
-/** The tag adapter has no owner parameter; identity comes from verified MCP auth. */
+/** MCP exposes only document-derived tag names; owner identity comes from verified auth. */
 export function createTagMcpTools(context: McpTagToolContext) {
   return {
     list_tags: async (raw: unknown) => {
       const parsed = tagListInputSchema.safeParse(raw);
       if (!parsed.success) return text({ error: "Invalid tag list input." }, true);
-
-      const { search, usage, sort, limit, cursor } = parsed.data;
-      const fingerprint = cursorFingerprint(context.userId, { search, usage, sort, limit });
-      const cursorPosition = cursor ? decodeTagCursor(cursor, fingerprint) : undefined;
-      if (cursor && cursorPosition === null)
-        return text({ error: "Invalid tag cursor. Start a new tag listing." }, true);
-      const after = cursorPosition ?? undefined;
       if (!allowed(context, false).allowed) return text({ error: "Rate limit exceeded." }, true);
-
+      const { search, sort, limit, cursor } = parsed.data;
+      const fingerprint = cursorFingerprint(context.userId, { search, sort, limit });
+      const after = cursor ? decodeCursor(cursor, fingerprint) : undefined;
+      if (cursor && !after)
+        return text({ error: "Invalid tag cursor. Start a new tag listing." }, true);
+      if (after && (sort === "name_asc") === (after.usageCount !== undefined))
+        return text({ error: "Invalid tag cursor. Start a new tag listing." }, true);
       try {
-        const page = await context.service.list({
+        const page = await context.service.listFromRecipes({
           search: search || undefined,
-          usage,
           sort,
           limit,
-          after,
+          after: after ?? undefined,
         });
-        const lastTag = page.tags.at(-1);
-        const nextCursor =
-          page.hasMore && lastTag
-            ? encodeTagCursor(fingerprint, {
-                id: lastTag.id,
-                name: lastTag.name,
-                usageCount: lastTag.usageCount,
-              })
-            : undefined;
+        const last = page.tags.at(-1);
         return text({
-          tags: page.tags.map(({ id, name, usageCount }) => ({ id, name, usageCount })),
-          ...(nextCursor ? { nextCursor } : {}),
+          tags: page.tags,
+          ...(page.hasMore && last ? { nextCursor: encodeCursor(fingerprint, last, sort) } : {}),
         });
       } catch {
         return text({ error: "Unable to load tags." }, true);
       }
     },
-    delete_unused_tag: async (raw: unknown) => {
-      const parsed = deleteUnusedTagInputSchema.safeParse(raw);
-      if (!parsed.success) return text({ error: "Invalid tag deletion input." }, true);
+    replace_tag_name: async (raw: unknown) => {
+      const parsed = replaceTagInputSchema.safeParse(raw);
+      if (!parsed.success) return text({ error: "Invalid tag replacement input." }, true);
       if (!allowed(context, true).allowed) return text({ error: "Rate limit exceeded." }, true);
-
       try {
-        const deleted = await context.service.deleteUnused(parsed.data.tagId);
-        if (!deleted) {
-          return text({ deleted: false, message: "Tag was in use or not found." }, true);
-        }
-        return text({ deleted: true, tagId: parsed.data.tagId });
-      } catch {
-        return text({ error: "Unable to delete tag." }, true);
-      }
-    },
-    merge_tags: async (raw: unknown) => {
-      const parsed = mergeTagsInputSchema.safeParse(raw);
-      if (!parsed.success) return text({ error: "Invalid tag merge input." }, true);
-      if (!allowed(context, true).allowed) return text({ error: "Rate limit exceeded." }, true);
-
-      try {
-        const merged = await context.service.merge(
-          parsed.data.sourceTagId,
-          parsed.data.targetTagId,
-        );
-        if (!merged) {
-          return text(
-            {
-              merged: false,
-              message: "One or both selected tags were not found or cannot be merged.",
-            },
-            true,
-          );
-        }
+        const sourceName = tagNameSchema.parse(parsed.data.sourceName);
+        const targetName = tagNameSchema.parse(parsed.data.targetName);
+        const result = await context.service.replaceNameInRecipes({ sourceName, targetName });
+        if (result.status === "source_missing")
+          return text({ replaced: false, message: "Source tag was not found." }, true);
         return text({
-          merged: true,
-          sourceTagId: parsed.data.sourceTagId,
-          targetTagId: parsed.data.targetTagId,
+          replaced: true,
+          sourceName,
+          targetName,
+          changedRecipes: result.changedRecipes,
         });
       } catch {
-        return text({ error: "Unable to merge tags." }, true);
+        return text({ error: "Unable to replace tag name." }, true);
       }
     },
   };
 }
 
-/**
- * The tool adapter stays independent of HTTP and receives only a verified user
- * context. The owner-bound service ensures the service-role MCP adapter cannot
- * select a tenant from model-controlled tool input.
- */
+/** Recipe methods are bound to an owner selected by verified MCP authentication. */
 export function createRecipeMcpTools(context: McpToolContext) {
   return {
     search_recipes: async (raw: unknown) => {
@@ -292,29 +210,24 @@ export function createRecipeMcpTools(context: McpToolContext) {
       if (!parsed.success) return text({ error: "Invalid search input." }, true);
       if (!allowed(context, false).allowed) return text({ error: "Rate limit exceeded." }, true);
       try {
-        const results = await context.service.listPage({
+        const page = await context.service.listDocumentPage({
           search: parsed.data.query,
-          tags: parsed.data.tags.map((tag) => tag.toLowerCase()),
+          tags: parsed.data.tags.map((tag) => tagNameSchema.parse(tag)),
           page: 1,
           pageSize: parsed.data.limit,
         });
         const output = mcpSearchRecipesOutputSchema.parse({
-          recipes: results.items.map((recipe) => ({
-            id: recipe.id,
-            title: recipe.title,
-            ...(recipe.summary ? { summary: recipe.summary } : {}),
-            ...(recipe.prepTimeMinutes !== undefined
-              ? { prepTimeMinutes: recipe.prepTimeMinutes }
-              : {}),
-            ...(recipe.cookTimeMinutes !== undefined
-              ? { cookTimeMinutes: recipe.cookTimeMinutes }
-              : {}),
-            ...(recipe.totalTimeMinutes !== undefined
-              ? { totalTimeMinutes: recipe.totalTimeMinutes }
-              : {}),
-            ...(recipe.servings !== undefined ? { servings: recipe.servings } : {}),
-            tags: recipe.tags,
-          })),
+          recipes: page.items.map(
+            ({ id, title, description, yield: recipeYield, time, tags, revision }) => ({
+              id,
+              title,
+              description,
+              ...(recipeYield ? { yield: recipeYield } : {}),
+              time,
+              tags,
+              revision,
+            }),
+          ),
         });
         return { ...text(output), structuredContent: output };
       } catch {
@@ -326,28 +239,66 @@ export function createRecipeMcpTools(context: McpToolContext) {
       if (!parsed.success) return text({ error: "Recipe not found." }, true);
       if (!allowed(context, false).allowed) return text({ error: "Rate limit exceeded." }, true);
       try {
-        const recipe = await context.service.get(parsed.data.recipeId);
-        if (!recipe) return text({ error: "Recipe not found." }, true);
-        return {
-          ...text({ recipe }),
-          structuredContent: displayRecipe(recipe),
-        };
+        const snapshot = await context.service.getDocument(parsed.data.recipeId);
+        if (!snapshot) return text({ error: "Recipe not found." }, true);
+        const output = mcpGetRecipeOutputSchema.parse(snapshot);
+        return { ...text(output), structuredContent: output };
       } catch {
         return text({ error: "Unable to load recipe." }, true);
       }
     },
     save_recipe: async (raw: unknown) => {
-      const parsed = recipeCreateInputSchema.safeParse(raw);
+      const parsed = recipeDocumentContentSchema.safeParse(raw);
       if (!parsed.success) return text({ error: "Recipe validation failed." }, true);
       if (!allowed(context, true).allowed) return text({ error: "Rate limit exceeded." }, true);
       try {
-        const recipe = await context.service.create(parsed.data, {
+        const result = await context.service.createDocument(parsed.data as RecipeDocumentContent, {
           requestId: context.requestId,
           method: "MCP save_recipe",
         });
-        return text({ recipeId: recipe.id, message: "Recipe saved." });
+        if (result.status !== "saved")
+          return text(
+            {
+              error:
+                result.status === "invalid"
+                  ? "Recipe validation failed."
+                  : "Unable to save recipe.",
+            },
+            true,
+          );
+        return text({
+          recipeId: result.recipe.id,
+          revision: result.revision,
+          message: "Recipe saved.",
+        });
       } catch {
         return text({ error: "Unable to save recipe." }, true);
+      }
+    },
+    replace_recipe: async (raw: unknown) => {
+      const parsed = replaceInputSchema.safeParse(raw);
+      if (!parsed.success) return text({ error: "Recipe validation failed." }, true);
+      if (!allowed(context, true).allowed) return text({ error: "Rate limit exceeded." }, true);
+      try {
+        const result = await context.service.replaceDocument(
+          parsed.data.recipe,
+          parsed.data.expectedRevision,
+          { requestId: context.requestId, method: "MCP replace_recipe" },
+        );
+        if (result.status === "saved")
+          return text({
+            recipeId: result.recipe.id,
+            revision: result.revision,
+            message: "Recipe replaced.",
+          });
+        if (result.status === "conflict")
+          return text(
+            { error: "Recipe changed since it was read.", revision: result.revision },
+            true,
+          );
+        return text({ error: "Recipe not found or invalid." }, true);
+      } catch {
+        return text({ error: "Unable to replace recipe." }, true);
       }
     },
   };
@@ -356,8 +307,8 @@ export function createRecipeMcpTools(context: McpToolContext) {
 export const mcpToolSchemas = {
   search: searchInputSchema,
   recipeId: recipeIdInputSchema,
-  recipe: recipeCreateInputSchema,
+  recipe: mcpContentSchema,
+  replaceRecipe: replaceInputSchema,
   tags: tagListInputSchema,
-  deleteUnusedTag: deleteUnusedTagInputSchema,
-  mergeTags: mergeTagsInputSchema,
+  replaceTagName: replaceTagInputSchema,
 };
