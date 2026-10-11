@@ -65,7 +65,6 @@ function DocumentRecipeListItem({ summary }: { summary: RecipeDocumentListSummar
       href={`/recipes/${summary.id}`}
       description={
         <Stack as="span" gap="050">
-          {summary.description && <Text>{summary.description}</Text>}
           {(timeMetadata.length > 0 || summary.yield !== undefined) && (
             <Inline as="span" gap="100" align="center">
               {timeMetadata.length > 0 && (
