@@ -1,8 +1,8 @@
 import { getAuthenticatedUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
-import { createRecipeApi } from "@/lib/api/recipe-handlers";
+import { createDocumentRecipeApi } from "@/lib/api/document-recipe-handlers";
 
-const api = createRecipeApi({
+const api = createDocumentRecipeApi({
   getUser: getAuthenticatedUser,
   getService: getRecipeService,
 });

@@ -1,10 +1,10 @@
 import { getAuthenticatedUser } from "@/lib/auth/require-user";
-import { getRecipeService } from "@/lib/recipes";
-import { createRecipeApi } from "@/lib/api/recipe-handlers";
+import { getTagService } from "@/lib/recipes";
+import { createDocumentTagApi } from "@/lib/api/document-tag-handlers";
 
-const api = createRecipeApi({
+const api = createDocumentTagApi({
   getUser: getAuthenticatedUser,
-  getService: getRecipeService,
+  getService: getTagService,
 });
 
-export const GET = api.listTags;
+export const GET = api.list;
