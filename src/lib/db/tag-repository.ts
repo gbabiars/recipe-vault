@@ -23,12 +23,28 @@ export type TagInventoryItem = {
 };
 export type TagInventoryPage = { tags: TagInventoryItem[]; hasMore: boolean };
 
+export type DocumentTagSortOrder = "name_asc" | "usage_desc" | "usage_asc";
+export type DocumentTagCursor = { name: string; usageCount?: number };
+export type DocumentTagInventoryOptions = {
+  search?: string;
+  sort: DocumentTagSortOrder;
+  limit: number;
+  after?: DocumentTagCursor;
+};
+export type DocumentTagInventoryItem = { name: string; usageCount: number };
+export type DocumentTagInventoryPage = {
+  tags: DocumentTagInventoryItem[];
+  hasMore: boolean;
+};
+
 type DatabaseTagInventory = {
   id: string;
   name: string;
   usage_count: number | string;
   description: string | null;
 };
+
+type DatabaseDocumentTagInventory = { name: string; usage_count: number | string };
 
 /** Owns aggregate tag queries, including the explicit owner filter in the RPC. */
 export class TagRepository {
@@ -64,6 +80,50 @@ export class TagRepository {
     });
 
     return { tags, hasMore: rows.length > options.limit };
+  }
+
+  /** Reads names and counts derived only from the owner's recipe documents. */
+  async listFromDocuments(
+    ownerId: string,
+    options: DocumentTagInventoryOptions,
+  ): Promise<DocumentTagInventoryPage> {
+    if (
+      (options.sort === "name_asc" && options.after?.usageCount !== undefined) ||
+      (options.sort !== "name_asc" && options.after && options.after.usageCount === undefined)
+    ) {
+      throw new Error("Could not load tags.");
+    }
+    const { data, error } = await this.client.rpc("recipe_vault_list_document_tag_inventory", {
+      target_owner_id: ownerId,
+      target_search: options.search?.trim() || null,
+      target_sort: options.sort,
+      after_usage_count: options.after?.usageCount ?? null,
+      after_name: options.after?.name ?? null,
+      target_limit: options.limit + 1,
+    });
+    if (error || !Array.isArray(data)) throw new Error("Could not load tags.");
+
+    const rows = data as DatabaseDocumentTagInventory[];
+    const tags = rows.slice(0, options.limit).map((row) => {
+      const usageCount = Number(row.usage_count);
+      if (typeof row.name !== "string" || !Number.isSafeInteger(usageCount) || usageCount < 1)
+        throw new Error("Could not load tags.");
+      return { name: row.name, usageCount };
+    });
+    return { tags, hasMore: rows.length > options.limit };
+  }
+
+  /** Returns recipe IDs whose document tags contain this exact canonical name. */
+  async listRecipeIdsWithDocumentTag(ownerId: string, tagName: string): Promise<string[]> {
+    const { data, error } = await this.client.rpc("recipe_vault_list_recipe_ids_by_document_tag", {
+      target_owner_id: ownerId,
+      target_tag_name: tagName,
+    });
+    if (error || !Array.isArray(data)) throw new Error("Could not filter recipes by tag.");
+    return data.map((row: { recipe_id?: unknown }) => {
+      if (typeof row.recipe_id !== "string") throw new Error("Could not filter recipes by tag.");
+      return row.recipe_id;
+    });
   }
 
   async deleteUnused(ownerId: string, tagId: string): Promise<boolean> {
