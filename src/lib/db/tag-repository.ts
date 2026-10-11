@@ -36,6 +36,9 @@ export type DocumentTagInventoryPage = {
   tags: DocumentTagInventoryItem[];
   hasMore: boolean;
 };
+export type DocumentTagNameReplacementResult =
+  | { status: "replaced"; changedRecipes: number }
+  | { status: "source_missing" };
 
 type DatabaseTagInventory = {
   id: string;
@@ -124,6 +127,32 @@ export class TagRepository {
       if (typeof row.recipe_id !== "string") throw new Error("Could not filter recipes by tag.");
       return row.recipe_id;
     });
+  }
+
+  /** Renames or merges one canonical name across the owner's recipe documents. */
+  async replaceDocumentTagName(
+    ownerId: string,
+    sourceName: string,
+    targetName: string,
+  ): Promise<DocumentTagNameReplacementResult> {
+    const { data, error } = await this.client.rpc("recipe_vault_replace_document_tag", {
+      target_owner_id: ownerId,
+      source_name: sourceName,
+      target_name: targetName,
+    });
+    if (error || !Array.isArray(data) || data.length !== 1) {
+      throw new Error("Could not rename tag.");
+    }
+
+    const row = data[0] as { status?: unknown; changed_recipes?: unknown };
+    if (row.status === "source_missing" && Number(row.changed_recipes) === 0) {
+      return { status: "source_missing" };
+    }
+    const changedRecipes = Number(row.changed_recipes);
+    if (row.status !== "replaced" || !Number.isSafeInteger(changedRecipes) || changedRecipes < 1) {
+      throw new Error("Could not rename tag.");
+    }
+    return { status: "replaced", changedRecipes };
   }
 
   async deleteUnused(ownerId: string, tagId: string): Promise<boolean> {

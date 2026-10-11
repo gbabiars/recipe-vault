@@ -254,3 +254,49 @@ test("document tag usage sorting requires the usage/name cursor pair", async () 
     /Could not load tags/,
   );
 });
+
+test("document tag name replacement passes explicit owner and canonical names", async () => {
+  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+  const repository = new TagRepository({
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      calls.push({ name, args });
+      return { data: [{ status: "replaced", changed_recipes: "3" }], error: null };
+    },
+  } as never);
+
+  assert.deepEqual(await repository.replaceDocumentTagName("owner-a", "quick meals", "weeknight"), {
+    status: "replaced",
+    changedRecipes: 3,
+  });
+  assert.deepEqual(calls, [
+    {
+      name: "recipe_vault_replace_document_tag",
+      args: {
+        target_owner_id: "owner-a",
+        source_name: "quick meals",
+        target_name: "weeknight",
+      },
+    },
+  ]);
+});
+
+test("document tag name replacement maps a missing source without exposing IDs", async () => {
+  const repository = new TagRepository({
+    rpc: async () => ({ data: [{ status: "source_missing", changed_recipes: 0 }], error: null }),
+  } as never);
+
+  assert.deepEqual(await repository.replaceDocumentTagName("owner-a", "quick meals", "weeknight"), {
+    status: "source_missing",
+  });
+});
+
+test("document tag name replacement rejects malformed RPC results", async () => {
+  const repository = new TagRepository({
+    rpc: async () => ({ data: [{ status: "replaced", changed_recipes: 0 }], error: null }),
+  } as never);
+
+  await assert.rejects(
+    repository.replaceDocumentTagName("owner-a", "quick meals", "weeknight"),
+    /Could not rename tag/,
+  );
+});

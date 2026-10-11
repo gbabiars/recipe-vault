@@ -61,3 +61,61 @@ test("owner-bound tag service binds both merge IDs to its verified owner", async
     },
   ]);
 });
+
+test("tag service validates canonical names and returns replacement results", async () => {
+  const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+  const repository = new TagRepository({
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      calls.push({ name, args });
+      return { data: [{ status: "replaced", changed_recipes: 2 }], error: null };
+    },
+  } as never);
+  const service = new TagService(repository);
+
+  assert.deepEqual(
+    await service.replaceNameInRecipes("owner-a", {
+      sourceName: "quick meals",
+      targetName: "weeknight",
+    }),
+    { status: "replaced", changedRecipes: 2 },
+  );
+  assert.deepEqual(calls[0].args, {
+    target_owner_id: "owner-a",
+    source_name: "quick meals",
+    target_name: "weeknight",
+  });
+  assert.throws(
+    () =>
+      service.replaceNameInRecipes("owner-a", {
+        sourceName: "Quick Meals",
+        targetName: "weeknight",
+      }),
+    /Invalid canonical tag name/,
+  );
+  assert.throws(
+    () =>
+      service.replaceNameInRecipes("owner-a", {
+        sourceName: "quick meals",
+        targetName: "quick meals",
+      }),
+    /must differ/,
+  );
+  assert.equal(calls.length, 1);
+});
+
+test("owner-bound tag service supplies its verified owner to document name replacement", async () => {
+  let requestedOwner: string | undefined;
+  const repository = new TagRepository({
+    rpc: async (_name: string, args: { target_owner_id: string }) => {
+      requestedOwner = args.target_owner_id;
+      return { data: [{ status: "source_missing", changed_recipes: 0 }], error: null };
+    },
+  } as never);
+  const service = new OwnerBoundTagService("verified-owner", new TagService(repository));
+
+  assert.deepEqual(
+    await service.replaceNameInRecipes({ sourceName: "quick meals", targetName: "weeknight" }),
+    { status: "source_missing" },
+  );
+  assert.equal(requestedOwner, "verified-owner");
+});
