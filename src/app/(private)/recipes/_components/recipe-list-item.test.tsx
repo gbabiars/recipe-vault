@@ -79,7 +79,7 @@ const documentSummary: RecipeDocumentListSummary = {
   updatedAt: "2026-09-15T12:00:00.000Z",
 };
 
-test("document summary shows description, optional yield, independent times, and tags", () => {
+test("document summary shows optional yield, independent times, and tags without description", () => {
   render(
     <List>
       <RecipeListItem documentSummary={documentSummary} />
@@ -90,7 +90,7 @@ test("document summary shows description, optional yield, independent times, and
   expect(within(item).getByRole("link", { name: "Orange shortbread" }).getAttribute("href")).toBe(
     "/recipes/orange-shortbread",
   );
-  expect(within(item).getByText("Crisp cookies with orange zest.")).toBeTruthy();
+  expect(within(item).queryByText("Crisp cookies with orange zest.")).toBeNull();
   expect(within(item).getByText("Yield: 24 cookies")).toBeTruthy();
   expect(within(item).getByText("Prep: 15 min")).toBeTruthy();
   expect(within(item).getByText("Cook: 18 min")).toBeTruthy();
