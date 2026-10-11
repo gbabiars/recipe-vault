@@ -51,11 +51,24 @@ const tagListInputSchema = z
   })
   .strict();
 // A wire schema cannot expose Zod's normalization transform to MCP JSON Schema.
-// Accept the shared schema's alphabet here, then normalize with tagNameSchema.
-const tagNameInput = z
-  .string()
-  .regex(/^\s*[a-z0-9][a-z0-9 _-]*\s*$/iu)
-  .max(256);
+// Validate the shared schema's alphabet with a linear scan, then normalize with
+// tagNameSchema in the consuming tool.
+function isTagNameInput(value: string): boolean {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return false;
+  const isAsciiAlphanumeric = (character: string) =>
+    (character >= "a" && character <= "z") ||
+    (character >= "A" && character <= "Z") ||
+    (character >= "0" && character <= "9");
+
+  if (!isAsciiAlphanumeric(trimmed[0])) return false;
+  return [...trimmed].every(
+    (character) =>
+      isAsciiAlphanumeric(character) || character === " " || character === "_" || character === "-",
+  );
+}
+
+const tagNameInput = z.string().max(256).refine(isTagNameInput);
 const tagNameCanonical = z
   .string()
   .regex(/^[a-z0-9][a-z0-9 _-]*$/u)

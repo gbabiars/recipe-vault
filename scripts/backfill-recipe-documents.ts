@@ -2,6 +2,8 @@
 /**
  * Restartable backfill. Default to disposable local Supabase Postgres:
  * RECIPE_VAULT_DATABASE_URL='postgresql://postgres:postgres@127.0.0.1:54322/postgres' pnpm exec tsx scripts/backfill-recipe-documents.ts --batch-size 50
+ * psql is resolved from RECIPE_VAULT_PSQL_PATH or known absolute install paths;
+ * set that variable to an absolute executable path when psql is installed elsewhere.
  * Run --refresh-stale to catch up legacy edits, then --reconcile before cutover.
  * Remote writes require both --allow-remote and RECIPE_VAULT_ALLOW_REMOTE=YES;
  * for example, use `RECIPE_VAULT_ALLOW_REMOTE=YES RECIPE_VAULT_DATABASE_URL='postgresql://<user>:<password>@<host>:5432/<database>?sslmode=verify-full&sslrootcert=/path/to/root.crt' pnpm exec tsx scripts/backfill-recipe-documents.ts --allow-remote --refresh-stale` only after an independently reviewed production runbook. Every stderr row is an exception that must be resolved.
@@ -157,9 +159,33 @@ export function psqlInvocation(
   };
 }
 
+const TRUSTED_PSQL_PATHS = ["/usr/bin/psql", "/usr/local/bin/psql", "/opt/homebrew/bin/psql"];
+
+/** Resolve psql from explicit configuration or standard absolute install paths, never PATH. */
+export function resolvePsqlPath(
+  configuredPath = process.env.RECIPE_VAULT_PSQL_PATH,
+  trustedPaths = TRUSTED_PSQL_PATHS,
+): string {
+  const candidates = configuredPath ? [configuredPath] : trustedPaths;
+  for (const candidate of candidates) {
+    if (!isAbsolute(candidate)) continue;
+    try {
+      if (statSync(candidate).isFile()) {
+        accessSync(candidate, constants.X_OK);
+        return candidate;
+      }
+    } catch {
+      // Check the next fixed absolute path, if no explicit override was set.
+    }
+  }
+  throw new Error(
+    "Could not find executable psql at a trusted absolute path. Set RECIPE_VAULT_PSQL_PATH to its absolute path.",
+  );
+}
+
 export function runPsql(databaseUrl: string, sql: string): string {
   const invocation = psqlInvocation(databaseUrl, sql);
-  const result = spawnSync("psql", invocation.args, {
+  const result = spawnSync(resolvePsqlPath(), invocation.args, {
     encoding: "utf8",
     maxBuffer: PSQL_MAX_BUFFER_BYTES,
     env: invocation.env,

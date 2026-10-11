@@ -54,6 +54,11 @@ old instances cannot mutate data.
    pnpm exec tsx scripts/backfill-recipe-documents.ts --refresh-stale
    ```
 
+   The script starts `psql` from a fixed list of absolute install paths and
+   never searches the ambient `PATH`. Set `RECIPE_VAULT_PSQL_PATH` to the
+   absolute executable path if the installation is elsewhere (for example,
+   `/usr/bin/psql` on the Linux CI image).
+
    Resolve every exception printed by the script; do not proceed with an
    incomplete refresh. Then run the independent parity reconciliation:
 

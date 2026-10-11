@@ -12,6 +12,7 @@ const tag: DocumentTagInventoryItem = { name: "rice beans", usageCount: 4 };
 test("encodes and parses a name-only cursor for the repository", () => {
   const cursor = encodeDocumentTagCursor(tag);
 
+  assert.equal(cursor.includes("="), false, "base64url cursors omit padding");
   assert.deepEqual(parseDocumentTagCursor({ after: cursor }), { after: { name: tag.name } });
   assert.equal(documentTagPageHref(tag), `/tags?after=${encodeURIComponent(cursor)}`);
 });

@@ -6,7 +6,7 @@ export const DOCUMENT_TAG_CATALOG_PAGE_SIZE = 25;
 type CursorSearchParams = { after?: unknown; before?: unknown };
 
 function toBase64Url(value: string): string {
-  return btoa(value).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  return btoa(value).replace(/\+/g, "-").replace(/\//g, "_").replaceAll("=", "");
 }
 
 function fromBase64Url(value: string): string {

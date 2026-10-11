@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -11,6 +11,7 @@ import {
   parseOptions,
   psqlInvocation,
   psqlFailureMessage,
+  resolvePsqlPath,
   PSQL_MAX_BUFFER_BYTES,
   runPsql,
   shouldWriteDocument,
@@ -108,6 +109,20 @@ test("documents persisted to JSONB omit immutable row ID and psql output is boun
     psqlFailureMessage("ERR_CHILD_PROCESS_STDIO_MAXBUFFER", "", "RangeError"),
     /retry with a smaller --batch-size/,
   );
+});
+
+test("psql uses an explicitly configured absolute executable, never ambient PATH", () => {
+  const directory = mkdtempSync(join(tmpdir(), "recipe-backfill-psql-"));
+  const executable = join(directory, "psql");
+  writeFileSync(executable, "#!/bin/sh\nexit 0\n");
+  chmodSync(executable, 0o755);
+  try {
+    assert.equal(resolvePsqlPath(executable, []), executable);
+    assert.throws(() => resolvePsqlPath("psql", []), /trusted absolute path/);
+    assert.throws(() => resolvePsqlPath("", []), /RECIPE_VAULT_PSQL_PATH/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
 
 test("scoped source queries advance by the keyset cursor and terminate after one recipe", () => {
@@ -258,7 +273,7 @@ test(
 
       const writerInvocation = psqlInvocation(databaseUrl, "");
       const writerApplicationName = `recipe_writer_test_${randomUUID().replaceAll("-", "")}`;
-      const writer = spawn("psql", writerInvocation.args.slice(0, -2), {
+      const writer = spawn(resolvePsqlPath(), writerInvocation.args.slice(0, -2), {
         env: { ...writerInvocation.env, PGAPPNAME: writerApplicationName },
         stdio: ["pipe", "pipe", "pipe"],
       });

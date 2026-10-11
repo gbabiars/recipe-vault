@@ -235,6 +235,16 @@ test("MCP tag schemas accept canonical edge names supported by the shared tag co
       .success,
     true,
   );
+  assert.equal(
+    mcpToolSchemas.replaceTagName.safeParse({ sourceName: "\tVegan\n", targetName: "Foo Bar" })
+      .success,
+    true,
+  );
+  assert.equal(
+    mcpToolSchemas.replaceTagName.safeParse({ sourceName: "Foo\tBar", targetName: "vegan" })
+      .success,
+    false,
+  );
   assert.equal(mcpToolSchemas.recipe.safeParse({ ...content, tags: ["-invalid"] }).success, false);
   assert.equal(mcpToolSchemas.recipe.safeParse({ ...content, tags: ["!invalid"] }).success, false);
 });
