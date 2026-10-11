@@ -30,6 +30,32 @@ values
   );
 
 set local role authenticated;
+-- An authenticated database role without JWT claims must not inherit the
+-- SECURITY DEFINER service-role bypass when the JWT role claim is NULL.
+do $verify$
+begin
+  if auth.jwt() is not null then
+    raise exception 'Expected authenticated SQL session to have no JWT claims';
+  end if;
+
+  begin
+    perform public.recipe_vault_lock_document_owner('forged_owner_without_jwt');
+    raise exception 'owner lock accepted a forged owner without JWT claims';
+  exception when insufficient_privilege then
+    null;
+  end;
+
+  begin
+    perform * from public.recipe_vault_replace_document_tag(
+      'forged_owner_without_jwt', 'weeknight', 'dinner'
+    );
+    raise exception 'tag replacement accepted a forged owner without JWT claims';
+  exception when insufficient_privilege then
+    null;
+  end;
+end;
+$verify$;
+
 select set_config(
   'request.jwt.claims',
   '{"sub":"document_tag_replace_owner","role":"authenticated"}',
