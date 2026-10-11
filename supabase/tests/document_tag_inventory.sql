@@ -17,9 +17,6 @@ values
     '{"title":"Tag inventory two","description":"","time":{},"ingredients":[{"name":"beans"}],"equipment":[],"instructions":["Cook beans."],"notes":[],"tags":["dinner","lunch"]}'::jsonb
   ),
   (
-    'document_tag_owner', 'Tag inventory without document', null
-  ),
-  (
     'document_tag_other', 'Other owner tag inventory',
     '{"title":"Other owner tag inventory","description":"","time":{},"ingredients":[{"name":"soup"}],"equipment":[],"instructions":["Cook soup."],"notes":[],"tags":["dinner"]}'::jsonb
   );

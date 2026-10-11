@@ -27,6 +27,26 @@ values
     'document_tag_replace_other', 'Other owner recipe',
     '{"title":"Other owner recipe","description":"","time":{},"ingredients":[{"name":"soup"}],"equipment":[],"instructions":["Cook soup."],"notes":[],"tags":["quick meals"]}'::jsonb,
     3
+  ),
+  (
+    'document_tag_replace_owner', 'Order case one',
+    '{"title":"Order case one","description":"","time":{},"ingredients":[{"name":"a"}],"equipment":[],"instructions":["Cook."],"notes":[],"tags":["alpha"]}'::jsonb,
+    1
+  ),
+  (
+    'document_tag_replace_owner', 'Order case two',
+    '{"title":"Order case two","description":"","time":{},"ingredients":[{"name":"b"}],"equipment":[],"instructions":["Cook."],"notes":[],"tags":["beta"]}'::jsonb,
+    1
+  ),
+  (
+    'document_tag_replace_owner', 'Rollback case one',
+    '{"title":"Rollback case one","description":"","time":{},"ingredients":[{"name":"a"}],"equipment":[],"instructions":["Cook."],"notes":[],"tags":["rollback"]}'::jsonb,
+    1
+  ),
+  (
+    'document_tag_replace_owner', 'Rollback case two',
+    '{"title":"Rollback case two","description":"","time":{},"ingredients":[{"name":"b"}],"equipment":[],"instructions":["Cook."],"notes":[],"tags":["rollback"]}'::jsonb,
+    2147483647
   );
 
 set local role authenticated;
@@ -70,7 +90,8 @@ declare
   target_recipe_id uuid;
   unaffected_revision integer;
   fixture_count integer;
-  reset_count integer;
+  current_document jsonb;
+  current_revision integer;
 begin
   -- Wrong-owner calls are authorization failures, not an empty/missing result.
   begin
@@ -121,19 +142,6 @@ begin
 
   -- Sequentially exercise overlapping source/target names in each order. The
   -- owner transaction lock makes concurrent calls equivalent to one of these.
-  insert into public.recipes (owner_id, title, document, revision)
-  values
-    (
-      'document_tag_replace_owner', 'Order case one',
-      '{"title":"Order case one","description":"","time":{},"ingredients":[{"name":"a"}],"equipment":[],"instructions":["Cook."],"notes":[],"tags":["alpha"]}'::jsonb,
-      1
-    ),
-    (
-      'document_tag_replace_owner', 'Order case two',
-      '{"title":"Order case two","description":"","time":{},"ingredients":[{"name":"b"}],"equipment":[],"instructions":["Cook."],"notes":[],"tags":["beta"]}'::jsonb,
-      1
-    );
-
   perform * from public.recipe_vault_replace_document_tag(
     'document_tag_replace_owner', 'alpha', 'beta'
   );
@@ -153,14 +161,27 @@ begin
     raise exception 'overlapping replacements in alpha-then-beta order were inconsistent';
   end if;
 
-  update public.recipes
-  set document = pg_catalog.jsonb_set(document, '{tags}',
-        case title when 'Order case one' then '["alpha"]'::jsonb else '["beta"]'::jsonb end),
-      revision = 1
-  where owner_id = 'document_tag_replace_owner' and title in ('Order case one', 'Order case two');
-  get diagnostics reset_count = row_count;
-  if reset_count is distinct from 2 then
-    raise exception 'could not reset both recipes for reverse-order test';
+  select id, document, revision into target_recipe_id, current_document, current_revision
+  from public.recipes
+  where owner_id = 'document_tag_replace_owner' and title = 'Order case one';
+  select status into result_status
+  from public.recipe_vault_write_recipe_document(
+    'document_tag_replace_owner', target_recipe_id, current_revision,
+    pg_catalog.jsonb_set(current_document, '{tags}', '["alpha"]'::jsonb)
+  );
+  if result_status is distinct from 'saved' then
+    raise exception 'could not reset first recipe through document writer';
+  end if;
+  select id, document, revision into target_recipe_id, current_document, current_revision
+  from public.recipes
+  where owner_id = 'document_tag_replace_owner' and title = 'Order case two';
+  select status into result_status
+  from public.recipe_vault_write_recipe_document(
+    'document_tag_replace_owner', target_recipe_id, current_revision,
+    pg_catalog.jsonb_set(current_document, '{tags}', '["beta"]'::jsonb)
+  );
+  if result_status is distinct from 'saved' then
+    raise exception 'could not reset second recipe through document writer';
   end if;
   perform * from public.recipe_vault_replace_document_tag(
     'document_tag_replace_owner', 'beta', 'gamma'
@@ -183,18 +204,6 @@ begin
 
   -- A revision overflow after another affected row would abort the complete
   -- update statement. Verify that no document was partly changed.
-  insert into public.recipes (owner_id, title, document, revision)
-  values
-    (
-      'document_tag_replace_owner', 'Rollback case one',
-      '{"title":"Rollback case one","description":"","time":{},"ingredients":[{"name":"a"}],"equipment":[],"instructions":["Cook."],"notes":[],"tags":["rollback"]}'::jsonb,
-      1
-    ),
-    (
-      'document_tag_replace_owner', 'Rollback case two',
-      '{"title":"Rollback case two","description":"","time":{},"ingredients":[{"name":"b"}],"equipment":[],"instructions":["Cook."],"notes":[],"tags":["rollback"]}'::jsonb,
-      2147483647
-    );
   select id into target_recipe_id from public.recipes
   where owner_id = 'document_tag_replace_owner' and title = 'Rollback case two';
   if target_recipe_id is null then
