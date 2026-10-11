@@ -178,4 +178,4 @@ This avoids a blanket index over every JSON value. Postgres can index JSONB cont
 
 6. **Remove the old recipe representation after verification.** Run focused migration and RLS tests, API and MCP tests, and checks for the affected UI. Have an independent reviewer trace owner binding, tag synchronization, and service-role access before removing old storage.
 
-The **schema is agreed**. The storage design above is the recommended plan, with two migration decisions still requiring a rule: recipes without servings, and existing per-step durations. No database or application migration has started.
+The **schema is agreed**. The storage design above remains proposed. Existing recipes without servings require a real yield before cutover, and existing per-step durations will be appended to instruction text. The HTTP API and MCP recipe contracts will change together at cutover. The detailed [implementation plan](recipe-document-implementation-plan.md) records the steps and checks. No database or application migration has started.
