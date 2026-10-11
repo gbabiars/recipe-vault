@@ -3,7 +3,6 @@ import { expect, test } from "vitest";
 import type { Recipe } from "@/lib/db/recipe-repository";
 import type { RecipeDocumentContent } from "@/lib/validation/recipe-document";
 import {
-  RecipeDeleteCard,
   RecipeDocumentDetailCards,
   RecipeDetailsCard,
   RecipeIngredientsCard,
@@ -86,19 +85,9 @@ test("ingredient displays omit amount cleanly when it is absent", () => {
   expect(screen.getByRole("listitem")).toHaveTextContent("salt");
 });
 
-test("notes preserve line breaks and delete card renders the shared form", () => {
-  render(
-    <>
-      <RecipeNotesCard notes={recipe.notes!} />
-      <RecipeDeleteCard recipeId={recipe.id} deleteAction={async () => ({ errors: {} })} />
-    </>,
-  );
+test("notes preserve line breaks", () => {
+  render(<RecipeNotesCard notes={recipe.notes!} />);
   expect(screen.getByText("First line Second line").textContent).toBe(recipe.notes);
-  expect(screen.getByText("This cannot be undone.")).toBeTruthy();
-  expect(
-    screen.getByRole("checkbox", { name: "I understand this permanently deletes the recipe." }),
-  ).toBeTruthy();
-  expect(document.querySelector('input[name="recipeId"]')?.getAttribute("value")).toBe(recipe.id);
 });
 
 const recipeDocument: RecipeDocumentContent = {

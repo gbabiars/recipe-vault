@@ -6,7 +6,6 @@ import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
 import type { Recipe } from "@/lib/db/recipe-repository";
 import type { RecipeDocumentContent } from "@/lib/validation/recipe-document";
-import { DeleteRecipeForm, type DeleteRecipeAction } from "./delete-recipe-form";
 import styles from "./recipe-detail-cards.module.css";
 
 export function RecipeDetailsCard({ recipe }: { recipe: Recipe }) {
@@ -272,26 +271,6 @@ export function RecipeDocumentNotesCard({ notes }: { notes: RecipeDocumentConten
             </Text>
           ))}
         </Stack>
-      </Stack>
-    </Card>
-  );
-}
-
-export function RecipeDeleteCard({
-  recipeId,
-  deleteAction,
-}: {
-  recipeId: string;
-  deleteAction: DeleteRecipeAction;
-}) {
-  return (
-    <Card as="section">
-      <Stack gap="150">
-        <Heading as="h2" level={5}>
-          Delete recipe
-        </Heading>
-        <Text as="p">This cannot be undone.</Text>
-        <DeleteRecipeForm recipeId={recipeId} deleteAction={deleteAction} />
       </Stack>
     </Card>
   );
