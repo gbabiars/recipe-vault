@@ -59,3 +59,7 @@ export const recipeDocumentSchema = z
   .strict();
 
 export type RecipeDocument = z.output<typeof recipeDocumentSchema>;
+
+export const recipeDocumentContentSchema = recipeDocumentSchema.omit({ id: true }).strict();
+
+export type RecipeDocumentContent = z.output<typeof recipeDocumentContentSchema>;

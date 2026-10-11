@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { recipeDocumentSchema } from "./recipe-document";
+import { recipeDocumentContentSchema, recipeDocumentSchema } from "./recipe-document";
 
 const validDocument = {
   id: "8c0fb550-686a-4a0c-bf8f-690c1359c877",
@@ -48,4 +48,16 @@ test("rejects null yield, invalid IDs, incomplete arrays, and unknown fields", (
   for (const value of invalidDocuments) {
     assert.equal(recipeDocumentSchema.safeParse(value).success, false);
   }
+});
+
+test("validates create content without a server-assigned ID", () => {
+  const { id: _id, ...content } = validDocument;
+  void _id;
+
+  assert.deepEqual(recipeDocumentContentSchema.parse(content), content);
+  assert.equal(recipeDocumentContentSchema.safeParse(validDocument).success, false);
+  assert.equal(
+    recipeDocumentContentSchema.safeParse({ ...content, ownerId: "user_123" }).success,
+    false,
+  );
 });

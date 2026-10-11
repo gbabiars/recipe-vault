@@ -1,7 +1,132 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { recipeCreateInputSchema } from "../validation/recipe";
+import type { RecipeDocumentContent } from "../validation/recipe-document";
 import { RecipeRepository } from "./recipe-repository";
+
+const documentId = "8c0fb550-686a-4a0c-bf8f-690c1359c877";
+const recipeContent: RecipeDocumentContent = {
+  title: "Orange shortbread",
+  description: "Crisp cookies with orange zest.",
+  yield: { amount: 24, unit: "cookies" },
+  time: { cookMinutes: 18 },
+  ingredients: [{ name: "unsalted butter", amount: "1 cup", note: "softened" }],
+  equipment: [{ name: "baking sheet" }],
+  instructions: ["Cream the butter and sugar."],
+  notes: ["Chill the dough."],
+  tags: ["baking", "cookies"],
+  sourceUrl: "https://example.com/shortbread",
+};
+
+function rpcSavedDocument(revision = 3) {
+  return {
+    status: "saved",
+    recipe_id: documentId,
+    revision,
+    document: recipeContent,
+  };
+}
+
+test("document reads assemble the row ID and revision while scoping by owner", async () => {
+  const calls: Array<[string, ...unknown[]]> = [];
+  const query = {
+    select: (fields: string) => {
+      calls.push(["select", fields]);
+      return query;
+    },
+    eq: (field: string, value: string) => {
+      calls.push(["eq", field, value]);
+      return query;
+    },
+    maybeSingle: async () => ({
+      data: { id: documentId, document: recipeContent, revision: 7 },
+      error: null,
+    }),
+  };
+  const repository = new RecipeRepository({ from: () => query } as never);
+
+  const current = await repository.getDocument("owner-a", documentId);
+
+  assert.deepEqual(calls, [
+    ["select", "id, document, revision"],
+    ["eq", "owner_id", "owner-a"],
+    ["eq", "id", documentId],
+  ]);
+  assert.deepEqual(current, {
+    recipe: { id: documentId, ...recipeContent },
+    revision: 7,
+  });
+});
+
+test("document create sends id-free content and owner to the atomic RPC", async () => {
+  let rpcCall: { name: string; args: Record<string, unknown> } | undefined;
+  const repository = new RecipeRepository({
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      rpcCall = { name, args };
+      return { data: [rpcSavedDocument(1)], error: null };
+    },
+  } as never);
+
+  const result = await repository.createDocument("owner-a", recipeContent);
+
+  assert.deepEqual(rpcCall, {
+    name: "recipe_vault_write_recipe_document",
+    args: {
+      target_owner_id: "owner-a",
+      target_recipe_id: null,
+      target_expected_revision: null,
+      target_document: recipeContent,
+    },
+  });
+  assert.equal("id" in (rpcCall?.args.target_document as object), false);
+  assert.deepEqual(result, {
+    status: "saved",
+    recipe: { id: documentId, ...recipeContent },
+    revision: 1,
+  });
+});
+
+test("document replacement sends the immutable row ID and expected revision", async () => {
+  let rpcArgs: Record<string, unknown> | undefined;
+  const repository = new RecipeRepository({
+    rpc: async (_name: string, args: Record<string, unknown>) => {
+      rpcArgs = args;
+      return { data: [{ ...rpcSavedDocument(9), status: "conflict" }], error: null };
+    },
+  } as never);
+
+  const recipe = { id: documentId, ...recipeContent };
+  const result = await repository.replaceDocument("owner-a", recipe, 8);
+
+  assert.deepEqual(rpcArgs, {
+    target_owner_id: "owner-a",
+    target_recipe_id: documentId,
+    target_expected_revision: 8,
+    target_document: recipeContent,
+  });
+  assert.deepEqual(result, { status: "conflict", revision: 9 });
+});
+
+test("document write preserves explicit not-found and invalid outcomes", async () => {
+  const repository = new RecipeRepository({
+    rpc: async (_name: string, args: { target_recipe_id: string | null }) => ({
+      data: [
+        args.target_recipe_id === null
+          ? { status: "invalid", recipe_id: null, revision: null, document: null }
+          : { status: "not_found", recipe_id: null, revision: null, document: null },
+      ],
+      error: null,
+    }),
+  } as never);
+
+  assert.deepEqual(await repository.createDocument("owner-a", recipeContent), {
+    status: "invalid",
+  });
+  assert.deepEqual(
+    await repository.replaceDocument("owner-a", { id: documentId, ...recipeContent }, 1),
+    { status: "not_found" },
+  );
+});
 
 test("recipe list queries are constrained to the current owner before RLS is applied", async () => {
   const filters: string[][] = [];
