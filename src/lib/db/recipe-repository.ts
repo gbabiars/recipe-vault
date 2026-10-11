@@ -41,6 +41,11 @@ export type RecipeDocumentWriteResult =
   | { status: "conflict"; revision?: number }
   | { status: "not_found" }
   | { status: "invalid" };
+export type RecipeDocumentDeleteResult =
+  | { status: "deleted"; recipeId: string; revision: number }
+  | { status: "conflict"; revision: number }
+  | { status: "not_found" }
+  | { status: "invalid" };
 
 type DatabaseRecipeDocument = {
   id: string;
@@ -370,6 +375,43 @@ export class RecipeRepository {
       recipeDocumentContentSchema.parse(content),
       expectedRevision,
     );
+  }
+
+  async deleteDocument(
+    ownerId: string,
+    recipeId: string,
+    expectedRevision: number,
+    audit?: AuditMetadata,
+  ): Promise<RecipeDocumentDeleteResult> {
+    const { data, error } = await this.client.rpc("recipe_vault_delete_recipe_document", {
+      target_owner_id: ownerId,
+      target_recipe_id: recipeId,
+      target_expected_revision: expectedRevision,
+      target_audit_request_id: audit?.requestId ?? null,
+      target_audit_method: audit?.method ?? null,
+    });
+    if (error) throw new Error("Could not delete this recipe.");
+
+    const result = (Array.isArray(data) ? data[0] : data) as {
+      status?: string;
+      recipe_id?: string | null;
+      revision?: number | null;
+    } | null;
+    if (!result) throw new Error("Could not delete this recipe.");
+    if (result.status === "conflict" && Number.isSafeInteger(result.revision)) {
+      return { status: "conflict", revision: result.revision as number };
+    }
+    if (result.status === "not_found" || result.status === "invalid") {
+      return { status: result.status };
+    }
+    if (
+      result.status === "deleted" &&
+      result.recipe_id === recipeId &&
+      Number.isSafeInteger(result.revision)
+    ) {
+      return { status: "deleted", recipeId, revision: result.revision as number };
+    }
+    throw new Error("Could not delete this recipe.");
   }
 
   private async write(

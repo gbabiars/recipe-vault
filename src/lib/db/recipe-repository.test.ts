@@ -242,6 +242,71 @@ test("document write preserves explicit not-found and invalid outcomes", async (
   );
 });
 
+test("document delete binds owner, recipe, revision, and optional audit metadata", async () => {
+  let call: { name: string; args: Record<string, unknown> } | undefined;
+  const repository = new RecipeRepository({
+    rpc: async (name: string, args: Record<string, unknown>) => {
+      call = { name, args };
+      return {
+        data: [{ status: "deleted", recipe_id: documentId, revision: 4 }],
+        error: null,
+      };
+    },
+  } as never);
+  const audit = { requestId: "request-123", method: "DELETE" };
+
+  const result = await repository.deleteDocument("owner-a", documentId, 4, audit);
+
+  assert.deepEqual(call, {
+    name: "recipe_vault_delete_recipe_document",
+    args: {
+      target_owner_id: "owner-a",
+      target_recipe_id: documentId,
+      target_expected_revision: 4,
+      target_audit_request_id: "request-123",
+      target_audit_method: "DELETE",
+    },
+  });
+  assert.deepEqual(result, { status: "deleted", recipeId: documentId, revision: 4 });
+});
+
+test("document delete preserves conflict, missing, and invalid outcomes", async () => {
+  let outcome: Record<string, unknown> = { status: "conflict", revision: 7 };
+  const repository = new RecipeRepository({
+    rpc: async () => ({ data: [outcome], error: null }),
+  } as never);
+
+  assert.deepEqual(await repository.deleteDocument("owner-a", documentId, 6), {
+    status: "conflict",
+    revision: 7,
+  });
+  outcome = { status: "not_found", recipe_id: null, revision: null };
+  assert.deepEqual(await repository.deleteDocument("owner-a", documentId, 6), {
+    status: "not_found",
+  });
+  outcome = { status: "invalid", recipe_id: null, revision: null };
+  assert.deepEqual(await repository.deleteDocument("owner-a", documentId, 0), {
+    status: "invalid",
+  });
+});
+
+test("document delete rejects malformed RPC results and hides database errors", async () => {
+  const invalidRepository = new RecipeRepository({
+    rpc: async () => ({
+      data: [{ status: "deleted", recipe_id: "another-id", revision: 4 }],
+      error: null,
+    }),
+  } as never);
+  await assert.rejects(invalidRepository.deleteDocument("owner-a", documentId, 4));
+
+  const failedRepository = new RecipeRepository({
+    rpc: async () => ({ data: null, error: new Error("sensitive database detail") }),
+  } as never);
+  await assert.rejects(failedRepository.deleteDocument("owner-a", documentId, 4), {
+    message: "Could not delete this recipe.",
+  });
+});
+
 test("recipe list queries are constrained to the current owner before RLS is applied", async () => {
   const filters: string[][] = [];
   const query = {

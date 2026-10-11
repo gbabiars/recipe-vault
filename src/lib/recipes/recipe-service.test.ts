@@ -255,6 +255,68 @@ test("document invalid, conflict, and not-found outcomes do not record audit eve
   assert.deepEqual(auditCalls, []);
 });
 
+test("document delete forwards owner, revision, and atomic audit metadata without a second audit call", async () => {
+  const calls: unknown[][] = [];
+  let auditRpcCalls = 0;
+  const audit = { requestId: "delete-request", method: "DELETE" };
+  const repository = {
+    deleteDocument: async (
+      ownerId: string,
+      recipeId: string,
+      revision: number,
+      metadata: typeof audit,
+    ) => {
+      calls.push([ownerId, recipeId, revision, metadata]);
+      return { status: "deleted" as const, recipeId, revision };
+    },
+    recordAudit: async () => {
+      auditRpcCalls++;
+    },
+  };
+  const service = new RecipeService(repository as never);
+  const bound = new OwnerBoundRecipeService("verified-owner", service);
+
+  const result = await bound.deleteDocument(documentId, 5, audit);
+
+  assert.deepEqual(result, { status: "deleted", recipeId: documentId, revision: 5 });
+  assert.deepEqual(calls, [["verified-owner", documentId, 5, audit]]);
+  assert.equal(auditRpcCalls, 0);
+});
+
+test("document delete conflict and missing outcomes do not trigger separate audit writes", async () => {
+  let nextResult: { status: "conflict"; revision: number } | { status: "not_found" } = {
+    status: "conflict",
+    revision: 6,
+  };
+  let deleteCalls = 0;
+  let auditCalls = 0;
+  const repository = {
+    deleteDocument: async () => {
+      deleteCalls++;
+      return nextResult;
+    },
+    recordAudit: async () => {
+      auditCalls++;
+    },
+  };
+  const service = new RecipeService(repository as never);
+  const audit = { requestId: "delete-request", method: "DELETE" };
+
+  assert.deepEqual(await service.deleteDocument("owner-a", documentId, 5, audit), {
+    status: "conflict",
+    revision: 6,
+  });
+  nextResult = { status: "not_found" };
+  assert.deepEqual(await service.deleteDocument("owner-a", documentId, 5, audit), {
+    status: "not_found",
+  });
+  assert.deepEqual(await service.deleteDocument("owner-a", documentId, 0, audit), {
+    status: "invalid",
+  });
+  assert.equal(deleteCalls, 2);
+  assert.equal(auditCalls, 0);
+});
+
 function inputIngredients() {
   return [{ displayOrder: 1, amount: "2 slices", ingredientName: "bread" }];
 }

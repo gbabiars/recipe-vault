@@ -7,6 +7,7 @@ import {
 import type {
   AuditMetadata,
   RecipeDocumentSnapshot,
+  RecipeDocumentDeleteResult,
   RecipeDocumentWriteResult,
   RecipeDocumentPage,
   RecipePage,
@@ -138,6 +139,21 @@ export class RecipeService {
     }
     return result;
   }
+  async deleteDocument(
+    ownerId: string,
+    recipeId: string,
+    expectedRevision: number,
+    audit?: AuditMetadata,
+  ): Promise<RecipeDocumentDeleteResult> {
+    if (
+      !Number.isSafeInteger(expectedRevision) ||
+      expectedRevision < 1 ||
+      expectedRevision > 2_147_483_647
+    ) {
+      return { status: "invalid" };
+    }
+    return this.recipes.deleteDocument(ownerId, recipeId, expectedRevision, audit);
+  }
   async create(ownerId: string, input: RecipeCreateInput, audit?: AuditMetadata) {
     const recipe = await this.recipes.create(ownerId, input);
     if (audit) await this.recipes.recordAudit(ownerId, recipe.id, "recipe.created", audit);
@@ -214,5 +230,9 @@ export class OwnerBoundRecipeService {
 
   replaceDocument(recipe: unknown, expectedRevision: number, audit?: AuditMetadata) {
     return this.recipes.replaceDocument(this.ownerId, recipe, expectedRevision, audit);
+  }
+
+  deleteDocument(recipeId: string, expectedRevision: number, audit?: AuditMetadata) {
+    return this.recipes.deleteDocument(this.ownerId, recipeId, expectedRevision, audit);
   }
 }
