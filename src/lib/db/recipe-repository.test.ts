@@ -58,6 +58,120 @@ test("document reads assemble the row ID and revision while scoping by owner", a
   });
 });
 
+test("document list summaries validate documents and filter by title, exact tags, and owner", async () => {
+  const calls: Array<[string, ...unknown[]]> = [];
+  const query = {
+    select: (...args: unknown[]) => {
+      calls.push(["select", ...args]);
+      return query;
+    },
+    eq: (...args: unknown[]) => {
+      calls.push(["eq", ...args]);
+      return query;
+    },
+    order: (...args: unknown[]) => {
+      calls.push(["order", ...args]);
+      return query;
+    },
+    range: (...args: unknown[]) => {
+      calls.push(["range", ...args]);
+      return query;
+    },
+    ilike: (...args: unknown[]) => {
+      calls.push(["ilike", ...args]);
+      return query;
+    },
+    or: (...args: unknown[]) => {
+      calls.push(["or", ...args]);
+      return query;
+    },
+    then: (resolve: (value: { data: unknown[]; error: null; count: number }) => void) =>
+      resolve({
+        data: [
+          {
+            id: documentId,
+            document: recipeContent,
+            revision: 4,
+            created_at: "created",
+            updated_at: "updated",
+          },
+        ],
+        error: null,
+        count: 1,
+      }),
+  };
+  const repository = new RecipeRepository({ from: () => query } as never);
+
+  const page = await repository.listDocumentPage(
+    "owner-a",
+    "rice%_\\",
+    ["weeknight dinner", "baking"],
+    10,
+    25,
+  );
+
+  assert.deepEqual(calls, [
+    ["select", "id, document, revision, created_at, updated_at", { count: "exact" }],
+    ["eq", "owner_id", "owner-a"],
+    ["order", "updated_at", { ascending: false }],
+    ["order", "id", { ascending: true }],
+    ["range", 10, 34],
+    ["ilike", "title_text", "%rice\\%\\_\\\\%"],
+    ["or", 'document->tags.cs.["weeknight dinner"],document->tags.cs.["baking"]'],
+  ]);
+  assert.deepEqual(page, {
+    items: [
+      {
+        id: documentId,
+        title: recipeContent.title,
+        description: recipeContent.description,
+        yield: recipeContent.yield,
+        time: recipeContent.time,
+        tags: recipeContent.tags,
+        revision: 4,
+        createdAt: "created",
+        updatedAt: "updated",
+      },
+    ],
+    total: 1,
+  });
+});
+
+test("document list summaries preserve omitted yields and reject malformed documents", async () => {
+  function makeQuery(document: unknown, revision: number) {
+    const query = {
+      select: () => query,
+      eq: () => query,
+      order: () => query,
+      range: () => query,
+      then: (resolve: (value: { data: unknown[]; error: null; count: number }) => void) =>
+        resolve({
+          data: [
+            { id: documentId, document, revision, created_at: "created", updated_at: "updated" },
+          ],
+          error: null,
+          count: 1,
+        }),
+    };
+    return query;
+  }
+  const noYieldContent = { ...recipeContent };
+  delete noYieldContent.yield;
+  const repository = new RecipeRepository({ from: () => makeQuery(noYieldContent, 1) } as never);
+  const page = await repository.listDocumentPage("owner-a", undefined, [], 0, 25);
+  assert.equal("yield" in page.items[0], false);
+
+  const malformedRepository = new RecipeRepository({
+    from: () => makeQuery({ ...recipeContent, title: "" }, 1),
+  } as never);
+  await assert.rejects(malformedRepository.listDocumentPage("owner-a", undefined, [], 0, 25));
+
+  const invalidRevisionRepository = new RecipeRepository({
+    from: () => makeQuery(recipeContent, 0),
+  } as never);
+  await assert.rejects(invalidRevisionRepository.listDocumentPage("owner-a", undefined, [], 0, 25));
+});
+
 test("document create sends id-free content and owner to the atomic RPC", async () => {
   let rpcCall: { name: string; args: Record<string, unknown> } | undefined;
   const repository = new RecipeRepository({

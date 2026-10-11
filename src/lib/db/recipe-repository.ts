@@ -31,6 +31,11 @@ export type RecipeSummary = Omit<Recipe, "ingredients" | "steps">;
 export type RecipePage = { items: RecipeSummary[]; total: number };
 export type AuditMetadata = { requestId: string; method: string };
 export type RecipeDocumentSnapshot = { recipe: RecipeDocument; revision: number };
+export type RecipeDocumentListSummary = Pick<
+  RecipeDocument,
+  "id" | "title" | "description" | "yield" | "time" | "tags"
+> & { revision: number; createdAt: string; updatedAt: string };
+export type RecipeDocumentPage = { items: RecipeDocumentListSummary[]; total: number };
 export type RecipeDocumentWriteResult =
   | ({ status: "saved" } & RecipeDocumentSnapshot)
   | { status: "conflict"; revision?: number }
@@ -41,6 +46,11 @@ type DatabaseRecipeDocument = {
   id: string;
   document: unknown;
   revision: number;
+};
+
+type DatabaseRecipeDocumentSummary = DatabaseRecipeDocument & {
+  created_at: string;
+  updated_at: string;
 };
 
 type RecipeDocumentWriteRpcResult = {
@@ -136,6 +146,25 @@ function mapRecipeDocument(row: DatabaseRecipeDocument): RecipeDocumentSnapshot 
     recipe: recipeDocumentSchema.parse({ id: row.id, ...content }),
     revision: row.revision,
   };
+}
+
+function mapRecipeDocumentSummary(row: DatabaseRecipeDocumentSummary): RecipeDocumentListSummary {
+  const { recipe } = mapRecipeDocument(row);
+  return {
+    id: recipe.id,
+    title: recipe.title,
+    description: recipe.description,
+    ...(recipe.yield === undefined ? {} : { yield: recipe.yield }),
+    time: recipe.time,
+    tags: recipe.tags,
+    revision: row.revision,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function escapeLikeSubstring(value: string): string {
+  return value.replace(/[\\%_]/g, "\\$&");
 }
 
 /** All operations use the caller's JWT and therefore remain subject to database RLS. */
@@ -255,6 +284,35 @@ export class RecipeRepository {
       .maybeSingle();
     if (error) throw new Error("Could not load this recipe.");
     return data ? mapRecipeDocument(data as DatabaseRecipeDocument) : null;
+  }
+
+  async listDocumentPage(
+    ownerId: string,
+    search: string | undefined,
+    tags: string[],
+    offset: number,
+    limit: number,
+  ): Promise<RecipeDocumentPage> {
+    let query = this.client
+      .from("recipes")
+      .select("id, document, revision, created_at, updated_at", { count: "exact" })
+      .eq("owner_id", ownerId)
+      .order("updated_at", { ascending: false })
+      .order("id", { ascending: true })
+      .range(offset, offset + limit - 1);
+
+    if (search) query = query.ilike("title_text", `%${escapeLikeSubstring(search)}%`);
+    if (tags.length) {
+      const clauses = tags.map((tag) => `document->tags.cs.${JSON.stringify([tag])}`);
+      query = query.or(clauses.join(","));
+    }
+
+    const { data, error, count } = await query;
+    if (error) throw new Error("Could not load recipes.");
+    return {
+      items: (data as unknown as DatabaseRecipeDocumentSummary[]).map(mapRecipeDocumentSummary),
+      total: count ?? 0,
+    };
   }
 
   private async writeDocument(

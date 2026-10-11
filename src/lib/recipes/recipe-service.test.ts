@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { parseRecipeFormData } from "../../app/(private)/recipes/_lib/recipe-form-data";
-import { RecipeService } from "./recipe-service";
+import { OwnerBoundRecipeService, RecipeService } from "./recipe-service";
 
 const documentId = "8c0fb550-686a-4a0c-bf8f-690c1359c877";
 const validDocumentContent = {
@@ -101,6 +101,36 @@ test("document service forwards owner and revision for read and replacement", as
     ],
   ]);
   assert.deepEqual(result, { status: "conflict", revision: 5 });
+});
+
+test("document list service translates pages into offsets and binds the owner", async () => {
+  const calls: unknown[][] = [];
+  const page = { items: [], total: 0 };
+  const repository = {
+    listDocumentPage: async (
+      ownerId: string,
+      search: string | undefined,
+      tags: string[],
+      offset: number,
+      limit: number,
+    ) => {
+      calls.push([ownerId, search, tags, offset, limit]);
+      return page;
+    },
+  };
+  const service = new RecipeService(repository as never);
+  const boundService = new OwnerBoundRecipeService("verified-owner", service);
+
+  assert.deepEqual(
+    await boundService.listDocumentPage({
+      search: "rice",
+      tags: ["weeknight"],
+      page: 3,
+      pageSize: 10,
+    }),
+    page,
+  );
+  assert.deepEqual(calls, [["verified-owner", "rice", ["weeknight"], 20, 10]]);
 });
 
 test("document service rejects invalid content before repository writes", async () => {

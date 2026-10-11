@@ -8,6 +8,7 @@ import type {
   AuditMetadata,
   RecipeDocumentSnapshot,
   RecipeDocumentWriteResult,
+  RecipeDocumentPage,
   RecipePage,
 } from "@/lib/db/recipe-repository";
 import {
@@ -63,6 +64,23 @@ export class RecipeService {
     },
   ): Promise<RecipePage> {
     return this.recipes.listPage(
+      ownerId,
+      options.search,
+      options.tags,
+      (options.page - 1) * options.pageSize,
+      options.pageSize,
+    );
+  }
+  listDocumentPage(
+    ownerId: string,
+    options: {
+      search?: string;
+      tags: string[];
+      page: number;
+      pageSize: number;
+    },
+  ): Promise<RecipeDocumentPage> {
+    return this.recipes.listDocumentPage(
       ownerId,
       options.search,
       options.tags,
@@ -172,6 +190,10 @@ export class OwnerBoundRecipeService {
 
   listPage(options: Parameters<RecipeService["listPage"]>[1]) {
     return this.recipes.listPage(this.ownerId, options);
+  }
+
+  listDocumentPage(options: Parameters<RecipeService["listDocumentPage"]>[1]) {
+    return this.recipes.listDocumentPage(this.ownerId, options);
   }
 
   get(recipeId: string) {
