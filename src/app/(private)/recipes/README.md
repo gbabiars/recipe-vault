@@ -11,6 +11,12 @@ helpers convert `FormData` to the shared recipe-document
 validation shape. The route group's layout owns the private shell; navigation
 lives in `src/components/app`.
 
+The `/recipes` list shows up to 25 matching recipes per page. Its `page` query
+parameter is one-based; the first page omits it. Pagination links retain the
+current search phrase and selected tags, while changing either filter returns
+to page 1. Invalid page values display page 1, and page values beyond the
+filtered result display the last available page.
+
 Recipes are complete validated documents. Their `tags` arrays are the source of
 tag names; the `/tags` route derives each owner's inventory and usage counts
 from recipe documents. There is no separate tag table or unused-tag catalog.

@@ -8,7 +8,10 @@ import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
 import { RecipeFilters } from "./_components/recipe-filters";
 import { RecipeList, RecipeListSkeleton } from "./_components/recipe-list";
+import { RecipePagination } from "./_components/recipe-pagination";
 import { RecipesHeaderActions } from "./_components/recipes-header-actions";
+import { loadRecipePage } from "./_lib/load-recipe-page";
+import { parseRecipePage, recipePageHref } from "./_lib/recipe-pagination";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
 import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
@@ -16,10 +19,11 @@ import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; tag?: string | string[] }>;
+  searchParams: Promise<{ q?: string; tag?: string | string[]; page?: string | string[] }>;
 }) {
-  const { q, tag } = await searchParams;
+  const { q, tag, page } = await searchParams;
   const tags = tag == null ? [] : Array.isArray(tag) ? tag : [tag];
+  const requestedPage = parseRecipePage(page);
   return (
     <PageLayout>
       <PageHeader title="Your recipes" actions={<RecipesHeaderActions />} />
@@ -28,8 +32,11 @@ export default async function RecipesPage({
           <RecipeFilters q={q} tag={tags} />
           <Card padding="none">
             <Stack paddingBlock="200" paddingInline="200">
-              <Suspense key={JSON.stringify([q, tags])} fallback={<RecipeListSkeleton />}>
-                <RecipeResults q={q} tags={tags} />
+              <Suspense
+                key={JSON.stringify([q, tags, requestedPage])}
+                fallback={<RecipeListSkeleton />}
+              >
+                <RecipeResults q={q} tags={tags} requestedPage={requestedPage} />
               </Suspense>
             </Stack>
           </Card>
@@ -39,21 +46,28 @@ export default async function RecipesPage({
   );
 }
 
-async function RecipeResults({ q, tags }: { q?: string; tags: string[] }) {
+async function RecipeResults({
+  q,
+  tags,
+  requestedPage,
+}: {
+  q?: string;
+  tags: string[];
+  requestedPage: number;
+}) {
   const user = await requireUser();
   let documentSummaries: RecipeDocumentListSummary[];
+  let total = 0;
+  let displayedPage = 1;
+  let pageCount = 1;
   let error: string | undefined;
   try {
-    const page = await (
-      await getRecipeService()
-    ).listDocumentPage(user.id, {
+    const result = await loadRecipePage(await getRecipeService(), user.id, {
       search: q?.trim() || undefined,
       tags,
-      page: 1,
-      // Match the previous unpaged list's PostgREST default row cap.
-      pageSize: 1000,
+      requestedPage,
     });
-    documentSummaries = page.items;
+    ({ items: documentSummaries, total, page: displayedPage, pageCount } = result);
   } catch {
     documentSummaries = [];
     error = "Recipes could not be loaded. Refresh the page to try again.";
@@ -83,7 +97,22 @@ async function RecipeResults({ q, tags }: { q?: string; tags: string[] }) {
           </Stack>
         </Card>
       ) : (
-        <RecipeList documentSummaries={documentSummaries} />
+        <Stack gap="200">
+          <RecipeList documentSummaries={documentSummaries} />
+          <RecipePagination
+            page={displayedPage}
+            pageCount={pageCount}
+            total={total}
+            previousHref={
+              displayedPage > 1 ? recipePageHref({ q, tags, page: displayedPage - 1 }) : undefined
+            }
+            nextHref={
+              displayedPage < pageCount
+                ? recipePageHref({ q, tags, page: displayedPage + 1 })
+                : undefined
+            }
+          />
+        </Stack>
       )}
     </>
   );
