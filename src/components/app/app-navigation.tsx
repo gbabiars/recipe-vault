@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { BookOpen, ChevronDown, PanelLeftClose, PanelLeftOpen, Tags } from "lucide-react";
+import {
+  BookOpen,
+  ChevronDown,
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Settings,
+  Tags,
+} from "lucide-react";
 import { Avatar } from "../ui/avatar";
 import { IconButton } from "../ui/button";
 import { Tooltip } from "../ui/tooltip";
@@ -126,6 +134,7 @@ export function AppNavigation({
           )}
           <DropdownMenuPopup side="top" align="start" className={styles.accountMenuPopup}>
             <DropdownMenuLinkItem
+              icon={Settings}
               render={
                 <Link
                   href="/settings"
@@ -137,6 +146,7 @@ export function AppNavigation({
               Settings
             </DropdownMenuLinkItem>
             <DropdownMenuItem
+              icon={LogOut}
               onClick={() => {
                 onSelect?.();
                 void onSignOut();
