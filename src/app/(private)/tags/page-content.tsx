@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
 import { Inline } from "@/components/ui/inline";
@@ -25,13 +26,11 @@ export function TagsPageContent({
       <PageHeader title="Tags" />
       <PageContent>
         {error ? (
-          <div role="alert">
-            <Card as="div">
-              <Text as="p" appearance="error">
-                Tags could not be loaded. Refresh the page to try again.
-              </Text>
-            </Card>
-          </div>
+          <Alert
+            description="Refresh the page to try again."
+            title="Tags could not be loaded"
+            variant="danger"
+          />
         ) : tags.length === 0 ? (
           <Card as="section" padding="large">
             <Stack gap="150">

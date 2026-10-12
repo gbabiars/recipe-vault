@@ -70,3 +70,16 @@ test("keeps website and PDF import available in the recipe menu", async () => {
   await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
   expect(document.activeElement).toBe(trigger);
 });
+
+test("shows a danger alert when recipes fail to load", async () => {
+  listMock.mockRejectedValue(new Error("request failed"));
+
+  const page = await RecipesPage({ searchParams: Promise.resolve({}) });
+  render(page);
+
+  const alert = await screen.findByRole("alert", { name: "Recipes could not be loaded" });
+  expect(alert.getAttribute("data-alert-variant")).toBe("danger");
+  expect(screen.getByText("Refresh the page to try again.")).toBeTruthy();
+
+  listMock.mockResolvedValue({ items: [], total: 0 });
+});

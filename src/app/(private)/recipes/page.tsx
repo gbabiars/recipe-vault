@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
@@ -67,11 +68,11 @@ async function RecipeResults({ q, tags }: { q?: string; tags: string[] }) {
   return (
     <>
       {error ? (
-        <Card as="div" role="alert">
-          <Text as="p" appearance="error">
-            {error}
-          </Text>
-        </Card>
+        <Alert
+          description="Refresh the page to try again."
+          title="Recipes could not be loaded"
+          variant="danger"
+        />
       ) : documentSummaries.length === 0 ? (
         <Card as="section" padding="large">
           <Stack gap="150">

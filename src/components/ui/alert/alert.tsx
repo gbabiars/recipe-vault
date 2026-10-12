@@ -39,6 +39,7 @@ const AlertImpl = (
       className={cn(styles.alert, className)}
       data-alert-variant={variant}
       padding="medium"
+      role="alert"
       ref={ref}
       variant="subtle"
     >

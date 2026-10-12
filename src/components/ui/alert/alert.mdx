@@ -21,9 +21,9 @@ React content, including links.
 ## Content and accessibility
 
 Write a specific title and explain the meaning or next step in the description.
-The icon is decorative; the title and description carry the message. Alert does
-not create a live region, so callers should choose focus management or a
-separately managed announcement when dynamically adding essential feedback.
+The icon is decorative; the title and description carry the message. Alert uses
+`role="alert"` so assistive technology announces it when it appears. Avoid
+placing rapidly changing or low-priority content in an Alert.
 
 ## Stories
 

@@ -9,16 +9,16 @@ afterEach(() => {
   document.documentElement.removeAttribute("data-theme");
 });
 
-test("renders a named section with a fixed level-three heading and no live role", () => {
+test("renders an alert section with a fixed level-three heading", () => {
   render(<Alert description="Review the recipe details." title="Check ingredients" />);
 
-  const alert = screen.getByRole("region", { name: "Check ingredients" });
+  const alert = screen.getByRole("alert", { name: "Check ingredients" });
   const heading = screen.getByRole("heading", { level: 5, name: "Check ingredients" });
 
   expect(alert).toBeInstanceOf(HTMLElement);
   expect(alert.tagName).toBe("SECTION");
   expect(alert.getAttribute("aria-labelledby")).toBe(heading.id);
-  expect(alert.getAttribute("role")).toBeNull();
+  expect(alert.getAttribute("role")).toBe("alert");
   expect(alert.getAttribute("aria-live")).toBeNull();
   expect(alert.getAttribute("data-variant")).toBe("subtle");
   expect(alert.getAttribute("data-padding")).toBe("medium");
@@ -37,7 +37,7 @@ test("renders a decorative icon and a rich description", () => {
     />,
   );
 
-  const alert = screen.getByRole("region", { name: "Check ingredients" });
+  const alert = screen.getByRole("alert", { name: "Check ingredients" });
   const icon = alert.querySelector("svg");
 
   expect(icon?.getAttribute("aria-hidden")).toBe("true");
