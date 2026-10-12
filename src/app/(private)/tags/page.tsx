@@ -3,6 +3,24 @@ import { TagsPageContent } from "./page-content";
 import { requireUser } from "@/lib/auth/require-user";
 import { getTagService } from "@/lib/recipes";
 
+async function fetchTagsPage(
+  userId: string,
+  cursors: ReturnType<typeof parseTagCursor>,
+): Promise<{ tags: { name: string; usageCount: number }[]; hasMore: boolean; error: boolean }> {
+  try {
+    const inventory = await (
+      await getTagService()
+    ).listFromRecipes(userId, {
+      sort: "name_asc",
+      limit: TAG_PAGE_SIZE,
+      ...cursors,
+    });
+    return { tags: inventory.tags, hasMore: inventory.hasMore, error: false };
+  } catch {
+    return { tags: [], hasMore: false, error: true };
+  }
+}
+
 export default async function TagsPage({
   searchParams,
 }: {
@@ -10,22 +28,7 @@ export default async function TagsPage({
 }) {
   const user = await requireUser();
   const cursors = parseTagCursor(await searchParams);
-  let tags: { name: string; usageCount: number }[] = [];
-  let hasMore = false;
-  let error = false;
-  try {
-    const inventory = await (
-      await getTagService()
-    ).listFromRecipes(user.id, {
-      sort: "name_asc",
-      limit: TAG_PAGE_SIZE,
-      ...cursors,
-    });
-    tags = inventory.tags;
-    hasMore = inventory.hasMore;
-  } catch {
-    error = true;
-  }
+  const { tags, hasMore, error } = await fetchTagsPage(user.id, cursors);
 
   const firstTag = tags[0];
   const lastTag = tags.at(-1);
