@@ -1,4 +1,4 @@
-import { TAG_PAGE_SIZE, parseTagCursor, tagPageHref } from "./_lib/tag-pagination";
+import { TAG_PAGE_SIZE, encodeTagCursor, parseTagCursor } from "./_lib/tag-pagination";
 import { TagsPageContent } from "./page-content";
 import { requireUser } from "@/lib/auth/require-user";
 import { getTagService } from "@/lib/recipes";
@@ -33,10 +33,12 @@ export default async function TagsPage({
   const firstTag = tags[0];
   const lastTag = tags.at(-1);
   const nextHref =
-    !error && lastTag && (hasMore || cursors.before) ? tagPageHref(lastTag) : undefined;
+    !error && lastTag && (hasMore || cursors.before)
+      ? `/tags?after=${encodeURIComponent(encodeTagCursor(lastTag))}`
+      : undefined;
   const previousHref =
     !error && firstTag && (cursors.after || (cursors.before && hasMore))
-      ? tagPageHref(firstTag, "before")
+      ? `/tags?before=${encodeURIComponent(encodeTagCursor(firstTag))}`
       : undefined;
 
   return (

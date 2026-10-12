@@ -49,7 +49,3 @@ export function parseTagCursor(searchParams: CursorSearchParams): {
   const name = decodeTagCursor(value);
   return name ? { [direction]: { name } } : {};
 }
-
-export function tagPageHref(tag: TagPosition, direction: "after" | "before" = "after"): string {
-  return `/tags?${direction}=${encodeURIComponent(encodeTagCursor(tag))}`;
-}
