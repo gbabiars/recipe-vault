@@ -146,6 +146,8 @@ test("tag MCP adapter binds verified owner and accepts only canonical names", as
         target_sort: "usage_desc",
         after_usage_count: null,
         after_name: null,
+        before_usage_count: null,
+        before_name: null,
         target_limit: 51,
       },
     },

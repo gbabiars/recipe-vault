@@ -1,9 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import type {
-  DocumentTagInventoryItem,
-  DocumentTagInventoryOptions,
-} from "@/lib/db/tag-repository";
+import { encodeTagCursor } from "./_lib/tag-pagination";
 import TagsPage from "./page";
 
 const { listFromRecipesMock } = vi.hoisted(() => ({ listFromRecipesMock: vi.fn() }));
@@ -15,7 +12,7 @@ vi.mock("@/lib/recipes", () => ({
   getTagService: async () => ({ listFromRecipes: listFromRecipesMock }),
 }));
 
-const allTags: DocumentTagInventoryItem[] = Array.from({ length: 53 }, (_, index) => ({
+const allTags = Array.from({ length: 53 }, (_, index) => ({
   name: `page tag ${String(index + 1).padStart(3, "0")}`,
   usageCount: index + 1,
 }));
@@ -44,7 +41,7 @@ function nextCursor() {
 beforeEach(() => listFromRecipesMock.mockReset());
 afterEach(() => cleanup());
 
-test("reads only document-derived names and counts for the authenticated owner", async () => {
+test("reads tag names and counts for the authenticated owner", async () => {
   listFromRecipesMock.mockResolvedValue({
     tags: [allTags[0], allTags[1]],
     hasMore: false,
@@ -59,23 +56,35 @@ test("reads only document-derived names and counts for the authenticated owner",
   );
   expect(screen.getByText("1 recipe")).toBeInTheDocument();
   expect(screen.getByText("2 recipes")).toBeInTheDocument();
-  expect(screen.queryByText(/description/i)).not.toBeInTheDocument();
   expect(listFromRecipesMock).toHaveBeenCalledWith("owner-ada", {
     sort: "name_asc",
     limit: 25,
   });
 });
 
-test("next cursor visits document tags once in name order", async () => {
+test("next cursor visits tags once in name order", async () => {
   listFromRecipesMock.mockImplementation(
     async (
       _ownerId: string,
-      options: DocumentTagInventoryOptions = { sort: "name_asc", limit: 25 },
+      options: {
+        after?: { name: string };
+        before?: { name: string };
+        sort: "name_asc";
+        limit: number;
+      } = {
+        sort: "name_asc",
+        limit: 25,
+      },
     ) => {
       const start = options.after
         ? allTags.findIndex((tag) => tag.name === options.after?.name) + 1
-        : 0;
-      return { tags: allTags.slice(start, start + 25), hasMore: start + 25 < allTags.length };
+        : options.before
+          ? allTags.findIndex((tag) => tag.name === options.before?.name) - 25
+          : 0;
+      return {
+        tags: allTags.slice(start, start + 25),
+        hasMore: options.before ? start > 0 : start + 25 < allTags.length,
+      };
     },
   );
 
@@ -99,10 +108,41 @@ test("next cursor visits document tags once in name order", async () => {
   });
 });
 
-test("invalid and unsupported reverse cursors restart at page one", async () => {
+test("previous cursor returns the prior page and keeps navigation in both directions", async () => {
+  listFromRecipesMock.mockImplementation(
+    async (
+      _ownerId: string,
+      options: { after?: { name: string }; before?: { name: string } } = {},
+    ) => {
+      const start = options.after
+        ? allTags.findIndex((tag) => tag.name === options.after?.name) + 1
+        : allTags.findIndex((tag) => tag.name === options.before?.name) - 25;
+      return { tags: allTags.slice(start, start + 25), hasMore: start > 0 };
+    },
+  );
+
+  await renderPage({ before: encodeTagCursor(allTags[50]!) });
+
+  expect(listedNames()).toEqual(allTags.slice(25, 50).map((tag) => tag.name));
+  expect(listFromRecipesMock).toHaveBeenCalledWith("owner-ada", {
+    sort: "name_asc",
+    limit: 25,
+    before: { name: allTags[50]!.name },
+  });
+  expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute(
+    "href",
+    expect.stringContaining("before="),
+  );
+  expect(screen.getByRole("link", { name: "Next" })).toHaveAttribute(
+    "href",
+    expect.stringContaining("after="),
+  );
+});
+
+test("invalid and conflicting cursors restart at page one", async () => {
   listFromRecipesMock.mockResolvedValue({ tags: [allTags[0]], hasMore: false });
 
-  await renderPage({ after: "malformed", before: "unsupported" });
+  await renderPage({ after: "malformed", before: "conflict" });
 
   expect(listFromRecipesMock).toHaveBeenCalledWith("owner-ada", {
     sort: "name_asc",

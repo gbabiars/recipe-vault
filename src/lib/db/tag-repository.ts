@@ -30,6 +30,7 @@ export type DocumentTagInventoryOptions = {
   sort: DocumentTagSortOrder;
   limit: number;
   after?: DocumentTagCursor;
+  before?: DocumentTagCursor;
 };
 export type DocumentTagInventoryItem = { name: string; usageCount: number };
 export type DocumentTagInventoryPage = {
@@ -91,8 +92,12 @@ export class TagRepository {
     options: DocumentTagInventoryOptions,
   ): Promise<DocumentTagInventoryPage> {
     if (
-      (options.sort === "name_asc" && options.after?.usageCount !== undefined) ||
-      (options.sort !== "name_asc" && options.after && options.after.usageCount === undefined)
+      (options.after && options.before) ||
+      (options.sort === "name_asc" &&
+        (options.after?.usageCount !== undefined || options.before?.usageCount !== undefined)) ||
+      (options.sort !== "name_asc" &&
+        ((options.after && options.after.usageCount === undefined) ||
+          (options.before && options.before.usageCount === undefined)))
     ) {
       throw new Error("Could not load tags.");
     }
@@ -102,12 +107,16 @@ export class TagRepository {
       target_sort: options.sort,
       after_usage_count: options.after?.usageCount ?? null,
       after_name: options.after?.name ?? null,
+      before_usage_count: options.before?.usageCount ?? null,
+      before_name: options.before?.name ?? null,
       target_limit: options.limit + 1,
     });
     if (error || !Array.isArray(data)) throw new Error("Could not load tags.");
 
     const rows = data as DatabaseDocumentTagInventory[];
-    const tags = rows.slice(0, options.limit).map((row) => {
+    const pageRows = rows.slice(0, options.limit);
+    if (options.before) pageRows.reverse();
+    const tags = pageRows.map((row) => {
       const usageCount = Number(row.usage_count);
       if (typeof row.name !== "string" || !Number.isSafeInteger(usageCount) || usageCount < 1)
         throw new Error("Could not load tags.");

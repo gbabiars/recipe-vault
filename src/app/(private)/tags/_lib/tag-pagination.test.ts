@@ -1,43 +1,23 @@
 import assert from "node:assert/strict";
-import test from "node:test";
-import type { TagInventoryItem } from "@/lib/db/tag-repository";
-import { encodeTagCursor, parseTagPageCursors, tagPageHref } from "./tag-pagination";
+import { test } from "node:test";
+import { encodeTagCursor, parseTagCursor, tagPageHref } from "./tag-pagination";
 
-const tag: TagInventoryItem = {
-  id: "00000000-0000-4000-8000-000000000001",
-  name: "weeknight meals",
-  usageCount: 3,
-};
+const tag = { name: "rice beans", usageCount: 4 };
 
-test("tag page cursors encode and decode stable tag positions", () => {
-  const token = encodeTagCursor(tag);
+test("encodes and parses a name cursor for tag pages", () => {
+  const cursor = encodeTagCursor(tag);
 
-  assert.deepEqual(parseTagPageCursors({ after: token }), {
-    after: { id: tag.id, name: tag.name, usageCount: tag.usageCount },
-  });
-  assert.deepEqual(parseTagPageCursors({ before: token }), {
-    before: { id: tag.id, name: tag.name, usageCount: tag.usageCount },
-  });
-  assert.equal(tagPageHref("before", tag), `/tags?before=${encodeURIComponent(token)}`);
+  assert.equal(cursor.includes("="), false, "base64url cursors omit padding");
+  assert.deepEqual(parseTagCursor({ after: cursor }), { after: { name: tag.name } });
+  assert.equal(tagPageHref(tag), `/tags?after=${encodeURIComponent(cursor)}`);
 });
 
-test("invalid, repeated, and conflicting cursor parameters restart at the first page", () => {
-  const valid = encodeTagCursor(tag);
-
-  assert.deepEqual(parseTagPageCursors({ after: "not-a-cursor" }), {});
-  assert.deepEqual(parseTagPageCursors({ before: [valid, valid] }), {});
-  assert.deepEqual(parseTagPageCursors({ after: valid, before: valid }), {});
-  assert.deepEqual(parseTagPageCursors({ after: undefined, before: undefined }), {});
-});
-
-test("cursor payloads must contain a valid count, canonical name, and UUID", () => {
-  for (const payload of [
-    { version: 1, usageCount: -1, name: tag.name, id: tag.id },
-    { version: 1, usageCount: 1.5, name: tag.name, id: tag.id },
-    { version: 1, usageCount: 1, name: "Weeknight Meals", id: tag.id },
-    { version: 1, usageCount: 1, name: tag.name, id: "not-a-uuid" },
-  ]) {
-    const token = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
-    assert.deepEqual(parseTagPageCursors({ after: token }), {});
-  }
+test("parses reverse cursors and rejects malformed or conflicting cursors", () => {
+  assert.deepEqual(parseTagCursor({ after: "bad" }), {});
+  assert.deepEqual(parseTagCursor({ after: encodeTagCursor({ name: " Rice " }) }), {});
+  const cursor = encodeTagCursor(tag);
+  assert.deepEqual(parseTagCursor({ before: cursor }), { before: { name: tag.name } });
+  assert.equal(tagPageHref(tag, "before"), `/tags?before=${encodeURIComponent(cursor)}`);
+  assert.deepEqual(parseTagCursor({ after: cursor, before: cursor }), {});
+  assert.deepEqual(parseTagCursor({ after: [encodeTagCursor(tag)] }), {});
 });

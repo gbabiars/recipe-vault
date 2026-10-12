@@ -144,10 +144,50 @@ test("document tag inventory passes an owner, filters, and usage/name cursor", a
         target_sort: "usage_desc",
         after_usage_count: 4,
         after_name: "dinner",
+        before_usage_count: null,
+        before_name: null,
         target_limit: 3,
       },
     },
   ]);
+});
+
+test("document tag inventory returns reverse cursor rows in display order", async () => {
+  const calls: Array<Record<string, unknown>> = [];
+  const repository = new TagRepository({
+    rpc: async (_name: string, args: Record<string, unknown>) => {
+      calls.push(args);
+      return {
+        data: [
+          { name: "zucchini", usage_count: 1 },
+          { name: "tomato", usage_count: 2 },
+          { name: "rice", usage_count: 3 },
+        ],
+        error: null,
+      };
+    },
+  } as never);
+
+  const page = await repository.listFromDocuments("owner-a", {
+    sort: "name_asc",
+    limit: 2,
+    before: { name: "zucchini" },
+  });
+
+  assert.deepEqual(
+    page.tags.map((tag) => tag.name),
+    ["tomato", "zucchini"],
+  );
+  assert.deepEqual(calls[0], {
+    target_owner_id: "owner-a",
+    target_search: null,
+    target_sort: "name_asc",
+    after_usage_count: null,
+    after_name: null,
+    before_usage_count: null,
+    before_name: "zucchini",
+    target_limit: 3,
+  });
 });
 
 test("document tag inventory maps only canonical name and positive usage count", async () => {

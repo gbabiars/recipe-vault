@@ -10,7 +10,9 @@ RPC performs atomic create, revision-checked replacement, or deletion.
 `tag-repository.ts` owns document-derived tag inventory and name replacement.
 `listFromDocuments(ownerId, options)` invokes
 `recipe_vault_list_document_tag_inventory` and returns canonical names with
-exact recipe usage counts. `replaceDocumentTagName(ownerId, sourceName,
+exact recipe usage counts. Inventory pages accept one name or usage cursor in
+either direction (`after` or `before`) and return names in the selected display
+order. `replaceDocumentTagName(ownerId, sourceName,
 targetName)` invokes the owner-bound `recipe_vault_replace_document_tag` RPC;
 it replaces names across affected documents atomically and collapses duplicates.
 The document arrays are the only tag source in the target model. There is no

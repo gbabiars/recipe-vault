@@ -1,26 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
-import { TagCatalog } from "./tag-catalog";
+import { TagsPageContent } from "./page-content";
 
 const meta = {
-  title: "App/Tags/TagCatalog",
-  component: TagCatalog,
+  title: "App/Tags/Page",
+  component: TagsPageContent,
   args: {
     tags: [
-      {
-        id: "00000000-0000-4000-8000-000000000001",
-        name: "weeknight meals",
-        usageCount: 3,
-        description: "Easy dinners for busy evenings.",
-      },
-      {
-        id: "00000000-0000-4000-8000-000000000002",
-        name: "vegetarian",
-        usageCount: 0,
-      },
+      { name: "weeknight meals", usageCount: 3 },
+      { name: "vegetarian", usageCount: 1 },
     ],
   },
-} satisfies Meta<typeof TagCatalog>;
+} satisfies Meta<typeof TagsPageContent>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -35,13 +26,13 @@ export const Paginated: Story = {
   args: { previousHref: "/tags?before=previous", nextHref: "/tags?after=next" },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("navigation", { name: "Tag pages" })).toBeInTheDocument();
-    await expect(canvas.getByRole("link", { name: "Previous" })).toHaveAttribute(
-      "href",
-      "/tags?before=previous",
-    );
     await expect(canvas.getByRole("link", { name: "Next" })).toHaveAttribute(
       "href",
       "/tags?after=next",
+    );
+    await expect(canvas.getByRole("link", { name: "Previous" })).toHaveAttribute(
+      "href",
+      "/tags?before=previous",
     );
   },
 };

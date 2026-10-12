@@ -86,6 +86,13 @@ begin
     raise exception 'name cursor did not continue deterministically';
   end if;
 
+  if (select pg_catalog.array_agg(name order by name)
+      from public.recipe_vault_list_document_tag_inventory(
+        'document_tag_owner', null, 'name_asc', null, null, null, 'lunch', 10
+      )) <> array['dinner'] then
+    raise exception 'reverse name cursor did not return earlier tags';
+  end if;
+
   select pg_catalog.array_agg(recipe_id order by recipe_id)
   into exact_recipe_ids
   from public.recipe_vault_list_recipe_ids_by_document_tag('document_tag_owner', 'dinner');

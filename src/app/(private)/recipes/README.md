@@ -4,9 +4,10 @@ Recipe UI lives beside the route segments that use it. The `recipes/_components`
 and `recipes/_lib` folders hold the list and the document form shared by new and
 edit pages; `recipes/_actions` holds save and delete server actions. Detail UI
 belongs to `recipes/[id]/_components`, and import forms and API adapters belong
-to `recipes/import/_components` and `recipes/import/_lib`. The tag catalog and
-its pagination live beside `tags/page.tsx`. Route pages compose these files and
-stay thin. Form helpers convert `FormData` to the shared recipe-document
+to `recipes/import/_components` and `recipes/import/_lib`. The tag list is
+rendered by the colocated page component in `tags/page-content.tsx`; cursor
+encoding and parsing live beside the route page. Route pages stay thin. Form
+helpers convert `FormData` to the shared recipe-document
 validation shape. The route group's layout owns the private shell; navigation
 lives in `src/components/app`.
 
