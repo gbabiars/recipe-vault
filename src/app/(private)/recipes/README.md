@@ -4,12 +4,11 @@ Recipe UI lives beside the route segments that use it. The `recipes/_components`
 and `recipes/_lib` folders hold the list and the document form shared by new and
 edit pages; `recipes/_actions` holds save and delete server actions. Detail UI
 belongs to `recipes/[id]/_components`, and import forms and API adapters belong
-to `recipes/import/_components` and `recipes/import/_lib`. The tag list is
-rendered by the colocated page component in `tags/page-content.tsx`; cursor
-encoding and parsing live beside the route page. Route pages stay thin. Form
-helpers convert `FormData` to the shared recipe-document
-validation shape. The route group's layout owns the private shell; navigation
-lives in `src/components/app`.
+to `recipes/import/_components` and `recipes/import/_lib`. The `/tags` route
+renders its inventory and usage counts in `tags/page.tsx`; cursor encoding and
+parsing live beside the route page. Form helpers convert `FormData` to the
+shared recipe-document validation shape. The route group's layout owns the
+private shell; navigation lives in `src/components/app`.
 
 The `/recipes` list shows up to 25 matching recipes per page. Its `page` query
 parameter is one-based; the first page omits it. Pagination links retain the
