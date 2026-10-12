@@ -9,11 +9,11 @@ afterEach(() => {
   document.documentElement.removeAttribute("data-theme");
 });
 
-test("renders an alert section with a fixed level-three heading", () => {
+test("renders an alert section with a level-two semantic heading", () => {
   render(<Alert description="Review the recipe details." title="Check ingredients" />);
 
   const alert = screen.getByRole("alert", { name: "Check ingredients" });
-  const heading = screen.getByRole("heading", { level: 5, name: "Check ingredients" });
+  const heading = screen.getByRole("heading", { level: 2, name: "Check ingredients" });
 
   expect(alert).toBeInstanceOf(HTMLElement);
   expect(alert.tagName).toBe("SECTION");
@@ -95,7 +95,7 @@ test.each([
 
     const alert = screen.getByTestId("alert");
     const icon = alert.querySelector("svg");
-    const title = screen.getByRole("heading", { level: 5, name: "Check ingredients" });
+    const title = screen.getByRole("heading", { level: 2, name: "Check ingredients" });
     const description = alert.querySelector("p");
     const style = getComputedStyle(alert);
 

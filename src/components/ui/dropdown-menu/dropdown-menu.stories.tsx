@@ -91,6 +91,9 @@ export const MixedActionsAndLinks: Story = {
     await expect(link).toHaveAttribute("href", "#recipe-details");
     await userEvent.click(link);
     await expect(within(document.body).queryByRole("menu")).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(document.querySelector("[data-base-ui-focus-guard]")).not.toBeInTheDocument(),
+    );
   },
 };
 

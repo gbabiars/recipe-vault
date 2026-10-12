@@ -45,7 +45,7 @@ const AlertImpl = (
     >
       <Icon aria-hidden="true" className={styles.icon} focusable="false" />
       <div className={styles.content}>
-        <Heading id={titleId} level={5}>
+        <Heading as="h2" id={titleId} level={5}>
           {title}
         </Heading>
         <Text as="p" appearance="secondary">

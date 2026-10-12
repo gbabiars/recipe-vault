@@ -24,7 +24,7 @@ const recipe: RecipeDocumentContent = {
 
 test("details render document metadata, source, and labels including tags", () => {
   render(<RecipeDetailsCard recipe={recipe} />);
-  const details = screen.getByRole("region", { name: "Details" });
+  const details = screen.getByRole("heading", { level: 2, name: "Details" }).closest("section")!;
   expect(within(details).getByText("Yield").tagName).toBe("DT");
   expect(within(details).getByText("4 servings").tagName).toBe("DD");
   expect(within(details).getByText("10 minutes")).toBeTruthy();

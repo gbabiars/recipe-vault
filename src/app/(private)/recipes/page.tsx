@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
 import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout";
 import { Stack } from "@/components/ui/stack";
+import { Text } from "@/components/ui/text";
 import { RecipeFilters } from "./_components/recipe-filters";
 import { RecipeList, RecipeListSkeleton } from "./_components/recipe-list";
 import { RecipesHeaderActions } from "./_components/recipes-header-actions";

@@ -14,7 +14,7 @@ test("shows the recipe form with a recipes breadcrumb", async () => {
   expect(screen.getByRole("heading", { level: 1, name: "Create recipe" })).toBeTruthy();
   expect(screen.getByRole("textbox", { name: "Title" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Create recipe" })).toBeTruthy();
-  expect(screen.getByLabelText("Yield amount (optional)")).toBeTruthy();
+  expect(screen.getByLabelText("Yield amount")).toBeTruthy();
 
   const breadcrumbs = screen.getByRole("navigation", { name: "Breadcrumbs" });
   expect(within(breadcrumbs).getByRole("link", { name: "Recipes" }).getAttribute("href")).toBe(

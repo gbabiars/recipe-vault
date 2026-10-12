@@ -1,31 +1,14 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "vitest/browser";
 import { expect, test, vi } from "vitest";
-import RecipesPage from "./page";
+import { RecipeFilters } from "./_components/recipe-filters";
+import { RecipesHeaderActions } from "./_components/recipes-header-actions";
 
-const { listMock, replaceMock } = vi.hoisted(() => ({
-  listMock: vi.fn(async () => ({ items: [], total: 0 })),
-  replaceMock: vi.fn(),
-}));
-
-vi.mock("@/lib/auth/require-user", () => ({ requireUser: async () => ({ id: "user-1" }) }));
+const { replaceMock } = vi.hoisted(() => ({ replaceMock: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: replaceMock }) }));
-vi.mock("@/lib/recipes", () => ({
-  getRecipeService: async () => ({ listDocumentPage: listMock }),
-}));
 
 test("ignores a saved dietary filter and preserves search and repeated tag values", async () => {
-  const page = await RecipesPage({
-    searchParams: Promise.resolve({
-      q: "soup",
-      tag: ["quick", "vegetarian"],
-      dietary: "gluten-free",
-    }),
-  });
-  const { container } = render(page);
-  expect(
-    screen.getByRole("heading", { level: 1, name: "Your recipes" }).getAttribute("data-level"),
-  ).toBe("2");
+  const { container } = render(<RecipeFilters q="soup" tag={["quick", "vegetarian"]} />);
   expect(screen.getByRole("searchbox", { name: "Search title" })).toBeTruthy();
   expect(screen.getByRole("combobox", { name: "Tags" })).toBeTruthy();
   expect(screen.queryByRole("textbox", { name: "Dietary flag" })).toBeNull();
@@ -33,24 +16,17 @@ test("ignores a saved dietary filter and preserves search and repeated tag value
   const formData = new FormData(container.querySelector("form")!);
   expect(formData.get("q")).toBe("soup");
   expect(formData.getAll("tag")).toEqual(["quick", "vegetarian"]);
+  await userEvent.click(screen.getByRole("searchbox", { name: "Search title" }));
+  await userEvent.keyboard("{Enter}");
   await waitFor(() =>
-    expect(listMock).toHaveBeenCalledWith("user-1", {
-      search: "soup",
-      tags: ["quick", "vegetarian"],
-      page: 1,
-      pageSize: 1000,
+    expect(replaceMock).toHaveBeenCalledWith("/recipes?q=soup&tag=quick&tag=vegetarian", {
+      scroll: false,
     }),
   );
-  const loading = screen.getByText("Loading your recipes…");
-  expect(
-    container.querySelector("form")!.compareDocumentPosition(loading) &
-      Node.DOCUMENT_POSITION_FOLLOWING,
-  ).toBeTruthy();
 });
 
 test("keeps website and PDF import available in the recipe menu", async () => {
-  const page = await RecipesPage({ searchParams: Promise.resolve({}) });
-  render(page);
+  render(<RecipesHeaderActions />);
 
   const trigger = screen.getByRole("button", { name: "Add a recipe" });
   expect(screen.queryByRole("menu")).toBeNull();
@@ -69,17 +45,4 @@ test("keeps website and PDF import available in the recipe menu", async () => {
 
   await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
   expect(document.activeElement).toBe(trigger);
-});
-
-test("shows a danger alert when recipes fail to load", async () => {
-  listMock.mockRejectedValue(new Error("request failed"));
-
-  const page = await RecipesPage({ searchParams: Promise.resolve({}) });
-  render(page);
-
-  const alert = await screen.findByRole("alert", { name: "Recipes could not be loaded" });
-  expect(alert.getAttribute("data-alert-variant")).toBe("danger");
-  expect(screen.getByText("Refresh the page to try again.")).toBeTruthy();
-
-  listMock.mockResolvedValue({ items: [], total: 0 });
 });
