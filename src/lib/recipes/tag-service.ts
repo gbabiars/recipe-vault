@@ -1,7 +1,6 @@
 import {
   TagRepository,
   type DocumentTagInventoryOptions,
-  type TagListOptions,
   type DocumentTagNameReplacementResult,
 } from "@/lib/db/tag-repository";
 import { tagNameSchema } from "@/lib/validation/recipe";
@@ -13,10 +12,6 @@ export type ReplaceDocumentTagNameInput = {
 
 export class TagService {
   constructor(private readonly tags: TagRepository) {}
-
-  list(ownerId: string, options: TagListOptions) {
-    return this.tags.list(ownerId, options);
-  }
 
   /** Lists names and usage counts derived from the owner's recipe documents. */
   listFromRecipes(ownerId: string, options: DocumentTagInventoryOptions) {
@@ -40,10 +35,6 @@ export class OwnerBoundTagService {
     readonly ownerId: string,
     private readonly tags: TagService,
   ) {}
-
-  list(options: TagListOptions) {
-    return this.tags.list(this.ownerId, options);
-  }
 
   listFromRecipes(options: DocumentTagInventoryOptions) {
     return this.tags.listFromRecipes(this.ownerId, options);

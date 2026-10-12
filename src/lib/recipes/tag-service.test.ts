@@ -3,20 +3,6 @@ import test from "node:test";
 import { TagRepository } from "../db/tag-repository";
 import { OwnerBoundTagService, TagService } from "./tag-service";
 
-test("owner-bound tag service supplies its verified owner to the repository", async () => {
-  let requestedOwner: string | undefined;
-  const repository = new TagRepository({
-    rpc: async (_name: string, args: { target_owner_id: string }) => {
-      requestedOwner = args.target_owner_id;
-      return { data: [], error: null };
-    },
-  } as never);
-  const service = new OwnerBoundTagService("verified-owner", new TagService(repository));
-
-  await service.list({ usage: "unused", sort: "usage_asc", limit: 25 });
-  assert.equal(requestedOwner, "verified-owner");
-});
-
 test("document tag inventory delegates owner, search, sort, cursor, and page size", async () => {
   const calls: Array<{ ownerId: string; options: Record<string, unknown> }> = [];
   const expectedPage = {

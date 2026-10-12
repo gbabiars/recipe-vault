@@ -32,4 +32,4 @@ invent a yield. Website source URLs are preserved when supplied. The API returns
 only safe error codes and messages to the forms.
 
 See the [recipe document cutover runbook](../../../../docs/recipe-document-cutover-runbook.md)
-for the coordinated write pause and database rollout steps.
+for the application-first rollout and database cleanup verification steps.

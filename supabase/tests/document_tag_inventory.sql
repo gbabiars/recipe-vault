@@ -6,18 +6,18 @@
 begin;
 select set_config('test.document_tag_inventory_token', gen_random_uuid()::text, true);
 
-insert into public.recipes (owner_id, title, document)
+insert into public.recipes (owner_id, document)
 values
   (
-    'document_tag_owner', 'Tag inventory one',
+    'document_tag_owner',
     '{"title":"Tag inventory one","description":"","time":{},"ingredients":[{"name":"rice"}],"equipment":[],"instructions":["Cook rice."],"notes":[],"tags":["dinner","weeknight"]}'::jsonb
   ),
   (
-    'document_tag_owner', 'Tag inventory two',
+    'document_tag_owner',
     '{"title":"Tag inventory two","description":"","time":{},"ingredients":[{"name":"beans"}],"equipment":[],"instructions":["Cook beans."],"notes":[],"tags":["dinner","lunch"]}'::jsonb
   ),
   (
-    'document_tag_other', 'Other owner tag inventory',
+    'document_tag_other',
     '{"title":"Other owner tag inventory","description":"","time":{},"ingredients":[{"name":"soup"}],"equipment":[],"instructions":["Cook soup."],"notes":[],"tags":["dinner"]}'::jsonb
   );
 

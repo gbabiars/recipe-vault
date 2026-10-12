@@ -26,7 +26,7 @@
     "supabase:status": "supabase status",
     "db:reset": "supabase db reset",
     "db:push": "supabase db push",
-    "test:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_document_cutover.sql && psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_document_cutover_rollback.sql && psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_document_writer.sql && psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/document_tag_inventory.sql && psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/document_tag_name_replacement.sql && bash supabase/tests/document_tag_replacement_concurrency.sh",
+    "test:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_document_storage_cleanup.sql && psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_document_storage.sql && psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_document_writer.sql && psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_document_delete.sql && psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_rls_verification.sql && psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/document_tag_inventory.sql && psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/document_tag_name_replacement.sql && bash supabase/tests/document_tag_replacement_concurrency.sh",
     "workflow:validate": "tsx scripts/validate-workflow.ts",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "storybook": "storybook dev -p 6006",

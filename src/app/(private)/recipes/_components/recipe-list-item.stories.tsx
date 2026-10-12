@@ -1,17 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import type { RecipeSummary } from "@/lib/db/recipe-repository";
+import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
 import { List } from "@/components/ui/list";
 
 import { RecipeListItem } from "./recipe-list-item";
 
-const recipe: RecipeSummary = {
+const documentSummary: RecipeDocumentListSummary = {
   id: "tomato-soup",
-  ownerId: "story-owner",
   title: "Tomato soup",
-  summary: "A simple soup with fresh basil.",
-  totalTimeMinutes: 35,
-  servings: 4,
+  description: "A simple soup with fresh basil.",
+  time: { prepMinutes: 15, cookMinutes: 20, totalMinutes: 35 },
+  yield: { amount: 4, unit: "servings" },
   tags: ["weeknight", "soup", "vegetarian", "high-protein", "quick"],
+  revision: 1,
   createdAt: "2026-09-01T12:00:00.000Z",
   updatedAt: "2026-09-15T12:00:00.000Z",
 };
@@ -19,7 +19,7 @@ const recipe: RecipeSummary = {
 const meta = {
   title: "App/Recipes/RecipeListItem",
   component: RecipeListItem,
-  args: { recipe },
+  args: { documentSummary },
   decorators: [
     (Story) => (
       <List>
@@ -31,21 +31,18 @@ const meta = {
 
 export default meta;
 
-// Explicit story args keep Storybook's inference from collapsing the component's
-// mutually exclusive legacy/document props to `never`.
-type Story = StoryObj<{ recipe: RecipeSummary }>;
+type Story = StoryObj<typeof meta>;
 
 export const WithDetails: Story = {};
 
 export const Minimal: Story = {
   args: {
-    recipe: {
-      ...recipe,
+    documentSummary: {
+      ...documentSummary,
       id: "plain-rice",
       title: "Plain rice",
-      summary: undefined,
-      totalTimeMinutes: undefined,
-      servings: undefined,
+      time: {},
+      yield: undefined,
       tags: [],
     },
   },

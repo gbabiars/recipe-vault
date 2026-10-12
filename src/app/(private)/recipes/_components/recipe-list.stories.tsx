@@ -1,38 +1,41 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { Card } from "@/components/ui/card";
 import { Stack } from "@/components/ui/stack";
-import type { RecipeSummary } from "@/lib/db/recipe-repository";
+import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
 
 import { RecipeList, RecipeListSkeleton } from "./recipe-list";
 
-const recipes: RecipeSummary[] = [
+const documentSummaries: RecipeDocumentListSummary[] = [
   {
     id: "lemon-garlic-chicken",
-    ownerId: "story-owner",
     title: "Lemon garlic chicken",
-    totalTimeMinutes: 35,
-    servings: 4,
+    description: "A bright weeknight chicken dinner.",
+    time: { prepMinutes: 10, cookMinutes: 25, totalMinutes: 35 },
+    yield: { amount: 4, unit: "servings" },
     tags: ["Dinner", "High protein"],
+    revision: 1,
     createdAt: "2026-09-01T12:00:00.000Z",
     updatedAt: "2026-09-15T12:00:00.000Z",
   },
   {
     id: "green-goddess-salad",
-    ownerId: "story-owner",
     title: "Green goddess salad",
-    totalTimeMinutes: 15,
-    servings: 2,
+    description: "A fresh herb salad.",
+    time: { totalMinutes: 15 },
+    yield: { amount: 2, unit: "servings" },
     tags: ["Vegetarian", "Lunch", "Quick"],
+    revision: 2,
     createdAt: "2026-09-01T12:00:00.000Z",
     updatedAt: "2026-09-15T12:00:00.000Z",
   },
   {
     id: "brown-butter-banana-bread",
-    ownerId: "story-owner",
     title: "Brown butter banana bread",
-    totalTimeMinutes: 70,
-    servings: 8,
+    description: "Tender banana bread with nutty brown butter.",
+    time: { totalMinutes: 70 },
+    yield: { amount: 8, unit: "slices" },
     tags: ["Dessert", "Baking"],
+    revision: 1,
     createdAt: "2026-09-01T12:00:00.000Z",
     updatedAt: "2026-09-15T12:00:00.000Z",
   },
@@ -41,7 +44,7 @@ const recipes: RecipeSummary[] = [
 const meta = {
   title: "App/Recipes/RecipeList",
   component: RecipeList,
-  args: { recipes },
+  args: { documentSummaries },
   render: (args) => (
     <Card padding="none">
       <Stack gap="200" paddingBlock="200" paddingInline="200">
@@ -59,13 +62,13 @@ export const WithRecipes: Story = {};
 
 export const Minimal: Story = {
   args: {
-    recipes: [
+    documentSummaries: [
       {
-        ...recipes[0],
+        ...documentSummaries[0],
         id: "plain-rice",
         title: "Plain rice",
-        totalTimeMinutes: undefined,
-        servings: undefined,
+        time: {},
+        yield: undefined,
         tags: [],
       },
     ],

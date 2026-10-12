@@ -1,16 +1,10 @@
 import { RecipeRepository } from "@/lib/db/recipe-repository";
-import {
-  recipeCreateInputSchema,
-  type RecipeCreateInput,
-  type RecipeUpdateInput,
-} from "@/lib/validation/recipe";
 import type {
   AuditMetadata,
   RecipeDocumentSnapshot,
   RecipeDocumentDeleteResult,
   RecipeDocumentWriteResult,
   RecipeDocumentPage,
-  RecipePage,
 } from "@/lib/db/recipe-repository";
 import {
   recipeDocumentContentSchema,
@@ -48,30 +42,6 @@ function mapWriteResult(result: RecipeDocumentWriteResult): RecipeDocumentServic
 export class RecipeService {
   constructor(private readonly recipes: RecipeRepository) {}
 
-  listTags(ownerId: string, search?: string) {
-    return this.recipes.listTags(ownerId, search);
-  }
-
-  list(ownerId: string, search?: string, tags?: string[]) {
-    return this.recipes.list(ownerId, search, tags);
-  }
-  listPage(
-    ownerId: string,
-    options: {
-      search?: string;
-      tags: string[];
-      page: number;
-      pageSize: number;
-    },
-  ): Promise<RecipePage> {
-    return this.recipes.listPage(
-      ownerId,
-      options.search,
-      options.tags,
-      (options.page - 1) * options.pageSize,
-      options.pageSize,
-    );
-  }
   listDocumentPage(
     ownerId: string,
     options: {
@@ -88,9 +58,6 @@ export class RecipeService {
       (options.page - 1) * options.pageSize,
       options.pageSize,
     );
-  }
-  get(ownerId: string, recipeId: string) {
-    return this.recipes.get(ownerId, recipeId);
   }
   getDocument(ownerId: string, recipeId: string): Promise<RecipeDocumentSnapshot | null> {
     return this.recipes.getDocument(ownerId, recipeId);
@@ -154,44 +121,6 @@ export class RecipeService {
     }
     return this.recipes.deleteDocument(ownerId, recipeId, expectedRevision, audit);
   }
-  async create(ownerId: string, input: RecipeCreateInput, audit?: AuditMetadata) {
-    const recipe = await this.recipes.create(ownerId, input);
-    if (audit) await this.recipes.recordAudit(ownerId, recipe.id, "recipe.created", audit);
-    return recipe;
-  }
-  async update(
-    ownerId: string,
-    recipeId: string,
-    patch: RecipeUpdateInput | RecipeCreateInput,
-    audit?: AuditMetadata,
-  ) {
-    const current = await this.recipes.get(ownerId, recipeId);
-    if (!current) return null;
-    const merged = recipeCreateInputSchema.parse({
-      title: current.title,
-      summary: current.summary,
-      prepTimeMinutes: current.prepTimeMinutes,
-      cookTimeMinutes: current.cookTimeMinutes,
-      totalTimeMinutes: current.totalTimeMinutes,
-      servings: current.servings,
-      tags: current.tags,
-      sourceUrl: current.sourceUrl,
-      notes: current.notes,
-      ...patch,
-      ingredients: patch.ingredients ?? current.ingredients,
-      steps: patch.steps ?? current.steps,
-    });
-    const recipe = await this.recipes.update(ownerId, recipeId, merged);
-    if (recipe && audit) await this.recipes.recordAudit(ownerId, recipeId, "recipe.updated", audit);
-    return recipe;
-  }
-  async delete(ownerId: string, recipeId: string, audit?: AuditMetadata) {
-    const recipe = await this.recipes.get(ownerId, recipeId);
-    if (!recipe) return false;
-    if (audit) await this.recipes.recordAudit(ownerId, recipeId, "recipe.deleted", audit);
-    await this.recipes.remove(ownerId, recipeId);
-    return true;
-  }
 }
 
 /**
@@ -204,20 +133,8 @@ export class OwnerBoundRecipeService {
     private readonly recipes: RecipeService,
   ) {}
 
-  listPage(options: Parameters<RecipeService["listPage"]>[1]) {
-    return this.recipes.listPage(this.ownerId, options);
-  }
-
   listDocumentPage(options: Parameters<RecipeService["listDocumentPage"]>[1]) {
     return this.recipes.listDocumentPage(this.ownerId, options);
-  }
-
-  get(recipeId: string) {
-    return this.recipes.get(this.ownerId, recipeId);
-  }
-
-  create(input: RecipeCreateInput, audit?: AuditMetadata) {
-    return this.recipes.create(this.ownerId, input, audit);
   }
 
   getDocument(recipeId: string) {

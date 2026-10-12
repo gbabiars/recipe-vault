@@ -1,6 +1,6 @@
 -- Run after applying local migrations:
 --   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/recipe_document_delete.sql
--- Owner-scoped fixtures, cascades, and audit events roll back at the end.
+-- Owner-scoped fixtures and audit events roll back at the end.
 
 begin;
 select set_config('test.recipe_document_delete_token', gen_random_uuid()::text, true);
@@ -10,12 +10,11 @@ select set_config(
   true
 );
 
-insert into public.recipes (owner_id, title, document, revision)
+insert into public.recipes (owner_id, document, revision)
 values (
   current_setting('test.recipe_document_delete_owner'),
-  'No-yield delete fixture ' || current_setting('test.recipe_document_delete_token'),
   jsonb_build_object(
-    'title', 'No-yield delete fixture',
+    'title', 'No-yield delete fixture ' || current_setting('test.recipe_document_delete_token'),
     'description', '',
     'time', '{}'::jsonb,
     'ingredients', jsonb_build_array(jsonb_build_object('name', 'onion')),
@@ -26,32 +25,6 @@ values (
   ),
   4
 );
-insert into public.recipes (owner_id, title)
-values (
-  current_setting('test.recipe_document_delete_owner'),
-  'Legacy delete fixture ' || current_setting('test.recipe_document_delete_token')
-);
-
-insert into public.recipe_ingredients (recipe_id, display_order, amount, ingredient_name)
-select id, 1, '1', 'onion'
-from public.recipes
-where owner_id = current_setting('test.recipe_document_delete_owner')
-  and title = 'No-yield delete fixture ' || current_setting('test.recipe_document_delete_token');
-
-insert into public.recipe_steps (recipe_id, step_order, instruction)
-select id, 1, 'Slice the onion.'
-from public.recipes
-where owner_id = current_setting('test.recipe_document_delete_owner')
-  and title = 'No-yield delete fixture ' || current_setting('test.recipe_document_delete_token');
-
-insert into public.tags (owner_id, name)
-values (current_setting('test.recipe_document_delete_owner'), 'weeknight');
-insert into public.recipe_tags (owner_id, recipe_id, tag_id)
-select recipe.owner_id, recipe.id, tag.id
-from public.recipes recipe
-join public.tags tag on tag.owner_id = recipe.owner_id and tag.name = 'weeknight'
-where recipe.owner_id = current_setting('test.recipe_document_delete_owner')
-  and recipe.title = 'No-yield delete fixture ' || current_setting('test.recipe_document_delete_token');
 
 set local role authenticated;
 
@@ -89,26 +62,14 @@ do $verify$
 declare
   result record;
   fixture_id uuid;
-  legacy_id uuid;
   fixture_owner text := current_setting('test.recipe_document_delete_owner');
   request_id text := current_setting('test.recipe_document_delete_token');
 begin
   select id into fixture_id from public.recipes
   where owner_id = fixture_owner
-    and title = 'No-yield delete fixture ' || current_setting('test.recipe_document_delete_token');
+    and document ->> 'title' = 'No-yield delete fixture ' || current_setting('test.recipe_document_delete_token');
   if (select document ? 'yield' from public.recipes where id = fixture_id) then
     raise exception 'No-yield fixture unexpectedly contains yield';
-  end if;
-
-  select id into legacy_id from public.recipes
-  where owner_id = fixture_owner
-    and title = 'Legacy delete fixture ' || current_setting('test.recipe_document_delete_token');
-  select * into result from public.recipe_vault_delete_recipe_document(
-    fixture_owner, legacy_id, 1, null, null
-  );
-  if result.status <> 'not_found'
-    or not exists (select 1 from public.recipes where id = legacy_id and document is null) then
-    raise exception 'Document delete path affected a legacy-only recipe';
   end if;
 
   -- A valid caller still cannot supply a different owner identity.
@@ -137,11 +98,8 @@ begin
   if result.status <> 'deleted' or result.recipe_id <> fixture_id or result.revision <> 4 then
     raise exception 'Current revision delete failed: %', result;
   end if;
-  if exists (select 1 from public.recipes where id = fixture_id)
-    or exists (select 1 from public.recipe_ingredients where recipe_id = fixture_id)
-    or exists (select 1 from public.recipe_steps where recipe_id = fixture_id)
-    or exists (select 1 from public.recipe_tags where recipe_id = fixture_id) then
-    raise exception 'Recipe deletion did not cascade legacy children and tag associations';
+  if exists (select 1 from public.recipes where id = fixture_id) then
+    raise exception 'Recipe deletion did not remove the document row';
   end if;
   if (select count(*) from public.recipe_audit_events
       where event_data ->> 'requestId' = request_id
@@ -164,15 +122,21 @@ begin
 end;
 $verify$;
 
--- A successful delete inside a savepoint can be rolled back with the row and
--- its cascades intact.
-insert into public.recipes (owner_id, title, document, revision)
+-- A successful delete inside a savepoint can be rolled back with the row intact.
+reset role;
+insert into public.recipes (owner_id, document, revision)
 values (
   current_setting('test.recipe_document_delete_owner'),
-  'Rollback delete fixture ' || current_setting('test.recipe_document_delete_token'),
-  '{"title":"Rollback delete fixture","description":"","time":{},"ingredients":[{"name":"salt"}],"equipment":[],"instructions":["Season."],"notes":[],"tags":[]}'::jsonb,
+  jsonb_build_object(
+    'title', 'Rollback delete fixture ' || current_setting('test.recipe_document_delete_token'),
+    'description', '', 'time', '{}'::jsonb,
+    'ingredients', jsonb_build_array(jsonb_build_object('name', 'salt')),
+    'equipment', '[]'::jsonb, 'instructions', jsonb_build_array('Season.'),
+    'notes', '[]'::jsonb, 'tags', '[]'::jsonb
+  ),
   2
 );
+set local role authenticated;
 savepoint recipe_document_delete_rollback;
 do $verify$
 declare
@@ -181,7 +145,7 @@ declare
 begin
   select id into fixture_id from public.recipes
   where owner_id = current_setting('test.recipe_document_delete_owner')
-    and title = 'Rollback delete fixture ' || current_setting('test.recipe_document_delete_token');
+    and document ->> 'title' = 'Rollback delete fixture ' || current_setting('test.recipe_document_delete_token');
   select * into result from public.recipe_vault_delete_recipe_document(
     current_setting('test.recipe_document_delete_owner'), fixture_id, 2, null, null
   );
@@ -196,7 +160,7 @@ begin
   if not exists (
     select 1 from public.recipes
     where owner_id = current_setting('test.recipe_document_delete_owner')
-      and title = 'Rollback delete fixture ' || current_setting('test.recipe_document_delete_token')
+      and document ->> 'title' = 'Rollback delete fixture ' || current_setting('test.recipe_document_delete_token')
   ) then
     raise exception 'Savepoint rollback did not restore deleted recipe';
   end if;

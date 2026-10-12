@@ -3,53 +3,15 @@ import { Inline } from "@/components/ui/inline";
 import { ListItem } from "@/components/ui/list";
 import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
-import { Clock, Users } from "lucide-react";
-import type { RecipeDocumentListSummary, RecipeSummary } from "@/lib/db/recipe-repository";
+import { Clock } from "lucide-react";
+import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
 
-type RecipeListItemProps =
-  | { recipe: RecipeSummary; documentSummary?: never }
-  | { recipe?: never; documentSummary: RecipeDocumentListSummary };
-
-export function RecipeListItem(props: RecipeListItemProps) {
-  if (props.documentSummary) {
-    return <DocumentRecipeListItem summary={props.documentSummary} />;
-  }
-
-  const { recipe } = props;
-  return (
-    <ListItem
-      title={recipe.title}
-      href={`/recipes/${recipe.id}`}
-      description={
-        <Stack as="span" gap="050">
-          {(recipe.totalTimeMinutes !== undefined || recipe.servings !== undefined) && (
-            <Inline as="span" gap="100" align="center">
-              {recipe.totalTimeMinutes !== undefined && (
-                <Inline as="span" gap="050" align="center">
-                  <Clock aria-hidden="true" size={16} />
-                  <Text>Total time: {recipe.totalTimeMinutes} min</Text>
-                </Inline>
-              )}
-              {recipe.servings !== undefined && (
-                <Inline as="span" gap="050" align="center">
-                  <Users aria-hidden="true" size={16} />
-                  <Text>Serves {recipe.servings}</Text>
-                </Inline>
-              )}
-            </Inline>
-          )}
-          {recipe.tags.length > 0 && (
-            <Inline as="span" gap="100">
-              {recipe.tags.slice(0, 2).map((tag) => (
-                <Chip key={tag}>{tag}</Chip>
-              ))}
-              {recipe.tags.length > 2 && <Chip>+{recipe.tags.length - 2}</Chip>}
-            </Inline>
-          )}
-        </Stack>
-      }
-    />
-  );
+export function RecipeListItem({
+  documentSummary,
+}: {
+  documentSummary: RecipeDocumentListSummary;
+}) {
+  return <DocumentRecipeListItem summary={documentSummary} />;
 }
 
 function DocumentRecipeListItem({ summary }: { summary: RecipeDocumentListSummary }) {

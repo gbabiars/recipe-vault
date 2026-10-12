@@ -2,24 +2,22 @@ import { List, ListItem } from "@/components/ui/list";
 import { SkeletonHeading, SkeletonText, Skeleton } from "@/components/ui/skeleton";
 import { Stack } from "@/components/ui/stack";
 import { Inline } from "@/components/ui/inline";
-import type { RecipeDocumentListSummary, RecipeSummary } from "@/lib/db/recipe-repository";
+import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
 
 import { RecipeListItem } from "./recipe-list-item";
 import styles from "./recipe-list.module.css";
 
-type RecipeListProps =
-  | { recipes: RecipeSummary[]; documentSummaries?: never }
-  | { recipes?: never; documentSummaries: RecipeDocumentListSummary[] };
-
-export function RecipeList(props: RecipeListProps) {
+export function RecipeList({
+  documentSummaries,
+}: {
+  documentSummaries: RecipeDocumentListSummary[];
+}) {
   return (
     <div className={styles.list}>
       <List aria-label="Recipes">
-        {props.documentSummaries !== undefined
-          ? props.documentSummaries.map((documentSummary) => (
-              <RecipeListItem key={documentSummary.id} documentSummary={documentSummary} />
-            ))
-          : props.recipes.map((recipe) => <RecipeListItem key={recipe.id} recipe={recipe} />)}
+        {documentSummaries.map((documentSummary) => (
+          <RecipeListItem key={documentSummary.id} documentSummary={documentSummary} />
+        ))}
       </List>
     </div>
   );

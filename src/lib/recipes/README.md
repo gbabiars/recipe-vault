@@ -32,12 +32,9 @@ await tagService.replaceNameInRecipes(user.id, {
 });
 ```
 
-The old `TagService.list` path remains in application code for legacy
-compatibility, but it is not part of the document-based application or MCP
-contract. Unused-tag deletion and ID-based merge methods have been removed from
-the application service. Their revoked database RPCs and the normalized tag
-tables remain only as transition history/read-only soak storage pending a
-separate cleanup migration.
+Tag inventory and replacement use recipe documents only. The forward cleanup
+migration removes the old catalog tables and their exclusive RPCs after the
+application release without those paths is deployed.
 
 Website import uses `readSource(url)` to fetch bounded HTTP HTML after checking
 each DNS destination and redirect. `importRecipeDocumentContent(url)` extracts

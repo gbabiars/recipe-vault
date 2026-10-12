@@ -6,45 +6,45 @@
 begin;
 select set_config('test.document_tag_replace_token', gen_random_uuid()::text, true);
 
-insert into public.recipes (owner_id, title, document, revision)
+insert into public.recipes (owner_id, document, revision)
 values
   (
-    'document_tag_replace_owner', 'Replace duplicate target',
+    'document_tag_replace_owner',
     '{"title":"Replace duplicate target","description":"","time":{},"ingredients":[{"name":"rice"}],"equipment":[],"instructions":["Cook rice."],"notes":[],"tags":["weeknight","quick meals"]}'::jsonb,
     1
   ),
   (
-    'document_tag_replace_owner', 'Replace source position',
+    'document_tag_replace_owner',
     '{"title":"Replace source position","description":"","time":{},"ingredients":[{"name":"beans"}],"equipment":[],"instructions":["Cook beans."],"notes":[],"tags":["quick meals","rice"]}'::jsonb,
     7
   ),
   (
-    'document_tag_replace_owner', 'Unaffected recipe',
+    'document_tag_replace_owner',
     '{"title":"Unaffected recipe","description":"","time":{},"ingredients":[{"name":"salt"}],"equipment":[],"instructions":["Season."],"notes":[],"tags":["pantry"]}'::jsonb,
     4
   ),
   (
-    'document_tag_replace_other', 'Other owner recipe',
+    'document_tag_replace_other',
     '{"title":"Other owner recipe","description":"","time":{},"ingredients":[{"name":"soup"}],"equipment":[],"instructions":["Cook soup."],"notes":[],"tags":["quick meals"]}'::jsonb,
     3
   ),
   (
-    'document_tag_replace_owner', 'Order case one',
+    'document_tag_replace_owner',
     '{"title":"Order case one","description":"","time":{},"ingredients":[{"name":"a"}],"equipment":[],"instructions":["Cook."],"notes":[],"tags":["alpha"]}'::jsonb,
     1
   ),
   (
-    'document_tag_replace_owner', 'Order case two',
+    'document_tag_replace_owner',
     '{"title":"Order case two","description":"","time":{},"ingredients":[{"name":"b"}],"equipment":[],"instructions":["Cook."],"notes":[],"tags":["beta"]}'::jsonb,
     1
   ),
   (
-    'document_tag_replace_owner', 'Rollback case one',
+    'document_tag_replace_owner',
     '{"title":"Rollback case one","description":"","time":{},"ingredients":[{"name":"a"}],"equipment":[],"instructions":["Cook."],"notes":[],"tags":["rollback"]}'::jsonb,
     1
   ),
   (
-    'document_tag_replace_owner', 'Rollback case two',
+    'document_tag_replace_owner',
     '{"title":"Rollback case two","description":"","time":{},"ingredients":[{"name":"b"}],"equipment":[],"instructions":["Cook."],"notes":[],"tags":["rollback"]}'::jsonb,
     2147483647
   );
@@ -112,24 +112,24 @@ begin
   end if;
 
   if (select document -> 'tags' from public.recipes
-      where owner_id = 'document_tag_replace_owner' and title = 'Replace duplicate target')
+      where owner_id = 'document_tag_replace_owner' and document ->> 'title' = 'Replace duplicate target')
     is distinct from '["weeknight"]'::jsonb then
     raise exception 'merge did not collapse the duplicate target name';
   end if;
   if (select document -> 'tags' from public.recipes
-      where owner_id = 'document_tag_replace_owner' and title = 'Replace source position')
+      where owner_id = 'document_tag_replace_owner' and document ->> 'title' = 'Replace source position')
     is distinct from '["weeknight", "rice"]'::jsonb then
     raise exception 'rename did not preserve tag ordering';
   end if;
   if (select revision from public.recipes
-      where owner_id = 'document_tag_replace_owner' and title = 'Replace duplicate target') is distinct from 2
+      where owner_id = 'document_tag_replace_owner' and document ->> 'title' = 'Replace duplicate target') is distinct from 2
     or (select revision from public.recipes
-      where owner_id = 'document_tag_replace_owner' and title = 'Replace source position') is distinct from 8 then
+      where owner_id = 'document_tag_replace_owner' and document ->> 'title' = 'Replace source position') is distinct from 8 then
     raise exception 'changed recipe revisions were not bumped exactly once';
   end if;
 
   select revision into unaffected_revision from public.recipes
-  where owner_id = 'document_tag_replace_owner' and title = 'Unaffected recipe';
+  where owner_id = 'document_tag_replace_owner' and document ->> 'title' = 'Unaffected recipe';
   if unaffected_revision is distinct from 4 then raise exception 'unaffected recipe revision changed'; end if;
 
   select result.status, result.changed_recipes into result_status, changed_count
@@ -150,20 +150,20 @@ begin
   );
   select pg_catalog.count(*) into fixture_count from public.recipes
   where owner_id = 'document_tag_replace_owner'
-    and title in ('Order case one', 'Order case two');
+    and document ->> 'title' in ('Order case one', 'Order case two');
   if fixture_count is distinct from 2 then
     raise exception 'alpha-then-beta order did not retain both test recipes';
   end if;
   if exists (select 1 from public.recipes
       where owner_id = 'document_tag_replace_owner'
-        and title in ('Order case one', 'Order case two')
+        and document ->> 'title' in ('Order case one', 'Order case two')
         and document -> 'tags' is distinct from '["gamma"]'::jsonb) then
     raise exception 'overlapping replacements in alpha-then-beta order were inconsistent';
   end if;
 
   select id, document, revision into target_recipe_id, current_document, current_revision
   from public.recipes
-  where owner_id = 'document_tag_replace_owner' and title = 'Order case one';
+  where owner_id = 'document_tag_replace_owner' and document ->> 'title' = 'Order case one';
   select status into result_status
   from public.recipe_vault_write_recipe_document(
     'document_tag_replace_owner', target_recipe_id, current_revision,
@@ -174,7 +174,7 @@ begin
   end if;
   select id, document, revision into target_recipe_id, current_document, current_revision
   from public.recipes
-  where owner_id = 'document_tag_replace_owner' and title = 'Order case two';
+  where owner_id = 'document_tag_replace_owner' and document ->> 'title' = 'Order case two';
   select status into result_status
   from public.recipe_vault_write_recipe_document(
     'document_tag_replace_owner', target_recipe_id, current_revision,
@@ -191,21 +191,21 @@ begin
   );
   select pg_catalog.count(*) into fixture_count from public.recipes
   where owner_id = 'document_tag_replace_owner'
-    and title in ('Order case one', 'Order case two');
+    and document ->> 'title' in ('Order case one', 'Order case two');
   if fixture_count is distinct from 2 then
     raise exception 'beta-then-alpha order did not retain both test recipes';
   end if;
   if (select document -> 'tags' from public.recipes
-      where owner_id = 'document_tag_replace_owner' and title = 'Order case one') is distinct from '["beta"]'::jsonb
+      where owner_id = 'document_tag_replace_owner' and document ->> 'title' = 'Order case one') is distinct from '["beta"]'::jsonb
     or (select document -> 'tags' from public.recipes
-      where owner_id = 'document_tag_replace_owner' and title = 'Order case two') is distinct from '["gamma"]'::jsonb then
+      where owner_id = 'document_tag_replace_owner' and document ->> 'title' = 'Order case two') is distinct from '["gamma"]'::jsonb then
     raise exception 'overlapping replacements in beta-then-alpha order were inconsistent';
   end if;
 
   -- A revision overflow after another affected row would abort the complete
   -- update statement. Verify that no document was partly changed.
   select id into target_recipe_id from public.recipes
-  where owner_id = 'document_tag_replace_owner' and title = 'Rollback case two';
+  where owner_id = 'document_tag_replace_owner' and document ->> 'title' = 'Rollback case two';
   if target_recipe_id is null then
     raise exception 'rollback fixture did not create its maximum-revision row';
   end if;
@@ -221,14 +221,14 @@ begin
 
   if exists (select 1 from public.recipes
       where owner_id = 'document_tag_replace_owner'
-        and title in ('Rollback case one', 'Rollback case two')
+        and document ->> 'title' in ('Rollback case one', 'Rollback case two')
         and document -> 'tags' is distinct from '["rollback"]'::jsonb)
     or (select revision from public.recipes where id = target_recipe_id) is distinct from 2147483647 then
     raise exception 'failed replacement left a partial document or revision change';
   end if;
   select pg_catalog.count(*) into fixture_count from public.recipes
   where owner_id = 'document_tag_replace_owner'
-    and title in ('Rollback case one', 'Rollback case two');
+    and document ->> 'title' in ('Rollback case one', 'Rollback case two');
   if fixture_count is distinct from 2 then
     raise exception 'rollback check did not find both expected recipes';
   end if;

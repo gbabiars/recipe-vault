@@ -1,28 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export type TagUsageFilter = "all" | "used" | "unused";
-export type TagSortOrder = "name_asc" | "usage_desc" | "usage_asc";
-export type TagCursorPosition = {
-  usageCount: number;
-  name: string;
-  id: string;
-};
-export type TagListOptions = {
-  search?: string;
-  usage: TagUsageFilter;
-  sort: TagSortOrder;
-  limit: number;
-  after?: TagCursorPosition;
-  before?: TagCursorPosition;
-};
-export type TagInventoryItem = {
-  id: string;
-  name: string;
-  usageCount: number;
-  description?: string;
-};
-export type TagInventoryPage = { tags: TagInventoryItem[]; hasMore: boolean };
-
 export type DocumentTagSortOrder = "name_asc" | "usage_desc" | "usage_asc";
 export type DocumentTagCursor = { name: string; usageCount?: number };
 export type DocumentTagInventoryOptions = {
@@ -41,50 +18,11 @@ export type DocumentTagNameReplacementResult =
   | { status: "replaced"; changedRecipes: number }
   | { status: "source_missing" };
 
-type DatabaseTagInventory = {
-  id: string;
-  name: string;
-  usage_count: number | string;
-  description: string | null;
-};
-
 type DatabaseDocumentTagInventory = { name: string; usage_count: number | string };
 
 /** Owns aggregate tag queries, including the explicit owner filter in the RPC. */
 export class TagRepository {
   constructor(private readonly client: SupabaseClient) {}
-
-  async list(ownerId: string, options: TagListOptions): Promise<TagInventoryPage> {
-    const { data, error } = await this.client.rpc("recipe_vault_list_tag_inventory", {
-      target_owner_id: ownerId,
-      target_search: options.search || null,
-      target_usage: options.usage,
-      target_sort: options.sort,
-      after_usage_count: options.after?.usageCount ?? null,
-      after_name: options.after?.name ?? null,
-      after_tag_id: options.after?.id ?? null,
-      target_limit: options.limit + 1,
-      before_usage_count: options.before?.usageCount ?? null,
-      before_name: options.before?.name ?? null,
-      before_tag_id: options.before?.id ?? null,
-    });
-    if (error || !Array.isArray(data)) throw new Error("Could not load tags.");
-
-    const rows = data as DatabaseTagInventory[];
-    const tags = rows.slice(0, options.limit).map((row) => {
-      const usageCount = Number(row.usage_count);
-      if (!Number.isSafeInteger(usageCount) || usageCount < 0)
-        throw new Error("Could not load tags.");
-      return {
-        id: row.id,
-        name: row.name,
-        usageCount,
-        ...(row.description == null ? {} : { description: row.description }),
-      };
-    });
-
-    return { tags, hasMore: rows.length > options.limit };
-  }
 
   /** Reads names and counts derived only from the owner's recipe documents. */
   async listFromDocuments(

@@ -18,13 +18,11 @@ it replaces names across affected documents atomically and collapses duplicates.
 The document arrays are the only tag source in the target model. There is no
 separate tags or recipe-tags table as an application data source.
 
-The repository retains a legacy tag `list` method for compatibility, but its
-`deleteUnused` and ID-based `merge` methods have been removed. The database
-retains the old inventory, delete, and merge functions and tables as transition
-history/read-only soak storage. The cutover migration revokes the legacy recipe
-writer, unused-tag deletion, ID-based merge RPCs, and direct DML on legacy
-recipe, child, and tag tables. Removing old storage and functions is a separate
-future migration. Do not wire new application behavior to legacy tag storage.
+The document cutover cleanup removes normalized recipe child tables, the tag
+catalog and links, legacy recipe columns, and their exclusive RPCs/helpers.
+`recipes.document` is the canonical recipe and tag store. Keep
+`recipe_vault_set_updated_at` because the recipes table still uses its trigger;
+keep Clerk ownership helpers, audit storage, and document mutation/tag RPCs.
 
 `recordAudit` invokes the narrowly scoped
 `recipe_vault_record_audit_event` database function. It accepts Clerk string
@@ -35,8 +33,6 @@ tool scope before creating the server-only Supabase client. Its owner-bound
 recipe service can use document RPCs with the service-role client; never expose
 that credential to a browser, route input, or MCP tool argument.
 
-The backfill and reconciliation utility reads the legacy recipe and child rows
-to convert and compare them with documents. It is a migration tool, not an
-application query path. The [recipe document cutover runbook](../../../docs/recipe-document-cutover-runbook.md)
-describes the pause, final refresh and reconciliation, cutover gate, and
-rollback boundary.
+The [recipe document cutover runbook](../../../docs/recipe-document-cutover-runbook.md)
+describes application deployment, the forward cleanup migration, and the
+post-migration verification boundary.

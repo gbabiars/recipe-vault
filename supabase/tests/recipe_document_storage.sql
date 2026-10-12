@@ -1,25 +1,19 @@
 -- Run after applying all migrations to a disposable local Supabase database:
 --   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 \
 --     -f supabase/tests/recipe_document_storage.sql
--- The test uses authenticated JWT claims to check the existing owner RLS on the
--- recipes row. All fixture data is rolled back. It does not call the service role.
+-- The database owner exercises document constraints; an authenticated claim
+-- checks private reads and the revoked direct-write boundary. Fixtures roll back.
 
 begin;
 
-set local role authenticated;
-select set_config(
-  'request.jwt.claims',
-  '{"sub":"recipe_document_storage_owner","role":"authenticated"}',
-  true
-);
 select set_config('test.recipe_document_token', gen_random_uuid()::text, true);
 
 do $verify$
 declare
   recipe_id uuid;
-  fixture_title text := 'Recipe document storage test ' || current_setting('test.recipe_document_token');
+  fixture_title text := 'Document recipe without yield ' || current_setting('test.recipe_document_token');
   document_without_yield jsonb := jsonb_build_object(
-    'title', 'Document recipe without yield',
+    'title', fixture_title,
     'description', 'No yield is stated.',
     'time', jsonb_build_object('prepMinutes', 5),
     'ingredients', jsonb_build_array(jsonb_build_object('name', 'onion', 'amount', '1')),
@@ -32,8 +26,8 @@ declare
   candidate jsonb;
   invalid_documents jsonb[];
 begin
-  insert into public.recipes (owner_id, title)
-  values ('recipe_document_storage_owner', fixture_title)
+  insert into public.recipes (owner_id, document)
+  values ('recipe_document_storage_owner', document_without_yield)
   returning id into recipe_id;
 
   update public.recipes
@@ -41,7 +35,7 @@ begin
   where id = recipe_id;
   if not found then raise exception 'Owner could not write their own document'; end if;
   if (select title_text from public.recipes where id = recipe_id)
-    <> 'Document recipe without yield' then
+    <> fixture_title then
     raise exception 'Generated title_text did not follow document.title';
   end if;
   if (select revision from public.recipes where id = recipe_id) <> 1 then
@@ -51,11 +45,11 @@ begin
   update public.recipes
   set document = document_without_yield || jsonb_build_object(
     'yield', jsonb_build_object('amount', 24, 'unit', 'cookies'),
-    'title', 'Document recipe with yield'
+    'title', 'Document recipe with yield ' || current_setting('test.recipe_document_token')
   )
   where id = recipe_id;
   if (select title_text from public.recipes where id = recipe_id)
-    <> 'Document recipe with yield' then
+    <> 'Document recipe with yield ' || current_setting('test.recipe_document_token') then
     raise exception 'Valid document with non-serving yield was rejected or title was stale';
   end if;
 
@@ -131,13 +125,18 @@ declare
 begin
   select count(*) into visible_rows
   from public.recipes
-  where title = 'Recipe document storage test ' || suffix;
+  where document ->> 'title' = 'Document recipe without yield ' || suffix;
   if visible_rows <> 0 then raise exception 'Other owner could read document-backed recipe'; end if;
 
-  update public.recipes set document = null
-  where title = 'Recipe document storage test ' || suffix;
-  get diagnostics changed_rows = row_count;
-  if changed_rows <> 0 then raise exception 'Other owner could update document-backed recipe'; end if;
+  begin
+    update public.recipes set document = null
+    where document ->> 'title' = 'Document recipe without yield ' || suffix;
+    get diagnostics changed_rows = row_count;
+    if changed_rows <> 0 then raise exception 'Other owner could update document-backed recipe'; end if;
+    raise exception 'Authenticated role unexpectedly had direct recipe UPDATE';
+  exception when insufficient_privilege then
+    null;
+  end;
 end;
 $verify$;
 

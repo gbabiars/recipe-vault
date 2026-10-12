@@ -16,7 +16,6 @@ do $verify$
 declare
   result record;
   fixture_token text := current_setting('test.recipe_document_writer_token');
-  fixture_title text := 'Document writer fixture ' || current_setting('test.recipe_document_writer_token');
   target_fixture_recipe_id uuid;
   created_document jsonb := jsonb_build_object(
     'title', 'Pickled onions ' || current_setting('test.recipe_document_writer_token'),
@@ -40,12 +39,6 @@ begin
     raise exception 'Authenticated create did not return the saved document and initial revision: %', result;
   end if;
   target_fixture_recipe_id := result.recipe_id;
-  if exists (select 1 from public.recipe_ingredients where recipe_ingredients.recipe_id = target_fixture_recipe_id)
-    or exists (select 1 from public.recipe_steps where recipe_steps.recipe_id = target_fixture_recipe_id)
-    or exists (select 1 from public.recipe_tags where recipe_tags.recipe_id = target_fixture_recipe_id) then
-    raise exception 'Document create wrote legacy child or tag association rows';
-  end if;
-
   replaced_document := created_document || jsonb_build_object(
     'title', 'Pickled onions with yield ' || fixture_token,
     'yield', jsonb_build_object('amount', 1, 'unit', 'jar')
@@ -157,7 +150,7 @@ do $verify$
 begin
   if exists (
     select 1 from public.recipes
-    where title = 'Rollback fixture ' || current_setting('test.recipe_document_writer_token')
+    where document ->> 'title' = 'Rollback fixture ' || current_setting('test.recipe_document_writer_token')
   ) then
     raise exception 'Rollback did not remove created recipe';
   end if;
