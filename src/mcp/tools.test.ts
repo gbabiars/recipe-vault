@@ -79,6 +79,12 @@ test("document recipe search and get preserve optional yield and complete conten
     ],
   };
   assert.deepEqual(body(searched), expectedSummary);
+  assert.deepEqual(calls[0], {
+    search: "rice",
+    tags: [],
+    page: 1,
+    pageSize: 20,
+  });
   assert.deepEqual(
     mcpSearchRecipesOutputSchema.parse(
       (searched as never as { structuredContent: unknown }).structuredContent,

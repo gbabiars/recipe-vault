@@ -8,6 +8,12 @@ document; replacement checks the expected revision and returns a conflict when
 the stored revision has changed. Ownership comes from authenticated Clerk
 identity, never from a document or request field.
 
+`RecipeService.listDocumentPage(ownerId, { search, tags, page, pageSize })`
+shares literal, case-insensitive substring search across title, description,
+ingredient names, equipment names, and tags with the HTTP and MCP recipe search
+consumers. The whole trimmed phrase must occur in one field. Exact selected
+tags continue to match any selected tag and combine with text search using AND.
+
 Recipe tag names are canonical lowercase ASCII with surrounding whitespace
 removed and repeated internal ASCII spaces collapsed. Duplicate names are
 removed after normalization. Tags are stored in each recipe document's

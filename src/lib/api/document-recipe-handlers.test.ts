@@ -96,17 +96,23 @@ function request(url: string, method = "GET", bodyValue?: unknown) {
   });
 }
 
-test("lists document summaries with normalized tag filter and authenticated owner", async () => {
+test("lists document summaries with search, normalized tag filter, and authenticated owner", async () => {
   const { api, calls } = makeApi();
   const response = await api.list(
-    request("http://test/api/v1/recipes?tag=  Weeknight%20%20Meals&page=2"),
+    request("http://test/api/v1/recipes?search=butter&tag=  Weeknight%20%20Meals&page=2"),
   );
   assert.equal(response!.status, 200);
   assert.deepEqual(calls[0], {
     name: "listDocumentPage",
     args: [
       "owner-1",
-      { page: 2, pageSize: 25, tag: "Weeknight  Meals", tags: ["weeknight meals"] },
+      {
+        page: 2,
+        pageSize: 25,
+        search: "butter",
+        tag: "Weeknight  Meals",
+        tags: ["weeknight meals"],
+      },
     ],
   });
 });

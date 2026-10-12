@@ -56,6 +56,11 @@ type DatabaseRecipeDocumentSummary = DatabaseRecipeDocument & {
   updated_at: string;
 };
 
+type RecipeDocumentSearchRpcResult = {
+  items: unknown;
+  total: unknown;
+};
+
 type RecipeDocumentWriteRpcResult = {
   status: RecipeDocumentWriteResult["status"];
   recipe_id: string | null;
@@ -89,10 +94,6 @@ function mapRecipeDocumentSummary(row: DatabaseRecipeDocumentSummary): RecipeDoc
   };
 }
 
-function escapeLikeSubstring(value: string): string {
-  return value.replace(/[\\%_]/g, "\\$&");
-}
-
 /** All operations use the caller's JWT and therefore remain subject to database RLS. */
 export class RecipeRepository {
   constructor(private readonly client: SupabaseClient) {}
@@ -115,25 +116,28 @@ export class RecipeRepository {
     offset: number,
     limit: number,
   ): Promise<RecipeDocumentPage> {
-    let query = this.client
-      .from("recipes")
-      .select("id, document, revision, created_at, updated_at", { count: "exact" })
-      .eq("owner_id", ownerId)
-      .order("updated_at", { ascending: false })
-      .order("id", { ascending: true })
-      .range(offset, offset + limit - 1);
-
-    if (search) query = query.ilike("title_text", `%${escapeLikeSubstring(search)}%`);
-    if (tags.length) {
-      const clauses = tags.map((tag) => `document->tags.cs.${JSON.stringify([tag])}`);
-      query = query.or(clauses.join(","));
-    }
-
-    const { data, error, count } = await query;
+    const { data, error } = await this.client.rpc("recipe_vault_search_recipe_documents", {
+      target_owner_id: ownerId,
+      target_search: search ?? null,
+      target_tags: tags,
+      target_offset: offset,
+      target_limit: limit,
+    });
     if (error) throw new Error("Could not load recipes.");
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      throw new Error("Could not load recipes.");
+    }
+    const result = data as RecipeDocumentSearchRpcResult;
+    if (
+      !Array.isArray(result.items) ||
+      !Number.isSafeInteger(result.total) ||
+      (result.total as number) < 0
+    ) {
+      throw new Error("Could not load recipes.");
+    }
     return {
-      items: (data as unknown as DatabaseRecipeDocumentSummary[]).map(mapRecipeDocumentSummary),
-      total: count ?? 0,
+      items: (result.items as DatabaseRecipeDocumentSummary[]).map(mapRecipeDocumentSummary),
+      total: result.total as number,
     };
   }
 

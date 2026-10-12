@@ -30,7 +30,7 @@ export const Inline: Story = {
     ),
   ],
   play: async ({ canvas }) => {
-    const search = canvas.getByRole("searchbox", { name: "Search title" });
+    const search = canvas.getByRole("searchbox", { name: "Search" });
     const tag = canvas.getByRole("combobox", { name: "Tags" });
     const searchField = search.closest<HTMLElement>('[data-layout="default"]');
     const tagField = tag.closest<HTMLElement>('[data-layout="default"]');
@@ -59,7 +59,7 @@ export const Narrow: Story = {
     ),
   ],
   play: async ({ canvas }) => {
-    const search = canvas.getByRole("searchbox", { name: "Search title" });
+    const search = canvas.getByRole("searchbox", { name: "Search" });
     const tag = canvas.getByRole("combobox", { name: "Tags" });
     await expect(tag.getBoundingClientRect().top).toBeGreaterThan(
       search.getBoundingClientRect().bottom,

@@ -109,7 +109,7 @@ export function RecipeFilters(props: { q?: string; tag?: string | string[] }) {
       <div className={styles.fields}>
         <TextInput
           name="q"
-          label="Search title"
+          label="Search"
           type="search"
           value={searchText}
           onValueChange={handleSearchChange}

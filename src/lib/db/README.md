@@ -7,6 +7,17 @@ boundary. Application features must not query Supabase directly. Document reads
 and writes use the complete JSONB recipe and its separate revision; a database
 RPC performs atomic create, revision-checked replacement, or deletion.
 
+`RecipeRepository.listDocumentPage(ownerId, search, tags, offset, limit)` calls
+`recipe_vault_search_recipe_documents`. The invoker function requires an owner
+ID and returns a page plus the pre-pagination total. A nonempty search is a
+literal, case-insensitive substring matched within one title, description,
+ingredient name, equipment name, or tag. Selected exact tag names match any
+selected value and combine with text search using AND. The function keeps an
+explicit owner predicate and runs with the caller's RLS context. Application
+code goes through the request-scoped repository; the verified MCP adapter
+calls through its owner-bound service. The authenticated RPC grant also stays
+protected by the explicit owner predicate and RLS.
+
 `tag-repository.ts` owns document-derived tag inventory and name replacement.
 `listFromDocuments(ownerId, options)` invokes
 `recipe_vault_list_document_tag_inventory` and returns canonical names with

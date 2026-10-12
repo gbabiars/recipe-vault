@@ -25,9 +25,9 @@ afterEach(() => {
   fetchMock.mockClear();
 });
 
-test("debounces title search until typing pauses", async () => {
+test("debounces recipe search until typing pauses", async () => {
   render(<RecipeFilters />);
-  const search = screen.getByRole("searchbox", { name: "Search title" });
+  const search = screen.getByRole("searchbox", { name: "Search" });
 
   fireEvent.change(search, { target: { value: "soup" } });
   expect(replaceMock).not.toHaveBeenCalled();
@@ -45,7 +45,7 @@ test("debounces title search until typing pauses", async () => {
 
 test("Enter applies search immediately and prevents form navigation", async () => {
   render(<RecipeFilters q="old" />);
-  const search = screen.getByRole("searchbox", { name: "Search title" });
+  const search = screen.getByRole("searchbox", { name: "Search" });
   const form = search.closest("form")!;
   const initialSearch = window.location.search;
 
@@ -62,7 +62,7 @@ test("Enter applies search immediately and prevents form navigation", async () =
 
 test("keeps search focus when route filter props update", async () => {
   const { rerender } = render(<RecipeFilters />);
-  const search = screen.getByRole("searchbox", { name: "Search title" });
+  const search = screen.getByRole("searchbox", { name: "Search" });
   await userEvent.click(search);
   fireEvent.change(search, { target: { value: "soup " } });
 
@@ -72,7 +72,7 @@ test("keeps search focus when route filter props update", async () => {
 
   rerender(<RecipeFilters q="soup" />);
 
-  expect(screen.getByRole("searchbox", { name: "Search title" })).toBe(search);
+  expect(screen.getByRole("searchbox", { name: "Search" })).toBe(search);
   expect(document.activeElement).toBe(search);
   expect(search).toHaveValue("soup ");
 });
@@ -100,7 +100,7 @@ test("stale route props do not overwrite a newer search edit", async () => {
   await userEvent.click(await screen.findByRole("option", { name: "dinner" }));
   await userEvent.keyboard("{Escape}");
 
-  const search = screen.getByRole("searchbox", { name: "Search title" });
+  const search = screen.getByRole("searchbox", { name: "Search" });
   fireEvent.change(search, { target: { value: "new" } });
   rerender(<RecipeFilters q="old" tag="dinner" />);
 
@@ -114,7 +114,7 @@ test("stale route props do not overwrite a newer search edit", async () => {
 
 test("external route changes sync controls and cancel pending search", async () => {
   const { rerender } = render(<RecipeFilters />);
-  const search = screen.getByRole("searchbox", { name: "Search title" });
+  const search = screen.getByRole("searchbox", { name: "Search" });
   fireEvent.change(search, { target: { value: "pending" } });
 
   rerender(<RecipeFilters q="external" tag="dinner" />);
@@ -127,7 +127,7 @@ test("external route changes sync controls and cancel pending search", async () 
 
 test("tag changes immediately apply pending search text and cancel its timer", async () => {
   render(<RecipeFilters />);
-  const search = screen.getByRole("searchbox", { name: "Search title" });
+  const search = screen.getByRole("searchbox", { name: "Search" });
   const tagInput = screen.getByRole("combobox", { name: "Tags" });
 
   fireEvent.change(search, { target: { value: "tomato soup" } });
@@ -157,7 +157,7 @@ test("removing tags preserves search and removes empty query values", async () =
 
 test("clearing all filters navigates to the bare recipes URL", async () => {
   render(<RecipeFilters q="soup" tag="dinner" />);
-  const search = screen.getByRole("searchbox", { name: "Search title" });
+  const search = screen.getByRole("searchbox", { name: "Search" });
 
   fireEvent.change(search, { target: { value: "   " } });
   await userEvent.click(screen.getByRole("button", { name: "Remove dinner" }));
