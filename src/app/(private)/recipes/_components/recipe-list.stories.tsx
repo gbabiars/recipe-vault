@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Stack } from "@/components/ui/stack";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
 
-import { RecipeList } from "./recipe-list";
+import { RecipeList, RecipeListSkeleton } from "./recipe-list";
 
 const recipes: RecipeSummary[] = [
   {
@@ -70,4 +70,14 @@ export const Minimal: Story = {
       },
     ],
   },
+};
+
+export const Loading: Story = {
+  render: () => (
+    <Card padding="none">
+      <Stack gap="200" paddingBlock="200" paddingInline="200">
+        <RecipeListSkeleton />
+      </Stack>
+    </Card>
+  ),
 };

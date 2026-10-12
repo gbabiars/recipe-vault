@@ -7,6 +7,7 @@
   background-color: var(--color-background-skeleton);
   vertical-align: middle;
   animation: skeleton-pulse 2.4s ease-in-out infinite;
+  max-width: 100%;
 }
 
 .skeleton[data-radius="0"] {
