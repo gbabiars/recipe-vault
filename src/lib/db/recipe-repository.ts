@@ -1,5 +1,4 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { RecipeCreateInput } from "@/lib/validation/recipe";
 import {
   recipeDocumentContentSchema,
   recipeDocumentSchema,
@@ -7,26 +6,6 @@ import {
   type RecipeContent,
 } from "@/lib/validation/recipe-document";
 
-export type LegacyRecipe = {
-  id: string;
-  ownerId: string;
-  title: string;
-  summary?: string;
-  prepTimeMinutes?: number;
-  cookTimeMinutes?: number;
-  totalTimeMinutes?: number;
-  servings?: number;
-  tags: string[];
-  sourceUrl?: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-  ingredients: LegacyRecipeIngredient[];
-  steps: LegacyRecipeStep[];
-};
-
-export type LegacyRecipeIngredient = RecipeCreateInput["ingredients"][number];
-export type LegacyRecipeStep = RecipeCreateInput["steps"][number];
 export type AuditMetadata = { requestId: string; method: string };
 export type RecipeDocumentSnapshot = { recipe: ValidatedRecipe; revision: number };
 export type RecipeDocumentListSummary = Pick<
