@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import type { RecipeDocumentContent } from "@/lib/validation/recipe-document";
+import type { RecipeContent } from "@/lib/validation/recipe-document";
 
 import { RecipeDetailsCard } from "./recipe-detail-cards";
 
-const recipe: RecipeDocumentContent = {
+const recipe: RecipeContent = {
   title: "Tomato soup",
   description: "A simple soup with fresh basil.",
   yield: { amount: 4, unit: "servings" },

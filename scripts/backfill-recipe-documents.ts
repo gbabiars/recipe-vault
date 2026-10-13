@@ -12,9 +12,9 @@ import { spawnSync } from "node:child_process";
 import { accessSync, constants, statSync } from "node:fs";
 import { isAbsolute } from "node:path";
 import { convertLegacyRecipeToDocument } from "@/lib/recipes/legacy-document-converter";
-import type { Recipe } from "@/lib/db/recipe-repository";
+import type { LegacyRecipe } from "@/lib/db/recipe-repository";
 
-type SourceRow = { recipe: Recipe; snapshot: unknown; document: unknown | null };
+type SourceRow = { recipe: LegacyRecipe; snapshot: unknown; document: unknown | null };
 type Options = {
   batchSize: number;
   mode: "backfill" | "refresh" | "reconcile";
@@ -232,11 +232,11 @@ export function sourceQuery(
   join public.recipes r on r.id = page.id`;
 }
 
-function reconstruct(source: unknown): Recipe {
+function reconstruct(source: unknown): LegacyRecipe {
   const row = source as Record<string, unknown>;
   const recipe = row.recipe as Record<string, unknown>;
   const { id, ...rest } = recipe;
-  return { id: String(id), ...(rest as Omit<Recipe, "id">) };
+  return { id: String(id), ...(rest as Omit<LegacyRecipe, "id">) };
 }
 
 export function updateSql(

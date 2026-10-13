@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
-import type { RecipeDocumentContent } from "@/lib/validation/recipe-document";
+import type { RecipeContent } from "@/lib/validation/recipe-document";
 import {
   RecipeDetailsCard,
   RecipeDocumentDetailCards,
@@ -9,7 +9,7 @@ import {
   RecipeNotesCard,
 } from "./recipe-detail-cards";
 
-const recipe: RecipeDocumentContent = {
+const recipe: RecipeContent = {
   title: "Tomato soup",
   description: "Fresh basil soup",
   yield: { amount: 4, unit: "servings" },

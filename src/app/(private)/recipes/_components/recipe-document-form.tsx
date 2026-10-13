@@ -11,7 +11,7 @@ import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
 import { TextInput } from "@/components/ui/text-input";
 import { Textarea } from "@/components/ui/textarea";
-import type { RecipeDocumentContent } from "@/lib/validation/recipe-document";
+import type { RecipeContent } from "@/lib/validation/recipe-document";
 import { tagNameSchema } from "@/lib/validation/recipe";
 import {
   parseRecipeDocumentFormData,
@@ -22,7 +22,7 @@ import styles from "./recipe-document-form.module.css";
 type RecipeDocumentEdit = {
   id: string;
   revision: number;
-  content: RecipeDocumentContent;
+  content: RecipeContent;
 };
 
 export type RecipeDocumentSaveContext = {
@@ -38,20 +38,20 @@ export type RecipeDocumentSaveResult =
   | { status: "invalid"; issues?: Array<{ path: Array<string | number>; message: string }> };
 
 export type RecipeDocumentSaveAction = (
-  content: RecipeDocumentContent,
+  content: RecipeContent,
   context: RecipeDocumentSaveContext,
 ) => Promise<RecipeDocumentSaveResult>;
 
 export type RecipeDocumentSavedAction = () => void | Promise<void>;
 
-type IngredientValue = RecipeDocumentContent["ingredients"][number];
-type EquipmentValue = RecipeDocumentContent["equipment"][number];
+type IngredientValue = RecipeContent["ingredients"][number];
+type EquipmentValue = RecipeContent["equipment"][number];
 
 const blankIngredient: IngredientValue = { name: "" };
 const blankEquipment: EquipmentValue = { name: "" };
 const commonRecipeTags = ["dinner", "soup", "weeknight"];
 
-function blankContent(): RecipeDocumentContent {
+function blankContent(): RecipeContent {
   return {
     title: "",
     description: "",
@@ -84,9 +84,7 @@ export function RecipeDocumentForm({
   saveRecipe: RecipeDocumentSaveAction;
   onSaved?: RecipeDocumentSavedAction;
 }) {
-  const [content, setContent] = useState<RecipeDocumentContent>(
-    () => recipe?.content ?? blankContent(),
-  );
+  const [content, setContent] = useState<RecipeContent>(() => recipe?.content ?? blankContent());
   const tagOptions: ComboboxOption[] = [...new Set([...commonRecipeTags, ...content.tags])].map(
     (value) => ({ value, label: value, icon: Tag }),
   );

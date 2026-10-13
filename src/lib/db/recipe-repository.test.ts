@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { RecipeDocumentContent } from "../validation/recipe-document";
+import type { RecipeContent } from "../validation/recipe-document";
 import { RecipeRepository } from "./recipe-repository";
 
 const documentId = "8c0fb550-686a-4a0c-bf8f-690c1359c877";
-const recipeContent: RecipeDocumentContent = {
+const recipeContent: RecipeContent = {
   title: "Orange shortbread",
   description: "Crisp cookies with orange zest.",
   yield: { amount: 24, unit: "cookies" },

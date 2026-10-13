@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { Recipe } from "@/lib/db/recipe-repository";
+import type { LegacyRecipe } from "@/lib/db/recipe-repository";
 import { convertLegacyRecipeToDocument } from "./legacy-document-converter";
 
-function legacyRecipe(overrides: Partial<Recipe> = {}): Recipe {
+function legacyRecipe(overrides: Partial<LegacyRecipe> = {}): LegacyRecipe {
   return {
     id: "8c0fb550-686a-4a0c-bf8f-690c1359c877",
     ownerId: "user_123",

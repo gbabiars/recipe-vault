@@ -1,9 +1,9 @@
-import { recipeDocumentSchema, type RecipeDocument } from "@/lib/validation/recipe-document";
+import { recipeDocumentSchema, type Recipe } from "@/lib/validation/recipe-document";
 
 export type RecipeViewState =
   | { state: "loading" }
   | { state: "error" }
-  | { state: "recipe"; recipe: RecipeDocument };
+  | { state: "recipe"; recipe: Recipe };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

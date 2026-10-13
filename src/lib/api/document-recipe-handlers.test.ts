@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createDocumentRecipeApi } from "./document-recipe-handlers";
-import type { RecipeDocumentContent } from "../validation/recipe-document";
+import type { RecipeContent } from "../validation/recipe-document";
 import { DocumentReadError, MAX_PDF_BYTES } from "../recipes/read-document";
 import { SourceReadError } from "../recipes/read-source";
 
@@ -17,19 +17,19 @@ const recipe = {
   notes: [],
   tags: ["condiments"],
 };
-const content: RecipeDocumentContent = (({ id: _id, ...rest }) => rest)(recipe);
+const content: RecipeContent = (({ id: _id, ...rest }) => rest)(recipe);
 
 function makeApi(
   options: {
     user?: string | null;
     limited?: boolean;
-    importContent?: (url: string) => Promise<RecipeDocumentContent>;
+    importContent?: (url: string) => Promise<RecipeContent>;
     readDocument?: (bytes: Uint8Array, signal: AbortSignal) => Promise<string>;
     extractDocument?: (
       text: string,
       sourceUrl: string | undefined,
       signal: AbortSignal,
-    ) => Promise<RecipeDocumentContent>;
+    ) => Promise<RecipeContent>;
   } = {},
 ) {
   const calls: Array<{ name: string; args: unknown[] }> = [];
@@ -222,7 +222,7 @@ test("rejects invalid website URLs and safely reports blocked destinations", asy
 
 test("preserves website source URL and allows omitted yield", async () => {
   const websiteUrl = "https://recipes.example/pickled-onions";
-  const importedContent: RecipeDocumentContent = { ...content, sourceUrl: websiteUrl };
+  const importedContent: RecipeContent = { ...content, sourceUrl: websiteUrl };
   const { api, calls } = makeApi({
     importContent: async (url) => {
       assert.equal(url, websiteUrl);
@@ -234,7 +234,7 @@ test("preserves website source URL and allows omitted yield", async () => {
   );
   assert.equal(response!.status, 201);
   const createdContent = calls.find((call) => call.name === "createDocument")!
-    .args[1] as RecipeDocumentContent;
+    .args[1] as RecipeContent;
   assert.equal(createdContent.sourceUrl, websiteUrl);
   assert.equal("yield" in createdContent, false);
 });
@@ -267,7 +267,7 @@ test("imports PDF content without fabricating yield or source URL", async () => 
   );
   assert.equal(response!.status, 201);
   const createdContent = calls.find((call) => call.name === "createDocument")!
-    .args[1] as RecipeDocumentContent;
+    .args[1] as RecipeContent;
   assert.equal("yield" in createdContent, false);
   assert.equal("sourceUrl" in createdContent, false);
 });

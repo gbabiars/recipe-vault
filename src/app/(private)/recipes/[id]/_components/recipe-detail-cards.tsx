@@ -4,10 +4,10 @@ import { Heading } from "@/components/ui/heading";
 import { Inline } from "@/components/ui/inline";
 import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
-import type { RecipeDocumentContent } from "@/lib/validation/recipe-document";
+import type { RecipeContent } from "@/lib/validation/recipe-document";
 import styles from "./recipe-detail-cards.module.css";
 
-export function RecipeDetailsCard({ recipe }: { recipe: RecipeDocumentContent }) {
+export function RecipeDetailsCard({ recipe }: { recipe: RecipeContent }) {
   return (
     <Card as="section">
       <Stack gap="150">
@@ -64,7 +64,7 @@ export function RecipeDetailsCard({ recipe }: { recipe: RecipeDocumentContent })
 export function RecipeIngredientsCard({
   ingredients,
 }: {
-  ingredients: RecipeDocumentContent["ingredients"];
+  ingredients: RecipeContent["ingredients"];
 }) {
   return (
     <Card as="section">
@@ -89,7 +89,7 @@ export function RecipeIngredientsCard({
 export function RecipeMethodCard({
   instructions,
 }: {
-  instructions: RecipeDocumentContent["instructions"];
+  instructions: RecipeContent["instructions"];
 }) {
   return (
     <Card as="section">
@@ -109,7 +109,7 @@ export function RecipeMethodCard({
   );
 }
 
-export function RecipeNotesCard({ notes }: { notes: RecipeDocumentContent["notes"] }) {
+export function RecipeNotesCard({ notes }: { notes: RecipeContent["notes"] }) {
   return (
     <Card as="section">
       <Stack gap="150">
@@ -128,11 +128,7 @@ export function RecipeNotesCard({ notes }: { notes: RecipeDocumentContent["notes
   );
 }
 
-export function RecipeEquipmentCard({
-  equipment,
-}: {
-  equipment: RecipeDocumentContent["equipment"];
-}) {
+export function RecipeEquipmentCard({ equipment }: { equipment: RecipeContent["equipment"] }) {
   return (
     <Card as="section">
       <Stack gap="150">
@@ -153,7 +149,7 @@ export function RecipeEquipmentCard({
 }
 
 /** Read-only composition for a recipe document. */
-export function RecipeDocumentDetailCards({ recipe }: { recipe: RecipeDocumentContent }) {
+export function RecipeDocumentDetailCards({ recipe }: { recipe: RecipeContent }) {
   return (
     <>
       <RecipeDetailsCard recipe={recipe} />

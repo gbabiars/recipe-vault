@@ -3,11 +3,11 @@ import type { RecipeCreateInput } from "@/lib/validation/recipe";
 import {
   recipeDocumentContentSchema,
   recipeDocumentSchema,
-  type RecipeDocument,
-  type RecipeDocumentContent,
+  type Recipe as ValidatedRecipe,
+  type RecipeContent,
 } from "@/lib/validation/recipe-document";
 
-export type Recipe = {
+export type LegacyRecipe = {
   id: string;
   ownerId: string;
   title: string;
@@ -21,16 +21,16 @@ export type Recipe = {
   notes?: string;
   createdAt: string;
   updatedAt: string;
-  ingredients: RecipeIngredient[];
-  steps: RecipeStep[];
+  ingredients: LegacyRecipeIngredient[];
+  steps: LegacyRecipeStep[];
 };
 
-export type RecipeIngredient = RecipeCreateInput["ingredients"][number];
-export type RecipeStep = RecipeCreateInput["steps"][number];
+export type LegacyRecipeIngredient = RecipeCreateInput["ingredients"][number];
+export type LegacyRecipeStep = RecipeCreateInput["steps"][number];
 export type AuditMetadata = { requestId: string; method: string };
-export type RecipeDocumentSnapshot = { recipe: RecipeDocument; revision: number };
+export type RecipeDocumentSnapshot = { recipe: ValidatedRecipe; revision: number };
 export type RecipeDocumentListSummary = Pick<
-  RecipeDocument,
+  ValidatedRecipe,
   "id" | "title" | "description" | "yield" | "time" | "tags"
 > & { revision: number; createdAt: string; updatedAt: string };
 export type RecipeDocumentPage = { items: RecipeDocumentListSummary[]; total: number };
@@ -144,7 +144,7 @@ export class RecipeRepository {
   private async writeDocument(
     ownerId: string,
     id: string | null,
-    content: RecipeDocumentContent,
+    content: RecipeContent,
     expectedRevision: number | null,
   ): Promise<RecipeDocumentWriteResult> {
     const { data, error } = await this.client.rpc("recipe_vault_write_recipe_document", {
@@ -177,16 +177,13 @@ export class RecipeRepository {
     };
   }
 
-  createDocument(
-    ownerId: string,
-    content: RecipeDocumentContent,
-  ): Promise<RecipeDocumentWriteResult> {
+  createDocument(ownerId: string, content: RecipeContent): Promise<RecipeDocumentWriteResult> {
     return this.writeDocument(ownerId, null, content, null);
   }
 
   replaceDocument(
     ownerId: string,
-    recipe: RecipeDocument,
+    recipe: ValidatedRecipe,
     expectedRevision: number,
   ): Promise<RecipeDocumentWriteResult> {
     const { id, ...content } = recipe;

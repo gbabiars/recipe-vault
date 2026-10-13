@@ -6,7 +6,7 @@ import { getRecipeService } from "@/lib/recipes";
 import {
   recipeDocumentContentSchema,
   recipeDocumentSchema,
-  type RecipeDocumentContent,
+  type RecipeContent,
 } from "@/lib/validation/recipe-document";
 import type {
   RecipeDocumentSaveContext,
@@ -38,7 +38,7 @@ function invalidDelete(
 
 /** Creates or replaces one complete recipe document for the authenticated owner. */
 export async function saveRecipeDocumentAction(
-  content: RecipeDocumentContent,
+  content: RecipeContent,
   context: RecipeDocumentSaveContext = {},
 ): Promise<RecipeDocumentActionResult> {
   const user = await requireUser();

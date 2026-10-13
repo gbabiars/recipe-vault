@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { RecipeDocumentForm, type RecipeDocumentSaveAction } from "./recipe-document-form";
-import type { RecipeDocumentContent } from "@/lib/validation/recipe-document";
+import type { RecipeContent } from "@/lib/validation/recipe-document";
 
 function fill(label: string, value: string) {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -31,7 +31,7 @@ test("creates a complete document with optional fields and no yield", async () =
   fireEvent.click(screen.getByRole("button", { name: "Create recipe" }));
 
   await waitFor(() => expect(saveRecipe).toHaveBeenCalledTimes(1));
-  const expected: RecipeDocumentContent = {
+  const expected: RecipeContent = {
     title: "Quick pickled onions",
     description: "Tangy onions for tacos.",
     time: {},
@@ -48,7 +48,7 @@ test("creates a complete document with optional fields and no yield", async () =
 });
 
 test("passes edit identity and displays a stale revision conflict", async () => {
-  const content: RecipeDocumentContent = {
+  const content: RecipeContent = {
     title: "Rice",
     description: "",
     time: {},
@@ -104,7 +104,7 @@ test("focuses the first invalid field after client validation fails", async () =
 });
 
 test("focuses the field named by server validation issues", async () => {
-  const content: RecipeDocumentContent = {
+  const content: RecipeContent = {
     title: "Rice",
     description: "",
     time: {},

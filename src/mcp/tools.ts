@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import type { RecipeDocumentContent } from "@/lib/validation/recipe-document";
+import type { RecipeContent } from "@/lib/validation/recipe-document";
 import type { DocumentTagInventoryItem } from "@/lib/db/tag-repository";
 import type { OwnerBoundTagService } from "@/lib/recipes/tag-service";
 import type { OwnerBoundRecipeService } from "@/lib/recipes/recipe-service";
@@ -265,7 +265,7 @@ export function createRecipeMcpTools(context: McpToolContext) {
       if (!parsed.success) return text({ error: "Recipe validation failed." }, true);
       if (!allowed(context, true).allowed) return text({ error: "Rate limit exceeded." }, true);
       try {
-        const result = await context.service.createDocument(parsed.data as RecipeDocumentContent, {
+        const result = await context.service.createDocument(parsed.data as RecipeContent, {
           requestId: context.requestId,
           method: "MCP save_recipe",
         });

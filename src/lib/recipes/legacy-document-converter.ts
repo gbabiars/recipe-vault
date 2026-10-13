@@ -1,8 +1,11 @@
-import type { Recipe } from "@/lib/db/recipe-repository";
-import { recipeDocumentSchema, type RecipeDocument } from "@/lib/validation/recipe-document";
+import type { LegacyRecipe } from "@/lib/db/recipe-repository";
+import {
+  recipeDocumentSchema,
+  type Recipe as ValidatedRecipe,
+} from "@/lib/validation/recipe-document";
 
 /** Converts the current relational read model to the agreed recipe document. */
-export function convertLegacyRecipeToDocument(recipe: Recipe): RecipeDocument {
+export function convertLegacyRecipeToDocument(recipe: LegacyRecipe): ValidatedRecipe {
   if (recipe.servings !== undefined && recipe.servings <= 0) {
     throw new Error("Cannot convert a recipe with nonpositive legacy servings.");
   }

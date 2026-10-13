@@ -1,10 +1,7 @@
 import { generateText, Output } from "ai";
 import { z } from "zod";
 import { recipeCreateInputSchema, type RecipeCreateInput } from "@/lib/validation/recipe";
-import {
-  recipeDocumentContentSchema,
-  type RecipeDocumentContent,
-} from "@/lib/validation/recipe-document";
+import { recipeDocumentContentSchema, type RecipeContent } from "@/lib/validation/recipe-document";
 import { readSource, SourceReadError } from "./read-source";
 
 const extractedRecipeSchema = z.object({
@@ -84,7 +81,7 @@ export async function extractRecipeInput(
 }
 
 /** Reads a bounded website source and extracts validated document content. */
-export async function importRecipeDocumentContent(url: string): Promise<RecipeDocumentContent> {
+export async function importRecipeDocumentContent(url: string): Promise<RecipeContent> {
   const source = await readSource(url);
   return extractRecipeDocumentContent(source.text, source.sourceUrl);
 }
@@ -98,7 +95,7 @@ export async function extractRecipeDocumentContent(
   text: string,
   sourceUrl?: string,
   abortSignal: AbortSignal = AbortSignal.timeout(30_000),
-): Promise<RecipeDocumentContent> {
+): Promise<RecipeContent> {
   let output: z.infer<typeof extractedDocumentContentSchema>;
   try {
     if (!process.env.AI_GATEWAY_API_KEY) throw new Error("Gateway key missing");
@@ -117,10 +114,7 @@ export async function extractRecipeDocumentContent(
   return mapExtractedDocumentContent(output, sourceUrl);
 }
 
-export function mapExtractedDocumentContent(
-  output: unknown,
-  sourceUrl?: string,
-): RecipeDocumentContent {
+export function mapExtractedDocumentContent(output: unknown, sourceUrl?: string): RecipeContent {
   const extracted = extractedDocumentContentSchema.safeParse(output);
   if (!extracted.success) throw new SourceReadError("no_recipe");
 

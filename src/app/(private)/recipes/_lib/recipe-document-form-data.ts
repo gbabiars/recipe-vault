@@ -1,12 +1,9 @@
-import {
-  recipeDocumentContentSchema,
-  type RecipeDocumentContent,
-} from "@/lib/validation/recipe-document";
+import { recipeDocumentContentSchema, type RecipeContent } from "@/lib/validation/recipe-document";
 
 export type RecipeDocumentFormErrors = Record<string, string>;
 
 export type RecipeDocumentFormDataResult =
-  | { success: true; data: RecipeDocumentContent }
+  | { success: true; data: RecipeContent }
   | { success: false; errors: RecipeDocumentFormErrors };
 
 const emptyToUndefined = (value: string) => (value.trim() ? value.trim() : undefined);

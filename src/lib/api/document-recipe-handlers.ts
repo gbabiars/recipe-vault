@@ -6,7 +6,7 @@ import {
 } from "@/lib/recipes/import-recipe";
 import { DocumentReadError, MAX_PDF_BYTES, readDocumentText } from "@/lib/recipes/read-document";
 import { SourceReadError, validateSourceUrl } from "@/lib/recipes/read-source";
-import type { RecipeDocumentContent } from "@/lib/validation/recipe-document";
+import type { RecipeContent } from "@/lib/validation/recipe-document";
 import type { RateLimiter } from "./rate-limit";
 import { defaultRateLimiter, recipeReadLimit, recipeWriteLimit } from "./rate-limit";
 import { logApiEvent, requestId } from "./observability";
@@ -15,13 +15,13 @@ type ApiDependencies = {
   getUser: () => Promise<{ id: string } | null>;
   getService: () => Promise<RecipeService>;
   limiter?: RateLimiter;
-  importContent?: (url: string) => Promise<RecipeDocumentContent>;
+  importContent?: (url: string) => Promise<RecipeContent>;
   readDocument?: (bytes: Uint8Array, signal: AbortSignal) => Promise<string>;
   extractDocument?: (
     text: string,
     sourceUrl: string | undefined,
     signal: AbortSignal,
-  ) => Promise<RecipeDocumentContent>;
+  ) => Promise<RecipeContent>;
 };
 
 const MAX_MULTIPART_BYTES = 3_200_000;
