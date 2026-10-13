@@ -106,34 +106,57 @@ async function TagsResults({ cursors }: { cursors: ReturnType<typeof parseTagCur
           </List>
         </Stack>
       </Card>
-      {(previousHref || nextHref) && (
-        <nav aria-label="Tag pages">
-          <Inline gap="100">
-            {previousHref && <Button label="Previous" href={previousHref} variant="subtle" />}
-            {nextHref && <Button label="Next" href={nextHref} variant="subtle" />}
-          </Inline>
-        </nav>
-      )}
+      <TagPagination previousHref={previousHref} nextHref={nextHref} />
     </Stack>
   );
 }
 
 function TagsPageSkeleton() {
   return (
-    <Card padding="none">
-      <Stack paddingBlock="100" paddingInline="0">
-        <div role="status" aria-label="Loading tags">
-          <List aria-label="Loading tags">
-            {Array.from({ length: 5 }, (_, index) => (
-              <ListItem
-                key={index}
-                title={<SkeletonHeading level={6} width="300px" />}
-                description={<SkeletonText size="medium" width="120px" />}
-              />
-            ))}
-          </List>
-        </div>
-      </Stack>
-    </Card>
+    <Stack gap="200">
+      <Card padding="none">
+        <Stack paddingBlock="100" paddingInline="0">
+          <div role="status" aria-label="Loading tags">
+            <List aria-label="Loading tags">
+              {Array.from({ length: 5 }, (_, index) => (
+                <ListItem
+                  key={index}
+                  title={<SkeletonHeading level={6} width="300px" />}
+                  description={<SkeletonText size="medium" width="120px" />}
+                />
+              ))}
+            </List>
+          </div>
+        </Stack>
+      </Card>
+      <TagPagination loading />
+    </Stack>
+  );
+}
+
+function TagPagination({
+  previousHref,
+  nextHref,
+  loading = false,
+}: {
+  previousHref?: string;
+  nextHref?: string;
+  loading?: boolean;
+}) {
+  return (
+    <nav aria-label="Tag pages">
+      <Inline gap="100">
+        {previousHref && !loading ? (
+          <Button label="Previous" href={previousHref} variant="subtle" />
+        ) : (
+          <Button label="Previous" disabled variant="subtle" />
+        )}
+        {nextHref && !loading ? (
+          <Button label="Next" href={nextHref} variant="subtle" />
+        ) : (
+          <Button label="Next" disabled variant="subtle" />
+        )}
+      </Inline>
+    </nav>
   );
 }

@@ -33,4 +33,7 @@ test("shows the tags header and skeleton while the inventory is loading", async 
   render(boundary.props.fallback);
   expect(screen.getByRole("status", { name: "Loading tags" })).toBeInTheDocument();
   expect(screen.getAllByRole("listitem")).toHaveLength(5);
+  expect(screen.getByRole("navigation", { name: "Tag pages" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
 });

@@ -53,7 +53,9 @@ export const OnePage: Story = {
       "href",
       "/recipes?tag=quick%20meals",
     );
-    await expect(canvas.queryByRole("navigation", { name: "Tag pages" })).not.toBeInTheDocument();
+    await expect(canvas.getByRole("navigation", { name: "Tag pages" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "Previous" })).toBeDisabled();
+    await expect(canvas.getByRole("button", { name: "Next" })).toBeDisabled();
     await expect(listFromRecipes).toHaveBeenCalledWith("storybook-owner", {
       sort: "name_asc",
       limit: 25,
@@ -72,7 +74,7 @@ export const MultiplePages: Story = {
       "href",
       `/tags?after=${encodeTagCursor(firstPageTags.at(-1)!)}`,
     );
-    await expect(canvas.queryByRole("link", { name: "Previous" })).not.toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: "Previous" })).toBeDisabled();
   },
 };
 
@@ -111,7 +113,7 @@ export const LastPage: Story = {
       "href",
       `/tags?before=${encodeTagCursor(lastPageTags[0])}`,
     );
-    await expect(canvas.queryByRole("link", { name: "Next" })).not.toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: "Next" })).toBeDisabled();
   },
 };
 
@@ -124,6 +126,7 @@ export const Error: Story = {
   play: async ({ canvas }) => {
     await expect(await canvas.findByRole("alert")).toHaveTextContent("Tags could not be loaded");
     await expect(canvas.getByText("Refresh the page to try again.")).toBeVisible();
+    await expect(canvas.queryByRole("navigation", { name: "Tag pages" })).not.toBeInTheDocument();
   },
 };
 
@@ -133,6 +136,7 @@ export const Empty: Story = {
   },
   play: async ({ canvas }) => {
     await expect(await canvas.findByRole("heading", { name: "No tags yet" })).toBeVisible();
+    await expect(canvas.queryByRole("navigation", { name: "Tag pages" })).not.toBeInTheDocument();
     await expect(
       canvas.getByText("Tag names will appear here when you add them to recipes."),
     ).toBeVisible();
