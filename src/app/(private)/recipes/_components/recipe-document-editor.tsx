@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { RecipeSnapshot } from "@/lib/db/recipe-repository";
-import { RecipeDocumentForm } from "./recipe-form";
+import { RecipeDocumentForm } from "./recipe-document-form";
 import { saveRecipeDocumentAction } from "../_actions/recipe-document-actions";
 
 /** Connects the shared editor to the save action and route-specific success destination. */

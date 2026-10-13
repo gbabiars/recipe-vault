@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { getRouter } from "@storybook/nextjs-vite/navigation.mock";
 import { expect, fn, userEvent } from "storybook/test";
-import { RecipeDocumentImportForm, type RecipeDocumentImporter } from "./recipe-import-form";
+import {
+  RecipeDocumentImportForm,
+  type RecipeDocumentImporter,
+} from "./recipe-document-import-form";
 import { RecipeImportError } from "../_lib/import-recipe-from-api";
 
 const pdf = new File(["%PDF-1.7"], "tomato-soup.pdf", { type: "application/pdf" });

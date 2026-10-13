@@ -1,10 +1,10 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import type { RecipeContent } from "@/lib/validation/tag";
+import type { RecipeContent } from "@/lib/validation/recipe";
 import type { TagInventoryItem } from "@/lib/db/tag-repository";
 import type { OwnerBoundTagService } from "@/lib/recipes/tag-service";
 import type { OwnerBoundRecipeService } from "@/lib/recipes/recipe-service";
-import { recipeContentSchema, recipeSchema } from "@/lib/validation/tag";
+import { recipeContentSchema, recipeSchema } from "@/lib/validation/recipe";
 import { tagNameSchema } from "@/lib/validation/tag";
 import {
   defaultRateLimiter,

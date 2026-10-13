@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parseRecipeDocumentFormData } from "./recipe-form-data";
+import { parseRecipeDocumentFormData } from "./recipe-document-form-data";
 
 function validForm() {
   const form = new FormData();

@@ -11,13 +11,13 @@ import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
 import { TextInput } from "@/components/ui/text-input";
 import { Textarea } from "@/components/ui/textarea";
-import type { RecipeContent } from "@/lib/validation/tag";
+import type { RecipeContent } from "@/lib/validation/recipe";
 import { tagNameSchema } from "@/lib/validation/tag";
 import {
   parseRecipeDocumentFormData,
   type RecipeDocumentFormErrors,
 } from "../_lib/recipe-document-form-data";
-import styles from "./recipe-form.module.css";
+import styles from "./recipe-document-form.module.css";
 
 type RecipeDocumentEdit = {
   id: string;

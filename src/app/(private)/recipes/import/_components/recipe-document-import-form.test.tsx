@@ -1,6 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import { RecipeDocumentImportForm, type RecipeDocumentImporter } from "./recipe-import-form";
+import {
+  RecipeDocumentImportForm,
+  type RecipeDocumentImporter,
+} from "./recipe-document-import-form";
 import { RecipeImportError } from "../_lib/import-recipe-from-api";
 
 const push = vi.fn();
