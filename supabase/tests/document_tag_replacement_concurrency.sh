@@ -27,10 +27,10 @@ cleanup() {
 trap cleanup EXIT
 
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q <<SQL
-insert into public.recipes (owner_id, document)
+insert into public.recipes (owner_id,title,description,tags,instructions,ingredients,equipment)
 values
-  ('$owner', '{"title":"Concurrency alpha","description":"","time":{},"ingredients":[{"name":"rice"}],"equipment":[],"instructions":["Cook rice."],"notes":[],"tags":["alpha"]}'),
-  ('$owner', '{"title":"Concurrency beta","description":"","time":{},"ingredients":[{"name":"beans"}],"equipment":[],"instructions":["Cook beans."],"notes":[],"tags":["beta"]}');
+  ('$owner','Concurrency alpha','',array['alpha'],array['Cook rice.'],'[{"name":"rice"}]','[]'),
+  ('$owner','Concurrency beta','',array['beta'],array['Cook beans.'],'[{"name":"beans"}]','[]');
 SQL
 
 # Hold the same owner lock used by recipe writes and bulk tag replacement so
@@ -106,7 +106,7 @@ if [[ "$statuses" != *replaced* ]] || [[ $(grep -o replaced <<<"$statuses" | wc 
 fi
 
 final_tags=$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -qAt -c \
-  "select string_agg(document -> 'tags' ->> 0, ',' order by document ->> 'title') from public.recipes where owner_id = '$owner';")
+  "select string_agg(tags[1], ',' order by title) from public.recipes where owner_id = '$owner';")
 if [[ "$final_tags" != "gamma,gamma" && "$final_tags" != "beta,gamma" ]]; then
   printf 'Concurrent replacements produced invalid final tags: %s\n' "$final_tags" >&2
   exit 1

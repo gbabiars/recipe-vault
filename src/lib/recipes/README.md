@@ -4,9 +4,11 @@
 by the web UI, HTTP API, and MCP adapters. `index.ts` composes it with the
 request-scoped repository. Application routes must use these services rather
 than reaching into Supabase. Recipe create and replacement validate the complete
-document; replacement checks the expected revision and returns a conflict when
-the stored revision has changed. Ownership comes from authenticated Clerk
-identity, never from a document or request field.
+recipe content; replacement checks the expected revision and returns a conflict
+when the stored revision has changed. Ownership comes from authenticated Clerk
+identity, never from recipe content or a request field. The repository maps
+typed database columns, text arrays, and ingredient/equipment JSONB into the
+same validated `Recipe` contract consumed by the UI, HTTP API, and MCP adapters.
 
 `RecipeService.listDocumentPage(ownerId, { search, tags, page, pageSize })`
 shares literal, case-insensitive substring search across title, description,
@@ -17,7 +19,8 @@ tags continue to match any selected tag and combine with text search using AND.
 Recipe tag names are canonical lowercase ASCII with surrounding whitespace
 removed and repeated internal ASCII spaces collapsed. Duplicate names are
 removed after normalization. Tags are stored in each recipe document's
-`tags: string[]`; they are not a separate durable catalog. `TagService.listFromRecipes(ownerId,
+`tags: string[]` and persisted as a database text array; they are not a separate
+durable catalog. `TagService.listFromRecipes(ownerId,
 options)` returns only `{ name, usageCount }` values derived from that owner's
 documents. `TagService.replaceNameInRecipes(ownerId, { sourceName, targetName
 })` performs an owner-scoped atomic name replacement, deduplicating a recipe's
@@ -38,9 +41,9 @@ await tagService.replaceNameInRecipes(user.id, {
 });
 ```
 
-Tag inventory and replacement use recipe documents only. The forward cleanup
-migration removes the old catalog tables and their exclusive RPCs after the
-application release without those paths is deployed.
+Tag inventory and replacement use the recipes' tag arrays. The storage
+migration keeps these arrays as the durable tag source while the repository
+continues to expose the recipe document contract.
 
 Website import uses `readSource(url)` to fetch bounded HTTP HTML after checking
 each DNS destination and redirect. `importRecipeDocumentContent(url)` extracts

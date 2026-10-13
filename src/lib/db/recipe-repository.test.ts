@@ -38,7 +38,23 @@ test("document reads assemble the row ID and revision while scoping by owner", a
       return query;
     },
     maybeSingle: async () => ({
-      data: { id: documentId, document: recipeContent, revision: 7 },
+      data: {
+        id: documentId,
+        revision: 7,
+        title: recipeContent.title,
+        description: recipeContent.description,
+        source_url: recipeContent.sourceUrl,
+        prep_minutes: null,
+        cook_minutes: 18,
+        total_minutes: null,
+        yield_amount: 24,
+        yield_unit: "cookies",
+        tags: recipeContent.tags,
+        notes: recipeContent.notes,
+        instructions: recipeContent.instructions,
+        ingredients: recipeContent.ingredients,
+        equipment: recipeContent.equipment,
+      },
       error: null,
     }),
   };
@@ -47,13 +63,58 @@ test("document reads assemble the row ID and revision while scoping by owner", a
   const current = await repository.getDocument("owner-a", documentId);
 
   assert.deepEqual(calls, [
-    ["select", "id, document, revision"],
+    [
+      "select",
+      "id, revision, title, description, source_url, prep_minutes, cook_minutes, total_minutes, yield_amount, yield_unit, tags, notes, instructions, ingredients, equipment",
+    ],
     ["eq", "owner_id", "owner-a"],
     ["eq", "id", documentId],
   ]);
   assert.deepEqual(current, {
     recipe: { id: documentId, ...recipeContent },
     revision: 7,
+  });
+});
+
+test("column reads omit absent optional yield, source URL, and time values", async () => {
+  const query = {
+    select: () => query,
+    eq: () => query,
+    maybeSingle: async () => ({
+      data: {
+        id: documentId,
+        revision: 1,
+        title: recipeContent.title,
+        description: recipeContent.description,
+        source_url: null,
+        prep_minutes: null,
+        cook_minutes: null,
+        total_minutes: null,
+        yield_amount: null,
+        yield_unit: null,
+        tags: [],
+        notes: [],
+        instructions: recipeContent.instructions,
+        ingredients: recipeContent.ingredients,
+        equipment: [],
+      },
+      error: null,
+    }),
+  };
+  const repository = new RecipeRepository({
+    from: () => query,
+  } as never);
+  const current = await repository.getDocument("owner-a", documentId);
+  assert.deepEqual(current?.recipe, {
+    id: documentId,
+    title: recipeContent.title,
+    description: recipeContent.description,
+    time: {},
+    tags: [],
+    ingredients: recipeContent.ingredients,
+    equipment: [],
+    instructions: recipeContent.instructions,
+    notes: [],
   });
 });
 

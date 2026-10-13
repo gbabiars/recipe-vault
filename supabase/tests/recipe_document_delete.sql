@@ -10,19 +10,11 @@ select set_config(
   true
 );
 
-insert into public.recipes (owner_id, document, revision)
+insert into public.recipes (owner_id, title, description, tags, notes, instructions, ingredients, equipment, revision)
 values (
   current_setting('test.recipe_document_delete_owner'),
-  jsonb_build_object(
-    'title', 'No-yield delete fixture ' || current_setting('test.recipe_document_delete_token'),
-    'description', '',
-    'time', '{}'::jsonb,
-    'ingredients', jsonb_build_array(jsonb_build_object('name', 'onion')),
-    'equipment', '[]'::jsonb,
-    'instructions', jsonb_build_array('Slice the onion.'),
-    'notes', '[]'::jsonb,
-    'tags', jsonb_build_array('weeknight')
-  ),
+  'No-yield delete fixture ' || current_setting('test.recipe_document_delete_token'), '', array['weeknight'],
+  array[]::text[], array['Slice the onion.'], '[{"name":"onion"}]'::jsonb, '[]'::jsonb,
   4
 );
 
@@ -67,10 +59,7 @@ declare
 begin
   select id into fixture_id from public.recipes
   where owner_id = fixture_owner
-    and document ->> 'title' = 'No-yield delete fixture ' || current_setting('test.recipe_document_delete_token');
-  if (select document ? 'yield' from public.recipes where id = fixture_id) then
-    raise exception 'No-yield fixture unexpectedly contains yield';
-  end if;
+    and title = 'No-yield delete fixture ' || current_setting('test.recipe_document_delete_token');
 
   -- A valid caller still cannot supply a different owner identity.
   begin
@@ -124,16 +113,11 @@ $verify$;
 
 -- A successful delete inside a savepoint can be rolled back with the row intact.
 reset role;
-insert into public.recipes (owner_id, document, revision)
+insert into public.recipes (owner_id, title, description, tags, notes, instructions, ingredients, equipment, revision)
 values (
   current_setting('test.recipe_document_delete_owner'),
-  jsonb_build_object(
-    'title', 'Rollback delete fixture ' || current_setting('test.recipe_document_delete_token'),
-    'description', '', 'time', '{}'::jsonb,
-    'ingredients', jsonb_build_array(jsonb_build_object('name', 'salt')),
-    'equipment', '[]'::jsonb, 'instructions', jsonb_build_array('Season.'),
-    'notes', '[]'::jsonb, 'tags', '[]'::jsonb
-  ),
+  'Rollback delete fixture ' || current_setting('test.recipe_document_delete_token'), '', array[]::text[],
+  array[]::text[], array['Season.'], '[{"name":"salt"}]'::jsonb, '[]'::jsonb,
   2
 );
 set local role authenticated;
@@ -145,7 +129,7 @@ declare
 begin
   select id into fixture_id from public.recipes
   where owner_id = current_setting('test.recipe_document_delete_owner')
-    and document ->> 'title' = 'Rollback delete fixture ' || current_setting('test.recipe_document_delete_token');
+    and title = 'Rollback delete fixture ' || current_setting('test.recipe_document_delete_token');
   select * into result from public.recipe_vault_delete_recipe_document(
     current_setting('test.recipe_document_delete_owner'), fixture_id, 2, null, null
   );
@@ -160,7 +144,7 @@ begin
   if not exists (
     select 1 from public.recipes
     where owner_id = current_setting('test.recipe_document_delete_owner')
-      and document ->> 'title' = 'Rollback delete fixture ' || current_setting('test.recipe_document_delete_token')
+      and title = 'Rollback delete fixture ' || current_setting('test.recipe_document_delete_token')
   ) then
     raise exception 'Savepoint rollback did not restore deleted recipe';
   end if;

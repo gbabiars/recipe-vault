@@ -7,51 +7,26 @@ do $fixture$
 declare
   suffix text := current_setting('test.recipe_document_search_token');
 begin
-  insert into public.recipes (owner_id, document, updated_at)
+  insert into public.recipes (owner_id,title,description,cook_minutes,ingredients,equipment,instructions,notes,tags,updated_at)
   values
     (
       'recipe_document_search_owner_a',
-      jsonb_build_object(
-        'title', 'Orange shortbread ' || suffix,
-        'description', 'Crisp cookies with orange zest.',
-        'time', jsonb_build_object('cookMinutes', 18),
-        'ingredients', jsonb_build_array(
-          jsonb_build_object('name', 'unsalted butter', 'amount', '1 cup', 'note', 'softened'),
-          jsonb_build_object('name', '100% salt_and_pepper back\slash', 'amount', '1', 'note', 'softened')
-        ),
-        'equipment', jsonb_build_array(jsonb_build_object('name', 'baking sheet', 'note', 'polished')),
-        'instructions', jsonb_build_array('Cream the butter and sugar.'),
-        'notes', jsonb_build_array('secret note phrase'),
-        'tags', jsonb_build_array('baking', 'quick')
-      ),
+      'Orange shortbread ' || suffix,'Crisp cookies with orange zest.',18,
+      '[{"name":"unsalted butter","amount":"1 cup","note":"softened"},{"name":"100% salt_and_pepper back\\slash","amount":"1","note":"softened"}]'::jsonb,
+      '[{"name":"baking sheet","note":"polished"}]'::jsonb,
+      array['Cream the butter and sugar.'],array['secret note phrase'],array['baking','quick'],
       '2026-01-01T00:00:00Z'
     ),
     (
       'recipe_document_search_owner_a',
-      jsonb_build_object(
-        'title', 'Separate phrase parts ' || suffix,
-        'description', 'olive',
-        'time', '{}'::jsonb,
-        'ingredients', jsonb_build_array(jsonb_build_object('name', 'oil')),
-        'equipment', jsonb_build_array(),
-        'instructions', jsonb_build_array('Mix.'),
-        'notes', jsonb_build_array(),
-        'tags', jsonb_build_array('slow')
-      ),
+      'Separate phrase parts ' || suffix,'olive',null,
+      '[{"name":"oil"}]'::jsonb,'[]'::jsonb,array['Mix.'],array[]::text[],array['slow'],
       '2026-01-02T00:00:00Z'
     ),
     (
       'recipe_document_search_owner_b',
-      jsonb_build_object(
-        'title', 'Other owner ' || suffix,
-        'description', 'Crisp cookies with orange zest.',
-        'time', '{}'::jsonb,
-        'ingredients', jsonb_build_array(jsonb_build_object('name', 'unsalted butter')),
-        'equipment', jsonb_build_array(jsonb_build_object('name', 'baking sheet')),
-        'instructions', jsonb_build_array('Bake.'),
-        'notes', jsonb_build_array(),
-        'tags', jsonb_build_array('baking')
-      ),
+      'Other owner ' || suffix,'Crisp cookies with orange zest.',null,
+      '[{"name":"unsalted butter"}]'::jsonb,'[{"name":"baking sheet"}]'::jsonb,array['Bake.'],array[]::text[],array['baking'],
       '2026-01-03T00:00:00Z'
     );
 end;

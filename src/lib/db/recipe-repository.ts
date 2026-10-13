@@ -45,13 +45,28 @@ export type RecipeDocumentDeleteResult =
   | { status: "not_found" }
   | { status: "invalid" };
 
-type DatabaseRecipeDocument = {
+type DatabaseRecipeRow = {
+  id: string;
+  revision: number;
+  title: unknown;
+  description: unknown;
+  source_url: unknown;
+  prep_minutes: unknown;
+  cook_minutes: unknown;
+  total_minutes: unknown;
+  yield_amount: unknown;
+  yield_unit: unknown;
+  tags: unknown;
+  notes: unknown;
+  instructions: unknown;
+  ingredients: unknown;
+  equipment: unknown;
+};
+
+type DatabaseRecipeDocumentSummary = {
   id: string;
   document: unknown;
   revision: number;
-};
-
-type DatabaseRecipeDocumentSummary = DatabaseRecipeDocument & {
   created_at: string;
   updated_at: string;
 };
@@ -68,19 +83,49 @@ type RecipeDocumentWriteRpcResult = {
   document: unknown | null;
 };
 
-function mapRecipeDocument(row: DatabaseRecipeDocument): RecipeDocumentSnapshot {
+function mapRecipeDocument(row: DatabaseRecipeRow): RecipeDocumentSnapshot {
   if (!Number.isSafeInteger(row.revision) || row.revision < 1 || row.revision > 2_147_483_647) {
     throw new Error("Could not load this recipe.");
   }
-  const content = recipeDocumentContentSchema.parse(row.document);
+  const time = {
+    ...(row.prep_minutes === null ? {} : { prepMinutes: row.prep_minutes }),
+    ...(row.cook_minutes === null ? {} : { cookMinutes: row.cook_minutes }),
+    ...(row.total_minutes === null ? {} : { totalMinutes: row.total_minutes }),
+  };
+  const content = recipeDocumentContentSchema.parse({
+    title: row.title,
+    description: row.description,
+    ...(row.yield_amount === null && row.yield_unit === null
+      ? {}
+      : { yield: { amount: row.yield_amount, unit: row.yield_unit } }),
+    time,
+    ingredients: row.ingredients,
+    equipment: row.equipment,
+    instructions: row.instructions,
+    notes: row.notes,
+    tags: row.tags,
+    ...(row.source_url === null ? {} : { sourceUrl: row.source_url }),
+  });
   return {
     recipe: recipeDocumentSchema.parse({ id: row.id, ...content }),
     revision: row.revision,
   };
 }
 
+function mapWrittenRecipeDocument(
+  id: string,
+  revision: number,
+  document: unknown,
+): RecipeDocumentSnapshot {
+  if (!Number.isSafeInteger(revision) || revision < 1 || revision > 2_147_483_647) {
+    throw new Error("Could not load this recipe.");
+  }
+  const content = recipeDocumentContentSchema.parse(document);
+  return { recipe: recipeDocumentSchema.parse({ id, ...content }), revision };
+}
+
 function mapRecipeDocumentSummary(row: DatabaseRecipeDocumentSummary): RecipeDocumentListSummary {
-  const { recipe } = mapRecipeDocument(row);
+  const { recipe } = mapWrittenRecipeDocument(row.id, row.revision, row.document);
   return {
     id: recipe.id,
     title: recipe.title,
@@ -101,12 +146,14 @@ export class RecipeRepository {
   async getDocument(ownerId: string, id: string): Promise<RecipeDocumentSnapshot | null> {
     const { data, error } = await this.client
       .from("recipes")
-      .select("id, document, revision")
+      .select(
+        "id, revision, title, description, source_url, prep_minutes, cook_minutes, total_minutes, yield_amount, yield_unit, tags, notes, instructions, ingredients, equipment",
+      )
       .eq("owner_id", ownerId)
       .eq("id", id)
       .maybeSingle();
     if (error) throw new Error("Could not load this recipe.");
-    return data ? mapRecipeDocument(data as DatabaseRecipeDocument) : null;
+    return data ? mapRecipeDocument(data as DatabaseRecipeRow) : null;
   }
 
   async listDocumentPage(
@@ -169,11 +216,7 @@ export class RecipeRepository {
     }
     return {
       status: "saved",
-      ...mapRecipeDocument({
-        id: result.recipe_id,
-        revision: result.revision,
-        document: result.document,
-      }),
+      ...mapWrittenRecipeDocument(result.recipe_id, result.revision, result.document),
     };
   }
 

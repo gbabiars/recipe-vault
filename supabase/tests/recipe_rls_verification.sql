@@ -1,14 +1,11 @@
--- Verify private Clerk ownership and audit behavior against the document model.
+-- Verify private Clerk ownership and audit behavior against column storage.
 -- The transaction rolls back all fixture rows and audit events.
 
 begin;
 select set_config('test.recipe_rls_token', gen_random_uuid()::text, true);
 
-insert into public.recipes (owner_id, document)
-values (
-  'recipe_rls_owner_a',
-  '{"title":"Private A","description":"","time":{},"ingredients":[{"name":"salt"}],"equipment":[],"instructions":["Season."],"notes":[],"tags":[]}'::jsonb
-);
+insert into public.recipes (owner_id,title,description,ingredients,equipment,instructions)
+values ('recipe_rls_owner_a','Private A','', '[{"name":"salt"}]'::jsonb,'[]'::jsonb,array['Season.']);
 
 set local role authenticated;
 select set_config(
@@ -22,7 +19,7 @@ declare
   target_recipe_id uuid;
 begin
   select id into target_recipe_id from public.recipes
-  where document ->> 'title' = 'Private A';
+  where title = 'Private A';
   if target_recipe_id is null then
     raise exception 'Owner could not read their own document';
   end if;
@@ -94,7 +91,7 @@ begin
   end if;
   begin
     update public.recipes
-    set document = document || '{"title":"Intruded"}'::jsonb
+    set title = 'Intruded'
     where owner_id = 'recipe_rls_owner_a';
     get diagnostics changed_rows = row_count;
     if changed_rows <> 0 then

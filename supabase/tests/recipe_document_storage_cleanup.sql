@@ -15,15 +15,11 @@ begin
   end loop;
 
   foreach legacy_name in array array[
-    'title',
     'summary',
     'prep_time_minutes',
     'cook_time_minutes',
     'total_time_minutes',
-    'servings',
-    'tags',
-    'source_url',
-    'notes'
+    'servings'
   ] loop
     if exists (
       select 1 from information_schema.columns
@@ -36,7 +32,9 @@ begin
   end loop;
 
   foreach required_column in array array[
-    'id', 'owner_id', 'created_at', 'updated_at', 'document', 'revision', 'title_text'
+    'id', 'owner_id', 'created_at', 'updated_at', 'revision', 'title', 'description',
+    'source_url', 'prep_minutes', 'cook_minutes', 'total_minutes', 'yield_amount',
+    'yield_unit', 'tags', 'notes', 'instructions', 'ingredients', 'equipment'
   ] loop
     if not exists (
       select 1 from information_schema.columns
@@ -47,6 +45,14 @@ begin
       raise exception 'required recipes.% column is missing', required_column;
     end if;
   end loop;
+
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='recipes'
+      and column_name in ('document','title_text')
+  ) then
+    raise exception 'transitional recipe document storage still exists';
+  end if;
 
   if pg_catalog.to_regclass('public.recipe_audit_events') is null then
     raise exception 'recipe audit history table is missing';

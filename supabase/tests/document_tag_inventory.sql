@@ -1,25 +1,16 @@
 -- Run after applying all migrations to the disposable local Supabase database:
 --   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/document_tag_inventory.sql
--- Inventory rows must be derived from documents, scoped to the supplied owner,
+-- Inventory rows must be derived from recipe tag columns, scoped to the supplied owner,
 -- and returned in stable cursor order. All fixtures are rolled back.
 
 begin;
 select set_config('test.document_tag_inventory_token', gen_random_uuid()::text, true);
 
-insert into public.recipes (owner_id, document)
+insert into public.recipes (owner_id, title, description, tags, instructions, ingredients, equipment)
 values
-  (
-    'document_tag_owner',
-    '{"title":"Tag inventory one","description":"","time":{},"ingredients":[{"name":"rice"}],"equipment":[],"instructions":["Cook rice."],"notes":[],"tags":["dinner","weeknight"]}'::jsonb
-  ),
-  (
-    'document_tag_owner',
-    '{"title":"Tag inventory two","description":"","time":{},"ingredients":[{"name":"beans"}],"equipment":[],"instructions":["Cook beans."],"notes":[],"tags":["dinner","lunch"]}'::jsonb
-  ),
-  (
-    'document_tag_other',
-    '{"title":"Other owner tag inventory","description":"","time":{},"ingredients":[{"name":"soup"}],"equipment":[],"instructions":["Cook soup."],"notes":[],"tags":["dinner"]}'::jsonb
-  );
+  ('document_tag_owner','Tag inventory one','',array['dinner','weeknight'],array['Cook rice.'],'[{"name":"rice"}]'::jsonb,'[]'::jsonb),
+  ('document_tag_owner','Tag inventory two','',array['dinner','lunch'],array['Cook beans.'],'[{"name":"beans"}]'::jsonb,'[]'::jsonb),
+  ('document_tag_other','Other owner tag inventory','',array['dinner'],array['Cook soup.'],'[{"name":"soup"}]'::jsonb,'[]'::jsonb);
 
 set local role authenticated;
 select set_config(

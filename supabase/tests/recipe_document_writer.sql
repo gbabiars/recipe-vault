@@ -80,7 +80,8 @@ begin
     raise exception 'Invalid nested yield did not return invalid: %', result;
   end if;
   if (select revision from public.recipes where id = target_fixture_recipe_id) <> 2
-    or (select document from public.recipes where id = target_fixture_recipe_id) <> replaced_document then
+    or (select title from public.recipes where id = target_fixture_recipe_id) <> (replaced_document ->> 'title')
+    or (select yield_amount from public.recipes where id = target_fixture_recipe_id) <> 1 then
     raise exception 'Invalid replacement changed persisted recipe content';
   end if;
 
@@ -100,8 +101,8 @@ begin
   if result.status <> 'conflict' or result.recipe_id <> target_fixture_recipe_id or result.revision <> 3 then
     raise exception 'Stale replacement did not return current revision conflict: %', result;
   end if;
-  if (select document -> 'tags' from public.recipes where id = target_fixture_recipe_id)
-    <> jsonb_build_array('dinner') then
+  if (select tags from public.recipes where id = target_fixture_recipe_id)
+    <> array['dinner']::text[] then
     raise exception 'Stale recipe write restored the replaced tag name';
   end if;
 
@@ -150,7 +151,7 @@ do $verify$
 begin
   if exists (
     select 1 from public.recipes
-    where document ->> 'title' = 'Rollback fixture ' || current_setting('test.recipe_document_writer_token')
+    where title = 'Rollback fixture ' || current_setting('test.recipe_document_writer_token')
   ) then
     raise exception 'Rollback did not remove created recipe';
   end if;
@@ -180,7 +181,8 @@ begin
       select 1 from public.recipes
       where id = result.recipe_id
         and owner_id = 'recipe_document_writer_service_bound_owner'
-        and document = content
+        and title = content ->> 'title'
+        and ingredients = content -> 'ingredients'
     ) then
     raise exception 'Explicit service-role owner binding failed: %', result;
   end if;
