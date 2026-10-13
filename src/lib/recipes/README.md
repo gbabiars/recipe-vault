@@ -1,31 +1,31 @@
 # Recipe library boundary
 
-`recipe-service.ts` provides the owner-aware recipe command/query surface used
-by the web UI, HTTP API, and MCP adapters. `index.ts` composes it with the
-request-scoped repository. Application routes must use these services rather
-than reaching into Supabase. Recipe create and replacement validate the complete
-recipe content; replacement checks the expected revision and returns a conflict
-when the stored revision has changed. Ownership comes from authenticated Clerk
-identity, never from recipe content or a request field. The repository maps
-typed database columns, text arrays, and ingredient/equipment JSONB into the
-same validated `Recipe` contract consumed by the UI, HTTP API, and MCP adapters.
+`recipe-service.ts` provides the owner-aware recipe command and query surface
+for the web UI, HTTP API, and MCP adapters. `index.ts` composes it with the
+request-scoped repository. Application routes use these services rather than
+querying Supabase. Recipe creation and replacement validate complete recipe
+content; replacement checks the expected revision and reports a conflict when
+the stored revision changes. Ownership comes from authenticated Clerk identity,
+never from recipe content or request fields.
 
-`RecipeService.listRecipes(ownerId, { search, tags, page, pageSize })`
-shares literal, case-insensitive substring search across title, description,
-ingredient names, equipment names, and tags with the HTTP and MCP recipe search
-consumers. The whole trimmed phrase must occur in one field. Exact selected
-tags continue to match any selected tag and combine with text search using AND.
+The shared `Recipe` shape contains an ID, title, description, optional yield,
+prep/cook/total time, ordered ingredients and equipment, ordered instructions
+and notes, a tag-name array, and an optional source URL. Ingredient entries have
+a name and optional text amount and note. Equipment entries have a name and an
+optional note. Yield contains a positive amount and unit and remains optional.
 
-Recipe tag names are canonical lowercase ASCII with surrounding whitespace
-removed and repeated internal ASCII spaces collapsed. Duplicate names are
-removed after normalization. Tags are stored in each recipe document's
-`tags: string[]` and persisted as a database text array; they are not a separate
-durable catalog. `TagService.listFromRecipes(ownerId,
-options)` returns only `{ name, usageCount }` values derived from that owner's
-documents. `TagService.replaceNameInRecipes(ownerId, { sourceName, targetName
-})` performs an owner-scoped atomic name replacement, deduplicating a recipe's
-array if the target name is already present. Removing a name from its last
-recipe removes it from inventory.
+`RecipeService.listRecipes(ownerId, { search, tags, page, pageSize })` provides
+literal, case-insensitive substring search across title, description, ingredient
+names, equipment names, and tags. The complete trimmed phrase occurs within one
+field. Exact selected tags match any selected tag and combine with text search
+using AND.
+
+Tag names are canonical lowercase ASCII. Normalization trims surrounding
+whitespace and collapses repeated internal ASCII spaces; duplicate names are
+removed. Each recipe stores its tags in `tags: string[]`. `TagService` derives
+inventory and usage counts from the owner's recipes and atomically replaces
+canonical names across their arrays. Removing a name from its last recipe also
+removes it from inventory.
 
 An authenticated consumer can list the derived inventory and replace a name
 through the same domain service:
@@ -41,21 +41,9 @@ await tagService.replaceNameInRecipes(user.id, {
 });
 ```
 
-Tag inventory and replacement use the recipes' tag arrays. The storage
-migration keeps these arrays as the durable tag source while the repository
-continues to expose the recipe document contract.
-
-Website import uses `readSource(url)` to fetch bounded HTTP HTML after checking
-each DNS destination and redirect. `importRecipeDocumentContent(url)` extracts
-and validates a document before it is saved by the recipe service. The submitted
-URL is retained as `sourceUrl` when supplied. Sites that reject automated HTTP
-requests return `access_denied` so the form can explain that another source or
-manual entry is needed.
-
-PDF import reads bounded embedded text in memory, then uses the same document
-extraction and validation as website import. The first complete recipe in
-document order is selected; no yield is invented. PDF.js runs as an external
-Node package so its worker loads beside the library instead of from a Next.js
-server chunk. Reader failures are classified into file format, damaged
-structure, encryption, and server reader errors without returning PDF.js
-exception text to the client.
+Website import reads bounded HTTP HTML after checking each DNS destination and
+redirect. PDF import reads bounded embedded text in memory. Both import paths
+extract and validate recipe fields before saving through the recipe service.
+They preserve a supplied source URL, select the first complete recipe in source
+order, and leave yield absent when the source does not provide it. PDF reader
+errors return safe classifications without exposing parser exception text.
