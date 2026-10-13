@@ -38,11 +38,10 @@ if (process.env.RECIPE_DOCUMENT_ACTION_TEST_CHILD === "1") {
     namedExports: { getRecipeService: async () => service },
   });
 
-  let deleteRecipeDocumentAction: (typeof import("./recipe-document-actions"))["deleteRecipeDocumentAction"];
-  let saveRecipeDocumentAction: (typeof import("./recipe-document-actions"))["saveRecipeDocumentAction"];
+  let deleteRecipeDocumentAction: (typeof import("./recipe-actions"))["deleteRecipeDocumentAction"];
+  let saveRecipeDocumentAction: (typeof import("./recipe-actions"))["saveRecipeDocumentAction"];
   before(async () => {
-    ({ deleteRecipeDocumentAction, saveRecipeDocumentAction } =
-      await import("./recipe-document-actions"));
+    ({ deleteRecipeDocumentAction, saveRecipeDocumentAction } = await import("./recipe-actions"));
   });
 
   const content = {

@@ -1,4 +1,4 @@
-import { recipeDocumentSchema, type Recipe } from "@/lib/validation/recipe-document";
+import { recipeSchema, type Recipe } from "@/lib/validation/recipe";
 
 export type RecipeViewState =
   | { state: "loading" }
@@ -21,6 +21,6 @@ export function getRecipeViewState(structuredContent: unknown, isError = false):
     return { state: "error" };
   }
 
-  const recipe = recipeDocumentSchema.safeParse(structuredContent.recipe);
+  const recipe = recipeSchema.safeParse(structuredContent.recipe);
   return recipe.success ? { state: "recipe", recipe: recipe.data } : { state: "error" };
 }

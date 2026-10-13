@@ -1,98 +1,60 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { recipeCreateInputSchema, recipeUpdateInputSchema } from "./recipe";
+import { recipeContentSchema, recipeSchema } from "./recipe";
 
-const validRecipe = {
-  title: "Lemon Pasta",
-  prepTimeMinutes: 10,
-  cookTimeMinutes: 15,
-  totalTimeMinutes: 25,
-  servings: 2,
-  tags: ["Weeknight", "weeknight"],
-  ingredients: [{ displayOrder: 1, amount: "200 g", ingredientName: "spaghetti" }],
-  steps: [{ stepOrder: 1, instruction: "Cook the pasta.", durationMinutes: 10 }],
+const validDocument = {
+  id: "8c0fb550-686a-4a0c-bf8f-690c1359c877",
+  title: "Orange shortbread",
+  description: "Crisp cookies with orange zest.",
+  yield: { amount: 24, unit: "cookies" },
+  time: { cookMinutes: 18 },
+  ingredients: [{ name: "unsalted butter", amount: "1 cup", note: "softened" }],
+  equipment: [{ name: "baking sheet" }],
+  instructions: ["Cream the butter and sugar."],
+  notes: ["The dough can be chilled overnight."],
+  tags: ["baking", "cookies"],
+  sourceUrl: "https://example.com/shortbread",
 };
 
-test("accepts a structured recipe and canonicalizes labels", () => {
-  const result = recipeCreateInputSchema.parse(validRecipe);
-
-  assert.deepEqual(result.tags, ["weeknight"]);
+test("accepts a full document with a non-serving yield and optional time fields", () => {
+  assert.deepEqual(recipeSchema.parse(validDocument), validDocument);
 });
 
-test("accepts optional free-text amounts and rejects invalid ingredient amounts", () => {
-  assert.deepEqual(
-    recipeCreateInputSchema.parse({
-      ...validRecipe,
-      ingredients: [{ displayOrder: 1, ingredientName: "salt" }],
-    }).ingredients,
-    [{ displayOrder: 1, ingredientName: "salt" }],
-  );
-  assert.deepEqual(
-    recipeCreateInputSchema.parse({
-      ...validRecipe,
-      ingredients: [{ displayOrder: 1, amount: "  1 1/2 cups  ", ingredientName: "milk" }],
-    }).ingredients[0].amount,
-    "1 1/2 cups",
-  );
-  for (const amount of [" ", "x".repeat(129)]) {
-    assert.equal(
-      recipeCreateInputSchema.safeParse({
-        ...validRecipe,
-        ingredients: [{ displayOrder: 1, amount, ingredientName: "salt" }],
-      }).success,
-      false,
-    );
+test("allows yield to be omitted and canonicalizes duplicate tags", () => {
+  const { yield: _yield, ...documentWithoutYield } = validDocument;
+  void _yield;
+  const result = recipeSchema.parse({
+    ...documentWithoutYield,
+    tags: [" Weeknight  Meals ", "weeknight meals"],
+  });
+
+  assert.equal("yield" in result, false);
+  assert.deepEqual(result.tags, ["weeknight meals"]);
+});
+
+test("rejects null yield, invalid IDs, incomplete arrays, and unknown fields", () => {
+  const invalidDocuments = [
+    { ...validDocument, yield: null },
+    { ...validDocument, id: "recipe-1" },
+    { ...validDocument, ingredients: [] },
+    { ...validDocument, instructions: [] },
+    { ...validDocument, equipment: [{ name: "sheet pan", extra: true }] },
+    { ...validDocument, time: { prepMinutes: -1 } },
+    { ...validDocument, tags: ["needs uppercase!"] },
+    { ...validDocument, sourceUrl: "file:///tmp/recipe" },
+    { ...validDocument, unexpected: "field" },
+  ];
+
+  for (const value of invalidDocuments) {
+    assert.equal(recipeSchema.safeParse(value).success, false);
   }
 });
 
-test("rejects retired quantity and unit fields, durations, servings, and ordering", () => {
-  for (const invalid of [
-    {
-      ...validRecipe,
-      ingredients: [{ displayOrder: 1, quantity: 1, unit: "g", ingredientName: "spaghetti" }],
-    },
-    { ...validRecipe, steps: [{ ...validRecipe.steps[0], durationMinutes: -1 }] },
-    { ...validRecipe, servings: 0 },
-    { ...validRecipe, steps: [{ ...validRecipe.steps[0], stepOrder: 0 }] },
-  ]) {
-    assert.equal(recipeCreateInputSchema.safeParse(invalid).success, false);
-  }
-});
+test("validates create content without a server-assigned ID", () => {
+  const { id: _id, ...content } = validDocument;
+  void _id;
 
-test("rejects inconsistent total time and duplicate child ordering", () => {
-  assert.equal(
-    recipeCreateInputSchema.safeParse({ ...validRecipe, totalTimeMinutes: 20 }).success,
-    false,
-  );
-  assert.equal(
-    recipeCreateInputSchema.safeParse({
-      ...validRecipe,
-      ingredients: [...validRecipe.ingredients, { ...validRecipe.ingredients[0] }],
-    }).success,
-    false,
-  );
-});
-
-test("requires a non-empty update patch", () => {
-  assert.equal(recipeUpdateInputSchema.safeParse({}).success, false);
-  assert.equal(recipeUpdateInputSchema.safeParse({ title: "Updated" }).success, true);
-});
-
-test("rejects retired dietary fields in create and update commands", () => {
-  assert.equal(
-    recipeCreateInputSchema.safeParse({ ...validRecipe, dietaryFlags: ["vegan"] }).success,
-    false,
-  );
-  assert.equal(recipeUpdateInputSchema.safeParse({ dietaryFlags: ["vegan"] }).success, false);
-});
-
-const input = recipeCreateInputSchema.parse({
-  title: "Soup",
-  tags: [" Dinner  Party ", "dinner party", "Week  Night"],
-  ingredients: [{ displayOrder: 1, amount: "1 cup", ingredientName: "water" }],
-  steps: [{ stepOrder: 1, instruction: "Boil." }],
-});
-
-test("recipe tag names collapse case, outer whitespace, and repeated spaces", () => {
-  assert.deepEqual(input.tags, ["dinner party", "week night"]);
+  assert.deepEqual(recipeContentSchema.parse(content), content);
+  assert.equal(recipeContentSchema.safeParse(validDocument).success, false);
+  assert.equal(recipeContentSchema.safeParse({ ...content, ownerId: "user_123" }).success, false);
 });

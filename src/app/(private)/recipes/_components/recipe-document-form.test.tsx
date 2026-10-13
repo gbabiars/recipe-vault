@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { RecipeDocumentForm, type RecipeDocumentSaveAction } from "./recipe-document-form";
-import type { RecipeContent } from "@/lib/validation/recipe-document";
+import { RecipeDocumentForm, type RecipeDocumentSaveAction } from "./recipe-form";
+import type { RecipeContent } from "@/lib/validation/recipe";
 
 function fill(label: string, value: string) {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

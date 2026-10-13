@@ -4,7 +4,7 @@ import { Heading } from "@/components/ui/heading";
 import { Inline } from "@/components/ui/inline";
 import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
-import type { RecipeContent } from "@/lib/validation/recipe-document";
+import type { RecipeContent } from "@/lib/validation/recipe";
 import styles from "./recipe-detail-cards.module.css";
 
 export function RecipeDetailsCard({ recipe }: { recipe: RecipeContent }) {

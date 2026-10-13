@@ -6,7 +6,7 @@ import {
 } from "@/lib/recipes/import-recipe";
 import { DocumentReadError, MAX_PDF_BYTES, readDocumentText } from "@/lib/recipes/read-document";
 import { SourceReadError, validateSourceUrl } from "@/lib/recipes/read-source";
-import type { RecipeContent } from "@/lib/validation/recipe-document";
+import type { RecipeContent } from "@/lib/validation/recipe";
 import type { RateLimiter } from "./rate-limit";
 import { defaultRateLimiter, recipeReadLimit, recipeWriteLimit } from "./rate-limit";
 import { logApiEvent, requestId } from "./observability";

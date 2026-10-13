@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createDocumentRecipeApi } from "./document-recipe-handlers";
-import type { RecipeContent } from "../validation/recipe-document";
+import type { RecipeContent } from "../validation/recipe";
 import { DocumentReadError, MAX_PDF_BYTES } from "../recipes/read-document";
 import { SourceReadError } from "../recipes/read-source";
 

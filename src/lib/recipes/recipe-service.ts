@@ -6,10 +6,7 @@ import type {
   RecipeDocumentWriteResult,
   RecipeDocumentPage,
 } from "@/lib/db/recipe-repository";
-import {
-  recipeDocumentContentSchema,
-  recipeDocumentSchema,
-} from "@/lib/validation/recipe-document";
+import { recipeContentSchema, recipeSchema } from "@/lib/validation/recipe";
 
 export type RecipeDocumentValidationIssue = {
   path: Array<string | number>;
@@ -67,7 +64,7 @@ export class RecipeService {
     content: unknown,
     audit?: AuditMetadata,
   ): Promise<RecipeDocumentServiceResult> {
-    const parsed = recipeDocumentContentSchema.safeParse(content);
+    const parsed = recipeContentSchema.safeParse(content);
     if (!parsed.success) return { status: "invalid", issues: validationIssues(parsed.error) };
 
     const result = mapWriteResult(await this.recipes.createDocument(ownerId, parsed.data));
@@ -95,7 +92,7 @@ export class RecipeService {
       };
     }
 
-    const parsed = recipeDocumentSchema.safeParse(recipe);
+    const parsed = recipeSchema.safeParse(recipe);
     if (!parsed.success) return { status: "invalid", issues: validationIssues(parsed.error) };
 
     const result = mapWriteResult(

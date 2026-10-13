@@ -3,7 +3,7 @@ import {
   type DocumentTagInventoryOptions,
   type DocumentTagNameReplacementResult,
 } from "@/lib/db/tag-repository";
-import { tagNameSchema } from "@/lib/validation/recipe";
+import { tagNameSchema } from "@/lib/validation/tag";
 
 export type ReplaceDocumentTagNameInput = {
   sourceName: string;

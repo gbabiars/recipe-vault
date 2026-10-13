@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent, within } from "storybook/test";
-import type { RecipeContent } from "@/lib/validation/recipe-document";
-import { RecipeDocumentForm } from "./recipe-document-form";
+import type { RecipeContent } from "@/lib/validation/recipe";
+import { RecipeDocumentForm } from "./recipe-form";
 
 const content: RecipeContent = {
   title: "Tomato soup",

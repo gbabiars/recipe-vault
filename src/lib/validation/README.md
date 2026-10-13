@@ -2,11 +2,7 @@
 
 Place shared input and domain validation schemas here as routes and recipe commands are added.
 
-`recipe.ts` is the canonical wire format for recipe create and update commands. Future
-web routes and MCP tools must validate against it before calling recipe-domain services;
-database column names deliberately remain an implementation detail. Create commands
-require at least one ingredient and one step. Update commands are non-empty patches.
-
-`RecipeIngredientInput` contains `displayOrder`, `ingredientName`, optional `amount`,
-and optional `notes`. Amount is free text, trimmed when parsed, and limited to 1-128
-characters when supplied.
+`recipe.ts` defines the canonical stored recipe shape shared by the UI, services,
+repository, API, and MCP adapters. `recipeSchema` validates a complete recipe;
+`recipeContentSchema` validates the same shape without its generated ID. Shared
+tag-name normalization lives in `tag.ts`.

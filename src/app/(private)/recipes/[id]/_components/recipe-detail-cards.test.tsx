@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
-import type { RecipeContent } from "@/lib/validation/recipe-document";
+import type { RecipeContent } from "@/lib/validation/recipe";
 import {
   RecipeDetailsCard,
   RecipeDocumentDetailCards,

@@ -1,10 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
-  recipeDocumentContentSchema,
-  recipeDocumentSchema,
+  recipeContentSchema,
+  recipeSchema,
   type Recipe as ValidatedRecipe,
   type RecipeContent,
-} from "@/lib/validation/recipe-document";
+} from "@/lib/validation/recipe";
 
 export type AuditMetadata = { requestId: string; method: string };
 export type RecipeDocumentSnapshot = { recipe: ValidatedRecipe; revision: number };
@@ -71,7 +71,7 @@ function mapRecipeDocument(row: DatabaseRecipeRow): RecipeDocumentSnapshot {
     ...(row.cook_minutes === null ? {} : { cookMinutes: row.cook_minutes }),
     ...(row.total_minutes === null ? {} : { totalMinutes: row.total_minutes }),
   };
-  const content = recipeDocumentContentSchema.parse({
+  const content = recipeContentSchema.parse({
     title: row.title,
     description: row.description,
     ...(row.yield_amount === null && row.yield_unit === null
@@ -86,7 +86,7 @@ function mapRecipeDocument(row: DatabaseRecipeRow): RecipeDocumentSnapshot {
     ...(row.source_url === null ? {} : { sourceUrl: row.source_url }),
   });
   return {
-    recipe: recipeDocumentSchema.parse({ id: row.id, ...content }),
+    recipe: recipeSchema.parse({ id: row.id, ...content }),
     revision: row.revision,
   };
 }
@@ -99,8 +99,8 @@ function mapWrittenRecipeDocument(
   if (!Number.isSafeInteger(revision) || revision < 1 || revision > 2_147_483_647) {
     throw new Error("Could not load this recipe.");
   }
-  const content = recipeDocumentContentSchema.parse(document);
-  return { recipe: recipeDocumentSchema.parse({ id, ...content }), revision };
+  const content = recipeContentSchema.parse(document);
+  return { recipe: recipeSchema.parse({ id, ...content }), revision };
 }
 
 function mapRecipeDocumentSummary(row: DatabaseRecipeDocumentSummary): RecipeDocumentListSummary {
@@ -209,12 +209,7 @@ export class RecipeRepository {
     expectedRevision: number,
   ): Promise<RecipeDocumentWriteResult> {
     const { id, ...content } = recipe;
-    return this.writeDocument(
-      ownerId,
-      id,
-      recipeDocumentContentSchema.parse(content),
-      expectedRevision,
-    );
+    return this.writeDocument(ownerId, id, recipeContentSchema.parse(content), expectedRevision);
   }
 
   async deleteDocument(

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { RecipeContent } from "../validation/recipe-document";
+import type { RecipeContent } from "../validation/recipe";
 import { RecipeRepository } from "./recipe-repository";
 
 const documentId = "8c0fb550-686a-4a0c-bf8f-690c1359c877";

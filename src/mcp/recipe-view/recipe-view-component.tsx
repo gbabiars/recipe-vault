@@ -7,7 +7,7 @@ import { Inline } from "../../components/ui/inline/inline";
 import { PageContent, PageHeader, PageLayout } from "../../components/ui/page-layout/page-layout";
 import { Stack } from "../../components/ui/stack/stack";
 import { Text } from "../../components/ui/text/text";
-import type { Recipe } from "@/lib/validation/recipe-document";
+import type { Recipe } from "@/lib/validation/recipe";
 
 import "./recipe-view.css";
 

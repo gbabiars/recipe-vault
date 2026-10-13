@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import type { RecipeContent } from "@/lib/validation/recipe-document";
+import type { RecipeContent } from "@/lib/validation/recipe";
 
 import { RecipeDetailsCard } from "./recipe-detail-cards";
 

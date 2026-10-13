@@ -1,4 +1,4 @@
-import { recipeDocumentContentSchema, type RecipeContent } from "@/lib/validation/recipe-document";
+import { recipeContentSchema, type RecipeContent } from "@/lib/validation/recipe";
 
 export type RecipeDocumentFormErrors = Record<string, string>;
 
@@ -95,7 +95,7 @@ export function parseRecipeDocumentFormData(formData: FormData): RecipeDocumentF
     ...(sourceUrl === undefined ? {} : { sourceUrl }),
   };
 
-  const parsed = recipeDocumentContentSchema.safeParse(candidate);
+  const parsed = recipeContentSchema.safeParse(candidate);
   if (!parsed.success) return { success: false, errors: errorMap(parsed.error.issues) };
   return { success: true, data: parsed.data };
 }

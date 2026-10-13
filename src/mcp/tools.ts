@@ -1,14 +1,11 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import type { RecipeContent } from "@/lib/validation/recipe-document";
+import type { RecipeContent } from "@/lib/validation/tag";
 import type { DocumentTagInventoryItem } from "@/lib/db/tag-repository";
 import type { OwnerBoundTagService } from "@/lib/recipes/tag-service";
 import type { OwnerBoundRecipeService } from "@/lib/recipes/recipe-service";
-import {
-  recipeDocumentContentSchema,
-  recipeDocumentSchema,
-} from "@/lib/validation/recipe-document";
-import { tagNameSchema } from "@/lib/validation/recipe";
+import { recipeContentSchema, recipeSchema } from "@/lib/validation/tag";
+import { tagNameSchema } from "@/lib/validation/tag";
 import {
   defaultRateLimiter,
   type RateLimiter,
@@ -87,9 +84,9 @@ const tagCursorSchema = z
 
 const tagNamesInputSchema = z.array(tagNameInput).max(32);
 const tagNamesOutputSchema = z.array(tagNameCanonical).max(32);
-const mcpDocumentInputSchema = recipeDocumentSchema.safeExtend({ tags: tagNamesInputSchema });
-const mcpContentSchema = recipeDocumentContentSchema.safeExtend({ tags: tagNamesInputSchema });
-const mcpDocumentOutputSchema = recipeDocumentSchema.safeExtend({ tags: tagNamesOutputSchema });
+const mcpDocumentInputSchema = recipeSchema.safeExtend({ tags: tagNamesInputSchema });
+const mcpContentSchema = recipeContentSchema.safeExtend({ tags: tagNamesInputSchema });
+const mcpDocumentOutputSchema = recipeSchema.safeExtend({ tags: tagNamesOutputSchema });
 const replaceInputSchema = z
   .object({ recipe: mcpDocumentInputSchema, expectedRevision: z.number().int().positive() })
   .strict();
@@ -261,7 +258,7 @@ export function createRecipeMcpTools(context: McpToolContext) {
       }
     },
     save_recipe: async (raw: unknown) => {
-      const parsed = recipeDocumentContentSchema.safeParse(raw);
+      const parsed = recipeContentSchema.safeParse(raw);
       if (!parsed.success) return text({ error: "Recipe validation failed." }, true);
       if (!allowed(context, true).allowed) return text({ error: "Rate limit exceeded." }, true);
       try {

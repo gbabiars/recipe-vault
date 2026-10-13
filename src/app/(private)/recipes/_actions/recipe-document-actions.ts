@@ -3,11 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
-import {
-  recipeDocumentContentSchema,
-  recipeDocumentSchema,
-  type RecipeContent,
-} from "@/lib/validation/recipe-document";
+import { recipeContentSchema, recipeSchema, type RecipeContent } from "@/lib/validation/recipe";
 import type {
   RecipeDocumentSaveContext,
   RecipeDocumentSaveResult,
@@ -60,7 +56,7 @@ export async function saveRecipeDocumentAction(
   }
 
   if (!hasRecipeId) {
-    const parsedContent = recipeDocumentContentSchema.safeParse(content);
+    const parsedContent = recipeContentSchema.safeParse(content);
     if (!parsedContent.success) {
       return {
         status: "invalid",
@@ -95,7 +91,7 @@ export async function saveRecipeDocumentAction(
     return invalid(["expectedRevision"], "Expected revision must be a positive integer.");
   }
 
-  const parsedRecipe = recipeDocumentSchema.safeParse({ ...content, id: context.recipeId });
+  const parsedRecipe = recipeSchema.safeParse({ ...content, id: context.recipeId });
   if (!parsedRecipe.success) {
     return {
       status: "invalid",

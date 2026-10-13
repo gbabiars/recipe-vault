@@ -1,4 +1,4 @@
-import { tagNameSchema } from "@/lib/validation/recipe";
+import { tagNameSchema } from "@/lib/validation/tag";
 
 export const TAG_PAGE_SIZE = 25;
 
