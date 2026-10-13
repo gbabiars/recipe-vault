@@ -100,6 +100,7 @@ own bounded tasks; no agent represents a feature slice or an entire stage.
 
 ## Change discipline
 
+- Do not refactor production components or modules without explicit user permission.
 - Break plans, implementation prompts, and changes into small iterative steps,
   each with one focused outcome and a way to verify it. Prefer narrow vertical
   slices; split coupled work horizontally when needed. Keep large cross-cutting

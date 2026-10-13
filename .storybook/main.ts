@@ -12,6 +12,7 @@ const config: StorybookConfig = {
   framework: "@storybook/nextjs-vite",
   features: {
     componentsManifest: true,
+    experimentalRSC: true,
   },
 };
 export default config;
