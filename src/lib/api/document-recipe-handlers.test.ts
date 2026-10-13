@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createDocumentRecipeApi } from "./document-recipe-handlers";
+import { createRecipeApi } from "./document-recipe-handlers";
 import type { RecipeContent } from "../validation/recipe";
 import { DocumentReadError, MAX_PDF_BYTES } from "../recipes/read-document";
 import { SourceReadError } from "../recipes/read-source";
@@ -34,8 +34,8 @@ function makeApi(
 ) {
   const calls: Array<{ name: string; args: unknown[] }> = [];
   const service = {
-    listDocumentPage: async (...args: unknown[]) => {
-      calls.push({ name: "listDocumentPage", args });
+    listRecipes: async (...args: unknown[]) => {
+      calls.push({ name: "listRecipes", args });
       return {
         items: [
           {
@@ -52,26 +52,26 @@ function makeApi(
         total: 1,
       };
     },
-    getDocument: async (...args: unknown[]) => {
-      calls.push({ name: "getDocument", args });
+    getRecipe: async (...args: unknown[]) => {
+      calls.push({ name: "getRecipe", args });
       return { recipe, revision: 2 };
     },
-    createDocument: async (...args: unknown[]) => {
-      calls.push({ name: "createDocument", args });
+    createRecipe: async (...args: unknown[]) => {
+      calls.push({ name: "createRecipe", args });
       if (args[1] && typeof args[1] === "object" && "id" in args[1])
         return { status: "invalid", issues: [{ path: ["id"], message: "Unrecognized key." }] };
       return { status: "saved", recipe, revision: 1 };
     },
-    replaceDocument: async (...args: unknown[]) => {
-      calls.push({ name: "replaceDocument", args });
+    replaceRecipe: async (...args: unknown[]) => {
+      calls.push({ name: "replaceRecipe", args });
       return { status: "conflict", revision: 3 };
     },
-    deleteDocument: async (...args: unknown[]) => {
-      calls.push({ name: "deleteDocument", args });
+    deleteRecipe: async (...args: unknown[]) => {
+      calls.push({ name: "deleteRecipe", args });
       return { status: "deleted", recipeId: id, revision: 2 };
     },
   };
-  const api = createDocumentRecipeApi({
+  const api = createRecipeApi({
     getUser: async () =>
       options.user === undefined ? { id: "owner-1" } : options.user ? { id: options.user } : null,
     getService: async () => service as never,
@@ -103,7 +103,7 @@ test("lists document summaries with search, normalized tag filter, and authentic
   );
   assert.equal(response!.status, 200);
   assert.deepEqual(calls[0], {
-    name: "listDocumentPage",
+    name: "listRecipes",
     args: [
       "owner-1",
       {
@@ -129,7 +129,7 @@ test("creates a document content object without accepting an ID from the client"
   const { api, calls } = makeApi();
   const response = await api.create(request("http://test/api/v1/recipes", "POST", content));
   assert.equal(response!.status, 201);
-  assert.equal(calls[0]!.name, "createDocument");
+  assert.equal(calls[0]!.name, "createRecipe");
   assert.deepEqual(calls[0]!.args.slice(0, 2), ["owner-1", content]);
   assert.deepEqual((await response!.json()).data, { recipe, revision: 1 });
 });
@@ -187,7 +187,7 @@ test("rejects an ID in create content and a path/body ID mismatch", async () => 
     422,
   );
   assert.equal(calls.length, 1);
-  assert.equal(calls[0]!.name, "createDocument");
+  assert.equal(calls[0]!.name, "createRecipe");
 });
 
 test("rejects invalid website URLs and safely reports blocked destinations", async () => {
@@ -233,7 +233,7 @@ test("preserves website source URL and allows omitted yield", async () => {
     request("http://test/api/v1/recipes/import", "POST", { url: websiteUrl }),
   );
   assert.equal(response!.status, 201);
-  const createdContent = calls.find((call) => call.name === "createDocument")!
+  const createdContent = calls.find((call) => call.name === "createRecipe")!
     .args[1] as RecipeContent;
   assert.equal(createdContent.sourceUrl, websiteUrl);
   assert.equal("yield" in createdContent, false);
@@ -266,7 +266,7 @@ test("imports PDF content without fabricating yield or source URL", async () => 
     pdfRequest(new File([pdfBytes], "recipe.pdf", { type: "application/pdf" })),
   );
   assert.equal(response!.status, 201);
-  const createdContent = calls.find((call) => call.name === "createDocument")!
+  const createdContent = calls.find((call) => call.name === "createRecipe")!
     .args[1] as RecipeContent;
   assert.equal("yield" in createdContent, false);
   assert.equal("sourceUrl" in createdContent, false);
@@ -305,7 +305,7 @@ test("returns safe PDF timeout and extraction errors", async () => {
   assert.equal(timeoutResponse!.status, 422);
   assert.equal((await timeoutResponse!.json()).error.code, "parse_timeout");
   assert.equal(
-    timedOut.calls.some((call) => call.name === "createDocument"),
+    timedOut.calls.some((call) => call.name === "createRecipe"),
     false,
   );
 
@@ -321,7 +321,7 @@ test("returns safe PDF timeout and extraction errors", async () => {
   assert.equal(failureBody.error.code, "extraction_failed");
   assert.doesNotMatch(JSON.stringify(failureBody), /confidential-name|private recipe source text/);
   assert.equal(
-    extractionFailed.calls.some((call) => call.name === "createDocument"),
+    extractionFailed.calls.some((call) => call.name === "createRecipe"),
     false,
   );
 });

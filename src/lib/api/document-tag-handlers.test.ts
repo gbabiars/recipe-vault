@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createDocumentTagApi } from "./document-tag-handlers";
+import { createRecipeTagApi } from "./document-tag-handlers";
 
 function makeApi(
   options: {
@@ -11,7 +11,7 @@ function makeApi(
   } = {},
 ) {
   const calls: Array<[string, unknown]> = [];
-  const api = createDocumentTagApi({
+  const api = createRecipeTagApi({
     getUser: async () =>
       options.user === null ? null : { id: options.user ?? "authenticated-owner" },
     getService: async () =>

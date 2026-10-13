@@ -2,16 +2,12 @@ import { List, ListItem } from "@/components/ui/list";
 import { SkeletonHeading, SkeletonText, Skeleton } from "@/components/ui/skeleton";
 import { Stack } from "@/components/ui/stack";
 import { Inline } from "@/components/ui/inline";
-import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
+import type { RecipeSummary } from "@/lib/db/recipe-repository";
 
 import { RecipeListItem } from "./recipe-list-item";
 import styles from "./recipe-list.module.css";
 
-export function RecipeList({
-  documentSummaries,
-}: {
-  documentSummaries: RecipeDocumentListSummary[];
-}) {
+export function RecipeList({ documentSummaries }: { documentSummaries: RecipeSummary[] }) {
   return (
     <div className={styles.list}>
       <List aria-label="Recipes">

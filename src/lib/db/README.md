@@ -9,7 +9,7 @@ assemble and validate the existing `Recipe` shape. Writes send complete content
 to an owner-bound database RPC, which atomically creates or revision-checks a
 replacement and returns a transient assembled document with its revision.
 
-`RecipeRepository.listDocumentPage(ownerId, search, tags, offset, limit)` calls
+`RecipeRepository.listRecipes(ownerId, search, tags, offset, limit)` calls
 `recipe_vault_search_recipe_documents`. The invoker function requires an owner
 ID and returns a page plus the pre-pagination total. Its transient document
 payload is mapped through the same validation as row reads. A nonempty search is a
@@ -22,12 +22,11 @@ calls through its owner-bound service. The authenticated RPC grant also stays
 protected by the explicit owner predicate and RLS.
 
 `tag-repository.ts` owns document-derived tag inventory and name replacement.
-`listFromDocuments(ownerId, options)` invokes
+`listTags(ownerId, options)` invokes
 `recipe_vault_list_document_tag_inventory` and returns canonical names with
 exact recipe usage counts. Inventory pages accept one name or usage cursor in
 either direction (`after` or `before`) and return names in the selected display
-order. `replaceDocumentTagName(ownerId, sourceName,
-targetName)` invokes the owner-bound `recipe_vault_replace_document_tag` RPC;
+order. `replaceTagName(ownerId, sourceName, targetName)` invokes the owner-bound `recipe_vault_replace_document_tag` RPC;
 it replaces names across affected documents atomically and collapses duplicates.
 The recipe tag arrays are the only tag source in the target model. There is no
 separate tags or recipe-tags table as an application data source.

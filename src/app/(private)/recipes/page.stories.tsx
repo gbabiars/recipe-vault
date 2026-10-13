@@ -2,11 +2,11 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn, mocked } from "storybook/test";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
-import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
+import type { RecipeSummary } from "@/lib/db/recipe-repository";
 import RecipesPage from "./page";
 
-const listDocumentPage = fn();
-const recipes: RecipeDocumentListSummary[] = Array.from({ length: 53 }, (_, index) => ({
+const listRecipes = fn();
+const recipes: RecipeSummary[] = Array.from({ length: 53 }, (_, index) => ({
   id: `recipe-${index + 1}`,
   title: ["Lemon garlic chicken", "Green goddess salad", "Brown butter banana bread"][index % 3],
   description: "A reliable favorite for the week.",
@@ -27,10 +27,10 @@ const meta = {
   args: { searchParams: Promise.resolve({}) },
   render: (args) => <RecipesPage {...args} />,
   beforeEach: () => {
-    listDocumentPage.mockReset();
+    listRecipes.mockReset();
     mocked(requireUser).mockResolvedValue({ id: "storybook-owner" });
     mocked(getRecipeService).mockResolvedValue({
-      listDocumentPage,
+      listRecipes,
     } as unknown as Awaited<ReturnType<typeof getRecipeService>>);
     globalThis.fetch = async () =>
       Response.json({ data: [{ name: "quick" }, { name: "vegetarian" }] });
@@ -46,7 +46,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Populated: Story = {
   beforeEach: () => {
-    listDocumentPage.mockResolvedValue({ items: recipes.slice(0, 3), total: 3 });
+    listRecipes.mockResolvedValue({ items: recipes.slice(0, 3), total: 3 });
   },
   play: async ({ canvas }) => {
     await expect(await canvas.findByRole("heading", { name: "Your recipes" })).toBeVisible();
@@ -59,7 +59,7 @@ export const Populated: Story = {
     await expect(
       canvas.queryByRole("navigation", { name: "Recipe pages" }),
     ).not.toBeInTheDocument();
-    await expect(listDocumentPage).toHaveBeenCalledWith("storybook-owner", {
+    await expect(listRecipes).toHaveBeenCalledWith("storybook-owner", {
       search: undefined,
       tags: [],
       page: 1,
@@ -70,7 +70,7 @@ export const Populated: Story = {
 
 export const MultiplePages: Story = {
   beforeEach: () => {
-    listDocumentPage.mockImplementation(async (_ownerId, { page, pageSize }) => ({
+    listRecipes.mockImplementation(async (_ownerId, { page, pageSize }) => ({
       items: recipes.slice((page - 1) * pageSize, page * pageSize),
       total: recipes.length,
     }));
@@ -91,7 +91,7 @@ export const FilteredPage: Story = {
     searchParams: Promise.resolve({ q: "soup", tag: ["quick", "vegetarian"], page: "2" }),
   },
   beforeEach: () => {
-    listDocumentPage.mockResolvedValue({ items: recipes.slice(25, 50), total: recipes.length });
+    listRecipes.mockResolvedValue({ items: recipes.slice(25, 50), total: recipes.length });
   },
   play: async ({ canvas, canvasElement }) => {
     await expect(await canvas.findByRole("navigation", { name: "Recipe pages" })).toBeVisible();
@@ -108,7 +108,7 @@ export const FilteredPage: Story = {
       "href",
       "/recipes?q=soup&tag=quick&tag=vegetarian&page=3",
     );
-    await expect(listDocumentPage).toHaveBeenCalledWith("storybook-owner", {
+    await expect(listRecipes).toHaveBeenCalledWith("storybook-owner", {
       search: "soup",
       tags: ["quick", "vegetarian"],
       page: 2,
@@ -120,7 +120,7 @@ export const FilteredPage: Story = {
 export const Empty: Story = {
   args: { searchParams: Promise.resolve({ q: "no matches" }) },
   beforeEach: () => {
-    listDocumentPage.mockResolvedValue({ items: [], total: 0 });
+    listRecipes.mockResolvedValue({ items: [], total: 0 });
   },
   play: async ({ canvas }) => {
     await expect(await canvas.findByRole("heading", { name: "No recipes found" })).toBeVisible();
@@ -137,7 +137,7 @@ export const Empty: Story = {
 
 export const Error: Story = {
   beforeEach: () => {
-    listDocumentPage.mockRejectedValue(new globalThis.Error("Recipe collection unavailable"));
+    listRecipes.mockRejectedValue(new globalThis.Error("Recipe collection unavailable"));
   },
   play: async ({ canvas }) => {
     await expect(await canvas.findByRole("alert")).toHaveTextContent("Recipes could not be loaded");
@@ -150,7 +150,7 @@ export const Error: Story = {
 
 export const Loading: Story = {
   beforeEach: () => {
-    listDocumentPage.mockImplementation(() => new Promise(() => {}));
+    listRecipes.mockImplementation(() => new Promise(() => {}));
   },
   play: async ({ canvas }) => {
     await expect(await canvas.findByRole("status", { name: "Loading recipes" })).toBeVisible();

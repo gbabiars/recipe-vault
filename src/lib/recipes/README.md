@@ -10,7 +10,7 @@ identity, never from recipe content or a request field. The repository maps
 typed database columns, text arrays, and ingredient/equipment JSONB into the
 same validated `Recipe` contract consumed by the UI, HTTP API, and MCP adapters.
 
-`RecipeService.listDocumentPage(ownerId, { search, tags, page, pageSize })`
+`RecipeService.listRecipes(ownerId, { search, tags, page, pageSize })`
 shares literal, case-insensitive substring search across title, description,
 ingredient names, equipment names, and tags with the HTTP and MCP recipe search
 consumers. The whole trimmed phrase must occur in one field. Exact selected

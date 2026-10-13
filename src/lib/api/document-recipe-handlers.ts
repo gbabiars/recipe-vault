@@ -92,7 +92,7 @@ async function readLimitedBody(request: Request, signal: AbortSignal): Promise<U
   return bytes;
 }
 
-export function createDocumentRecipeApi(deps: ApiDependencies) {
+export function createRecipeApi(deps: ApiDependencies) {
   async function context(request: Request, write: boolean) {
     const id = requestId(request);
     const user = await deps.getUser();
@@ -131,10 +131,7 @@ export function createDocumentRecipeApi(deps: ApiDependencies) {
     return responseError(500, "internal_error", "Unable to process this request.", id);
   }
 
-  function mapDocumentResult(
-    result: Awaited<ReturnType<RecipeService["createDocument"]>>,
-    id: string,
-  ) {
+  function mapRecipeResult(result: Awaited<ReturnType<RecipeService["createRecipe"]>>, id: string) {
     if (result.status === "saved")
       return Response.json(
         { data: { recipe: result.recipe, revision: result.revision }, meta: { requestId: id } },
@@ -166,7 +163,7 @@ export function createDocumentRecipeApi(deps: ApiDependencies) {
           query.error.flatten(),
         );
       try {
-        const page = await current.service.listDocumentPage(current.user.id, {
+        const page = await current.service.listRecipes(current.user.id, {
           ...query.data,
           tags: query.data.tag ? [query.data.tag.replace(/ +/g, " ").toLowerCase()] : [],
         });
@@ -193,7 +190,7 @@ export function createDocumentRecipeApi(deps: ApiDependencies) {
       if (!uuidSchema.safeParse(recipeId).success)
         return responseError(422, "invalid_request", "Recipe ID is invalid.", current.id);
       try {
-        const snapshot = await current.service.getDocument(current.user.id, recipeId);
+        const snapshot = await current.service.getRecipe(current.user.id, recipeId);
         return snapshot
           ? Response.json(
               { data: snapshot, meta: { requestId: current.id } },
@@ -215,12 +212,8 @@ export function createDocumentRecipeApi(deps: ApiDependencies) {
         return responseError(400, "invalid_json", "Request body must be valid JSON.", current.id);
       }
       try {
-        return mapDocumentResult(
-          await current.service.createDocument(
-            current.user.id,
-            content,
-            audit(request, current.id),
-          ),
+        return mapRecipeResult(
+          await current.service.createRecipe(current.user.id, content, audit(request, current.id)),
           current.id,
         );
       } catch {
@@ -259,7 +252,7 @@ export function createDocumentRecipeApi(deps: ApiDependencies) {
           current.id,
         );
       try {
-        const result = await current.service.replaceDocument(
+        const result = await current.service.replaceRecipe(
           current.user.id,
           parsed.data.recipe,
           parsed.data.expectedRevision,
@@ -323,7 +316,7 @@ export function createDocumentRecipeApi(deps: ApiDependencies) {
           current.id,
         );
       try {
-        const result = await current.service.deleteDocument(
+        const result = await current.service.deleteRecipe(
           current.user.id,
           recipeId,
           parsed.data.expectedRevision,
@@ -366,12 +359,8 @@ export function createDocumentRecipeApi(deps: ApiDependencies) {
       try {
         validateSourceUrl(parsed.data.url);
         const content = await (deps.importContent ?? importRecipeDocumentContent)(parsed.data.url);
-        return mapDocumentResult(
-          await current.service.createDocument(
-            current.user.id,
-            content,
-            audit(request, current.id),
-          ),
+        return mapRecipeResult(
+          await current.service.createRecipe(current.user.id, content, audit(request, current.id)),
           current.id,
         );
       } catch (error) {
@@ -423,12 +412,8 @@ export function createDocumentRecipeApi(deps: ApiDependencies) {
           AbortSignal.any([deadline, AbortSignal.timeout(30_000)]),
         );
         if (deadline.aborted) throw new SourceReadError("extraction_failed");
-        return mapDocumentResult(
-          await current.service.createDocument(
-            current.user.id,
-            content,
-            audit(request, current.id),
-          ),
+        return mapRecipeResult(
+          await current.service.createRecipe(current.user.id, content, audit(request, current.id)),
           current.id,
         );
       } catch (error) {

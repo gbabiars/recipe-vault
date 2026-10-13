@@ -1,11 +1,11 @@
 import {
   TagRepository,
-  type DocumentTagInventoryOptions,
-  type DocumentTagNameReplacementResult,
+  type TagInventoryOptions,
+  type TagNameReplacementResult,
 } from "@/lib/db/tag-repository";
 import { tagNameSchema } from "@/lib/validation/tag";
 
-export type ReplaceDocumentTagNameInput = {
+export type ReplaceTagNameInput = {
   sourceName: string;
   targetName: string;
 };
@@ -14,18 +14,18 @@ export class TagService {
   constructor(private readonly tags: TagRepository) {}
 
   /** Lists names and usage counts derived from the owner's recipe documents. */
-  listFromRecipes(ownerId: string, options: DocumentTagInventoryOptions) {
-    return this.tags.listFromDocuments(ownerId, options);
+  listFromRecipes(ownerId: string, options: TagInventoryOptions) {
+    return this.tags.listTags(ownerId, options);
   }
 
   replaceNameInRecipes(
     ownerId: string,
-    input: ReplaceDocumentTagNameInput,
-  ): Promise<DocumentTagNameReplacementResult> {
+    input: ReplaceTagNameInput,
+  ): Promise<TagNameReplacementResult> {
     const sourceName = parseCanonicalTagName(input.sourceName);
     const targetName = parseCanonicalTagName(input.targetName);
     if (sourceName === targetName) throw new Error("Source and target tags must differ.");
-    return this.tags.replaceDocumentTagName(ownerId, sourceName, targetName);
+    return this.tags.replaceRecipeTagName(ownerId, sourceName, targetName);
   }
 }
 
@@ -36,11 +36,11 @@ export class OwnerBoundTagService {
     private readonly tags: TagService,
   ) {}
 
-  listFromRecipes(options: DocumentTagInventoryOptions) {
+  listFromRecipes(options: TagInventoryOptions) {
     return this.tags.listFromRecipes(this.ownerId, options);
   }
 
-  replaceNameInRecipes(input: ReplaceDocumentTagNameInput) {
+  replaceNameInRecipes(input: ReplaceTagNameInput) {
     return this.tags.replaceNameInRecipes(this.ownerId, input);
   }
 }

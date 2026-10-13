@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { RecipeDocumentSnapshot } from "@/lib/db/recipe-repository";
+import type { RecipeSnapshot } from "@/lib/db/recipe-repository";
 import { RecipeDocumentForm } from "./recipe-form";
 import { saveRecipeDocumentAction } from "../_actions/recipe-document-actions";
 
@@ -10,7 +10,7 @@ export function RecipeDocumentEditor({
   snapshot,
   returnTo,
 }: {
-  snapshot?: RecipeDocumentSnapshot;
+  snapshot?: RecipeSnapshot;
   returnTo: string;
 }) {
   const router = useRouter();

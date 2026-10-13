@@ -10,7 +10,7 @@ test("document tag inventory delegates owner, search, sort, cursor, and page siz
     hasMore: false,
   };
   const repository = {
-    listFromDocuments: async (ownerId: string, options: Record<string, unknown>) => {
+    listTags: async (ownerId: string, options: Record<string, unknown>) => {
       calls.push({ ownerId, options });
       return expectedPage;
     },
@@ -34,7 +34,7 @@ test("owner-bound document tag inventory uses its verified owner", async () => {
     hasMore: true,
   };
   const repository = {
-    listFromDocuments: async (ownerId: string, options: Record<string, unknown>) => {
+    listTags: async (ownerId: string, options: Record<string, unknown>) => {
       calls.push({ ownerId, options });
       return expectedPage;
     },
@@ -49,7 +49,7 @@ test("owner-bound document tag inventory uses its verified owner", async () => {
 
 test("document tag inventory errors propagate through the service", async () => {
   const repository = {
-    listFromDocuments: async () => {
+    listTags: async () => {
       throw new Error("Could not load tags.");
     },
   } as unknown as TagRepository;

@@ -31,15 +31,15 @@ function body(result: { content: Array<{ text: string }> }) {
 function setup(limiter?: RateLimiter) {
   const calls: unknown[] = [];
   const service = {
-    async listDocumentPage(args: unknown) {
+    async listRecipes(args: unknown) {
       calls.push(args);
       return { items: [{ ...document, revision: 3 }], total: 1 };
     },
-    async getDocument(recipeId: string) {
+    async getRecipe(recipeId: string) {
       calls.push({ recipeId });
       return recipeId === id ? snapshot : null;
     },
-    async createDocument(content: unknown, audit: unknown) {
+    async createRecipe(content: unknown, audit: unknown) {
       calls.push({ content, audit });
       return {
         status: "saved",
@@ -47,7 +47,7 @@ function setup(limiter?: RateLimiter) {
         revision: 1,
       };
     },
-    async replaceDocument(recipe: { id: string }, revision: number, audit: unknown) {
+    async replaceRecipe(recipe: { id: string }, revision: number, audit: unknown) {
       calls.push({ recipe, revision, audit });
       return recipe.id === id ? { status: "conflict", revision: 4 } : { status: "not_found" };
     },

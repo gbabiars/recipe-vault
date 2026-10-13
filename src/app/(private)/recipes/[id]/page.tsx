@@ -10,7 +10,7 @@ import { DocumentRecipePageActions } from "./_components/document-recipe-page-ac
 export default async function RecipePage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
   const { id } = await params;
-  const snapshot = await (await getRecipeService()).getDocument(user.id, id);
+  const snapshot = await (await getRecipeService()).getRecipe(user.id, id);
   if (!snapshot) notFound();
 
   const recipe = snapshot.recipe;

@@ -4,17 +4,13 @@ import { ListItem } from "@/components/ui/list";
 import { Stack } from "@/components/ui/stack";
 import { Text } from "@/components/ui/text";
 import { Clock } from "lucide-react";
-import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
+import type { RecipeSummary } from "@/lib/db/recipe-repository";
 
-export function RecipeListItem({
-  documentSummary,
-}: {
-  documentSummary: RecipeDocumentListSummary;
-}) {
+export function RecipeListItem({ documentSummary }: { documentSummary: RecipeSummary }) {
   return <DocumentRecipeListItem summary={documentSummary} />;
 }
 
-function DocumentRecipeListItem({ summary }: { summary: RecipeDocumentListSummary }) {
+function DocumentRecipeListItem({ summary }: { summary: RecipeSummary }) {
   const timeMetadata = [
     summary.time.prepMinutes !== undefined && `Prep: ${summary.time.prepMinutes} min`,
     summary.time.cookMinutes !== undefined && `Cook: ${summary.time.cookMinutes} min`,

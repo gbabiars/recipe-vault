@@ -1,23 +1,23 @@
 import { RecipeRepository } from "@/lib/db/recipe-repository";
 import type {
   AuditMetadata,
-  RecipeDocumentSnapshot,
-  RecipeDocumentDeleteResult,
-  RecipeDocumentWriteResult,
-  RecipeDocumentPage,
+  RecipeSnapshot,
+  RecipeDeleteResult,
+  RecipeWriteResult,
+  RecipePage,
 } from "@/lib/db/recipe-repository";
 import { recipeContentSchema, recipeSchema } from "@/lib/validation/recipe";
 
-export type RecipeDocumentValidationIssue = {
+export type RecipeValidationIssue = {
   path: Array<string | number>;
   message: string;
 };
 
-export type RecipeDocumentServiceResult =
-  | ({ status: "saved" } & RecipeDocumentSnapshot)
+export type RecipeServiceResult =
+  | ({ status: "saved" } & RecipeSnapshot)
   | { status: "conflict"; revision?: number }
   | { status: "not_found" }
-  | { status: "invalid"; issues: RecipeDocumentValidationIssue[] };
+  | { status: "invalid"; issues: RecipeValidationIssue[] };
 
 function validationIssues(error: { issues: Array<{ path: PropertyKey[]; message: string }> }) {
   return error.issues.map(({ path, message }) => ({
@@ -26,7 +26,7 @@ function validationIssues(error: { issues: Array<{ path: PropertyKey[]; message:
   }));
 }
 
-function mapWriteResult(result: RecipeDocumentWriteResult): RecipeDocumentServiceResult {
+function mapWriteResult(result: RecipeWriteResult): RecipeServiceResult {
   if (result.status === "invalid") {
     return {
       status: "invalid",
@@ -39,7 +39,7 @@ function mapWriteResult(result: RecipeDocumentWriteResult): RecipeDocumentServic
 export class RecipeService {
   constructor(private readonly recipes: RecipeRepository) {}
 
-  listDocumentPage(
+  listRecipes(
     ownerId: string,
     options: {
       search?: string;
@@ -47,8 +47,8 @@ export class RecipeService {
       page: number;
       pageSize: number;
     },
-  ): Promise<RecipeDocumentPage> {
-    return this.recipes.listDocumentPage(
+  ): Promise<RecipePage> {
+    return this.recipes.listRecipes(
       ownerId,
       options.search,
       options.tags,
@@ -56,29 +56,29 @@ export class RecipeService {
       options.pageSize,
     );
   }
-  getDocument(ownerId: string, recipeId: string): Promise<RecipeDocumentSnapshot | null> {
-    return this.recipes.getDocument(ownerId, recipeId);
+  getRecipe(ownerId: string, recipeId: string): Promise<RecipeSnapshot | null> {
+    return this.recipes.getRecipe(ownerId, recipeId);
   }
-  async createDocument(
+  async createRecipe(
     ownerId: string,
     content: unknown,
     audit?: AuditMetadata,
-  ): Promise<RecipeDocumentServiceResult> {
+  ): Promise<RecipeServiceResult> {
     const parsed = recipeContentSchema.safeParse(content);
     if (!parsed.success) return { status: "invalid", issues: validationIssues(parsed.error) };
 
-    const result = mapWriteResult(await this.recipes.createDocument(ownerId, parsed.data));
+    const result = mapWriteResult(await this.recipes.createRecipe(ownerId, parsed.data));
     if (result.status === "saved" && audit) {
       await this.recipes.recordAudit(ownerId, result.recipe.id, "recipe.created", audit);
     }
     return result;
   }
-  async replaceDocument(
+  async replaceRecipe(
     ownerId: string,
     recipe: unknown,
     expectedRevision: number,
     audit?: AuditMetadata,
-  ): Promise<RecipeDocumentServiceResult> {
+  ): Promise<RecipeServiceResult> {
     if (
       !Number.isSafeInteger(expectedRevision) ||
       expectedRevision < 1 ||
@@ -96,19 +96,19 @@ export class RecipeService {
     if (!parsed.success) return { status: "invalid", issues: validationIssues(parsed.error) };
 
     const result = mapWriteResult(
-      await this.recipes.replaceDocument(ownerId, parsed.data, expectedRevision),
+      await this.recipes.replaceRecipe(ownerId, parsed.data, expectedRevision),
     );
     if (result.status === "saved" && audit) {
       await this.recipes.recordAudit(ownerId, parsed.data.id, "recipe.updated", audit);
     }
     return result;
   }
-  async deleteDocument(
+  async deleteRecipe(
     ownerId: string,
     recipeId: string,
     expectedRevision: number,
     audit?: AuditMetadata,
-  ): Promise<RecipeDocumentDeleteResult> {
+  ): Promise<RecipeDeleteResult> {
     if (
       !Number.isSafeInteger(expectedRevision) ||
       expectedRevision < 1 ||
@@ -116,7 +116,7 @@ export class RecipeService {
     ) {
       return { status: "invalid" };
     }
-    return this.recipes.deleteDocument(ownerId, recipeId, expectedRevision, audit);
+    return this.recipes.deleteRecipe(ownerId, recipeId, expectedRevision, audit);
   }
 }
 
@@ -130,23 +130,23 @@ export class OwnerBoundRecipeService {
     private readonly recipes: RecipeService,
   ) {}
 
-  listDocumentPage(options: Parameters<RecipeService["listDocumentPage"]>[1]) {
-    return this.recipes.listDocumentPage(this.ownerId, options);
+  listRecipes(options: Parameters<RecipeService["listRecipes"]>[1]) {
+    return this.recipes.listRecipes(this.ownerId, options);
   }
 
-  getDocument(recipeId: string) {
-    return this.recipes.getDocument(this.ownerId, recipeId);
+  getRecipe(recipeId: string) {
+    return this.recipes.getRecipe(this.ownerId, recipeId);
   }
 
-  createDocument(content: unknown, audit?: AuditMetadata) {
-    return this.recipes.createDocument(this.ownerId, content, audit);
+  createRecipe(content: unknown, audit?: AuditMetadata) {
+    return this.recipes.createRecipe(this.ownerId, content, audit);
   }
 
-  replaceDocument(recipe: unknown, expectedRevision: number, audit?: AuditMetadata) {
-    return this.recipes.replaceDocument(this.ownerId, recipe, expectedRevision, audit);
+  replaceRecipe(recipe: unknown, expectedRevision: number, audit?: AuditMetadata) {
+    return this.recipes.replaceRecipe(this.ownerId, recipe, expectedRevision, audit);
   }
 
-  deleteDocument(recipeId: string, expectedRevision: number, audit?: AuditMetadata) {
-    return this.recipes.deleteDocument(this.ownerId, recipeId, expectedRevision, audit);
+  deleteRecipe(recipeId: string, expectedRevision: number, audit?: AuditMetadata) {
+    return this.recipes.deleteRecipe(this.ownerId, recipeId, expectedRevision, audit);
   }
 }

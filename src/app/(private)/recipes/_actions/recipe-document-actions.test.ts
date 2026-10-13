@@ -9,18 +9,18 @@ if (process.env.RECIPE_DOCUMENT_ACTION_TEST_CHILD === "1") {
   let serviceFailure: Error | null = null;
 
   const service = {
-    createDocument: async (...args: unknown[]) => {
-      calls.push(["createDocument", ...args]);
+    createRecipe: async (...args: unknown[]) => {
+      calls.push(["createRecipe", ...args]);
       if (serviceFailure) throw serviceFailure;
       return activeResult;
     },
-    replaceDocument: async (...args: unknown[]) => {
-      calls.push(["replaceDocument", ...args]);
+    replaceRecipe: async (...args: unknown[]) => {
+      calls.push(["replaceRecipe", ...args]);
       if (serviceFailure) throw serviceFailure;
       return activeResult;
     },
-    deleteDocument: async (...args: unknown[]) => {
-      calls.push(["deleteDocument", ...args]);
+    deleteRecipe: async (...args: unknown[]) => {
+      calls.push(["deleteRecipe", ...args]);
       if (serviceFailure) throw serviceFailure;
       return activeResult;
     },
@@ -71,7 +71,7 @@ if (process.env.RECIPE_DOCUMENT_ACTION_TEST_CHILD === "1") {
     const result = await saveRecipeDocumentAction(content, {});
 
     assert.deepEqual(result, { status: "saved" });
-    assert.deepEqual(calls[0]?.slice(0, 3), ["createDocument", "clerk-owner-a", content]);
+    assert.deepEqual(calls[0]?.slice(0, 3), ["createRecipe", "clerk-owner-a", content]);
     assertAuditMetadata(calls[0]?.[3], "SERVER_ACTION_CREATE");
   });
 
@@ -94,7 +94,7 @@ if (process.env.RECIPE_DOCUMENT_ACTION_TEST_CHILD === "1") {
     assert.ok(result);
     assert.deepEqual(result, { status: "conflict", revision: 8 });
     assert.deepEqual(calls[0]?.slice(0, 4), [
-      "replaceDocument",
+      "replaceRecipe",
       "clerk-owner-a",
       { ...content, id: recipeId },
       7,
@@ -108,7 +108,7 @@ if (process.env.RECIPE_DOCUMENT_ACTION_TEST_CHILD === "1") {
     const result = await deleteRecipeDocumentAction(recipeId, 3);
     assert.ok(result);
     assert.deepEqual(result, { status: "conflict", revision: 4 });
-    assert.deepEqual(calls[0]?.slice(0, 4), ["deleteDocument", "clerk-owner-a", recipeId, 3]);
+    assert.deepEqual(calls[0]?.slice(0, 4), ["deleteRecipe", "clerk-owner-a", recipeId, 3]);
     assertAuditMetadata(calls[0]?.[4], "SERVER_ACTION_DELETE");
   });
 

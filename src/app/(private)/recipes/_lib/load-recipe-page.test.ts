@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { RecipeDocumentPage } from "@/lib/db/recipe-repository";
+import type { RecipePage } from "@/lib/db/recipe-repository";
 import type { RecipeService } from "@/lib/recipes/recipe-service";
 import { loadRecipePage } from "./load-recipe-page";
 
-function reader(responses: RecipeDocumentPage[]) {
+function reader(responses: RecipePage[]) {
   const calls: Array<{ ownerId: string; page: number; pageSize: number }> = [];
-  const service: Pick<RecipeService, "listDocumentPage"> = {
-    listDocumentPage: async (ownerId, options) => {
+  const service: Pick<RecipeService, "listRecipes"> = {
+    listRecipes: async (ownerId, options) => {
       calls.push({ ownerId, page: options.page, pageSize: options.pageSize });
       const result = responses.shift();
       if (!result) throw new Error("Unexpected page query");
@@ -18,7 +18,7 @@ function reader(responses: RecipeDocumentPage[]) {
 }
 
 test("rechecks the last page when recipes disappear between queries", async () => {
-  const lastFive = [{ id: "recipe-26" }] as RecipeDocumentPage["items"];
+  const lastFive = [{ id: "recipe-26" }] as RecipePage["items"];
   const { calls, service } = reader([
     { items: [], total: 53 },
     { items: [], total: 30 },
@@ -43,7 +43,7 @@ test("rechecks the last page when recipes disappear between queries", async () =
 });
 
 test("falls back to page 1 when counts keep shrinking", async () => {
-  const firstTen = [{ id: "recipe-1" }] as RecipeDocumentPage["items"];
+  const firstTen = [{ id: "recipe-1" }] as RecipePage["items"];
   const { calls, service } = reader([
     { items: [], total: 53 },
     { items: [], total: 30 },
@@ -66,7 +66,7 @@ test("falls back to page 1 when counts keep shrinking", async () => {
 });
 
 test("guards the database offset for a huge valid page", async () => {
-  const lastThree = [{ id: "recipe-51" }] as RecipeDocumentPage["items"];
+  const lastThree = [{ id: "recipe-51" }] as RecipePage["items"];
   const { calls, service } = reader([
     { items: [], total: 53 },
     { items: lastThree, total: 53 },

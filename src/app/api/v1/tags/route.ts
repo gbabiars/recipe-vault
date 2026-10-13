@@ -1,8 +1,8 @@
 import { getAuthenticatedUser } from "@/lib/auth/require-user";
 import { getTagService } from "@/lib/recipes";
-import { createDocumentTagApi } from "@/lib/api/document-tag-handlers";
+import { createRecipeTagApi } from "@/lib/api/document-tag-handlers";
 
-const api = createDocumentTagApi({
+const api = createRecipeTagApi({
   getUser: getAuthenticatedUser,
   getService: getTagService,
 });

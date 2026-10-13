@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { RecipeContent } from "@/lib/validation/tag";
-import type { DocumentTagInventoryItem } from "@/lib/db/tag-repository";
+import type { TagInventoryItem } from "@/lib/db/tag-repository";
 import type { OwnerBoundTagService } from "@/lib/recipes/tag-service";
 import type { OwnerBoundRecipeService } from "@/lib/recipes/recipe-service";
 import { recipeContentSchema, recipeSchema } from "@/lib/validation/tag";
@@ -147,7 +147,7 @@ function decodeCursor(
   }
 }
 
-function encodeCursor(fingerprint: string, tag: DocumentTagInventoryItem, sort: string) {
+function encodeCursor(fingerprint: string, tag: TagInventoryItem, sort: string) {
   return Buffer.from(
     JSON.stringify({
       version: 1,
@@ -220,7 +220,7 @@ export function createRecipeMcpTools(context: McpToolContext) {
       if (!parsed.success) return text({ error: "Invalid search input." }, true);
       if (!allowed(context, false).allowed) return text({ error: "Rate limit exceeded." }, true);
       try {
-        const page = await context.service.listDocumentPage({
+        const page = await context.service.listRecipes({
           search: parsed.data.query,
           tags: parsed.data.tags.map((tag) => tagNameSchema.parse(tag)),
           page: 1,
@@ -249,7 +249,7 @@ export function createRecipeMcpTools(context: McpToolContext) {
       if (!parsed.success) return text({ error: "Recipe not found." }, true);
       if (!allowed(context, false).allowed) return text({ error: "Rate limit exceeded." }, true);
       try {
-        const snapshot = await context.service.getDocument(parsed.data.recipeId);
+        const snapshot = await context.service.getRecipe(parsed.data.recipeId);
         if (!snapshot) return text({ error: "Recipe not found." }, true);
         const output = mcpGetRecipeOutputSchema.parse(snapshot);
         return { ...text(output), structuredContent: output };
@@ -262,7 +262,7 @@ export function createRecipeMcpTools(context: McpToolContext) {
       if (!parsed.success) return text({ error: "Recipe validation failed." }, true);
       if (!allowed(context, true).allowed) return text({ error: "Rate limit exceeded." }, true);
       try {
-        const result = await context.service.createDocument(parsed.data as RecipeContent, {
+        const result = await context.service.createRecipe(parsed.data as RecipeContent, {
           requestId: context.requestId,
           method: "MCP save_recipe",
         });
@@ -290,7 +290,7 @@ export function createRecipeMcpTools(context: McpToolContext) {
       if (!parsed.success) return text({ error: "Recipe validation failed." }, true);
       if (!allowed(context, true).allowed) return text({ error: "Rate limit exceeded." }, true);
       try {
-        const result = await context.service.replaceDocument(
+        const result = await context.service.replaceRecipe(
           parsed.data.recipe,
           parsed.data.expectedRevision,
           { requestId: context.requestId, method: "MCP replace_recipe" },

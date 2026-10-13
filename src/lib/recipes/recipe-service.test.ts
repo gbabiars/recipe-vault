@@ -20,29 +20,29 @@ test("document service forwards owner and revision for read and replacement", as
   const calls: unknown[][] = [];
   const snapshot = { recipe: { id: documentId, ...validDocumentContent }, revision: 4 };
   const repository = {
-    getDocument: async (ownerId: string, id: string) => {
-      calls.push(["getDocument", ownerId, id]);
+    getRecipe: async (ownerId: string, id: string) => {
+      calls.push(["getRecipe", ownerId, id]);
       return snapshot;
     },
-    replaceDocument: async (ownerId: string, recipe: unknown, revision: number) => {
-      calls.push(["replaceDocument", ownerId, recipe, revision]);
+    replaceRecipe: async (ownerId: string, recipe: unknown, revision: number) => {
+      calls.push(["replaceRecipe", ownerId, recipe, revision]);
       return { status: "conflict", revision: 5 } as const;
     },
   };
   const service = new RecipeService(repository as never);
 
-  const current = await service.getDocument("owner-a", documentId);
+  const current = await service.getRecipe("owner-a", documentId);
   assert.deepEqual(current, snapshot);
-  const result = await service.replaceDocument(
+  const result = await service.replaceRecipe(
     "owner-a",
     { ...current!.recipe, title: "Updated shortbread" },
     current!.revision,
   );
 
   assert.deepEqual(calls, [
-    ["getDocument", "owner-a", documentId],
+    ["getRecipe", "owner-a", documentId],
     [
-      "replaceDocument",
+      "replaceRecipe",
       "owner-a",
       { id: documentId, ...validDocumentContent, title: "Updated shortbread" },
       4,
@@ -55,7 +55,7 @@ test("document list service translates pages into offsets and binds the owner", 
   const calls: unknown[][] = [];
   const page = { items: [], total: 0 };
   const repository = {
-    listDocumentPage: async (
+    listRecipes: async (
       ownerId: string,
       search: string | undefined,
       tags: string[],
@@ -70,7 +70,7 @@ test("document list service translates pages into offsets and binds the owner", 
   const boundService = new OwnerBoundRecipeService("verified-owner", service);
 
   assert.deepEqual(
-    await boundService.listDocumentPage({
+    await boundService.listRecipes({
       search: "rice",
       tags: ["weeknight"],
       page: 3,
@@ -84,27 +84,27 @@ test("document list service translates pages into offsets and binds the owner", 
 test("document service rejects invalid content before repository writes", async () => {
   let writeCalls = 0;
   const repository = {
-    createDocument: async () => {
+    createRecipe: async () => {
       writeCalls++;
       return { status: "saved", recipe: { id: documentId, ...validDocumentContent }, revision: 1 };
     },
-    replaceDocument: async () => {
+    replaceRecipe: async () => {
       writeCalls++;
       return { status: "saved", recipe: { id: documentId, ...validDocumentContent }, revision: 2 };
     },
   };
   const service = new RecipeService(repository as never);
 
-  const createWithClientId = await service.createDocument("owner-a", {
+  const createWithClientId = await service.createRecipe("owner-a", {
     id: documentId,
     ...validDocumentContent,
   });
-  const replaceWithBadYield = await service.replaceDocument(
+  const replaceWithBadYield = await service.replaceRecipe(
     "owner-a",
     { id: documentId, ...validDocumentContent, yield: { amount: 0, unit: "cookies" } },
     1,
   );
-  const replaceWithBadRevision = await service.replaceDocument(
+  const replaceWithBadRevision = await service.replaceRecipe(
     "owner-a",
     { id: documentId, ...validDocumentContent },
     0,
@@ -119,7 +119,7 @@ test("document service rejects invalid content before repository writes", async 
 test("document create forwards validated content and owner and returns saved snapshot", async () => {
   const calls: unknown[][] = [];
   const repository = {
-    createDocument: async (ownerId: string, content: unknown) => {
+    createRecipe: async (ownerId: string, content: unknown) => {
       calls.push([ownerId, content]);
       return {
         status: "saved",
@@ -130,7 +130,7 @@ test("document create forwards validated content and owner and returns saved sna
   };
   const service = new RecipeService(repository as never);
 
-  const result = await service.createDocument("owner-a", validDocumentContent);
+  const result = await service.createRecipe("owner-a", validDocumentContent);
 
   assert.deepEqual(calls, [["owner-a", validDocumentContent]]);
   assert.deepEqual(result, {
@@ -143,12 +143,12 @@ test("document create forwards validated content and owner and returns saved sna
 test("saved document create and replacement record owner-bound audit events", async () => {
   const auditCalls: unknown[][] = [];
   const repository = {
-    createDocument: async () => ({
+    createRecipe: async () => ({
       status: "saved",
       recipe: { id: documentId, ...validDocumentContent },
       revision: 1,
     }),
-    replaceDocument: async (_ownerId: string, recipe: { id: string }) => ({
+    replaceRecipe: async (_ownerId: string, recipe: { id: string }) => ({
       status: "saved",
       recipe: { ...recipe, ...validDocumentContent },
       revision: 2,
@@ -160,8 +160,8 @@ test("saved document create and replacement record owner-bound audit events", as
   const service = new RecipeService(repository as never);
   const audit = { requestId: "request-123", method: "PUT" };
 
-  const created = await service.createDocument("owner-a", validDocumentContent, audit);
-  const replaced = await service.replaceDocument(
+  const created = await service.createRecipe("owner-a", validDocumentContent, audit);
+  const replaced = await service.replaceRecipe(
     "owner-a",
     { id: documentId, ...validDocumentContent, title: "Updated shortbread" },
     1,
@@ -182,8 +182,8 @@ test("document invalid, conflict, and not-found outcomes do not record audit eve
   let outcomeIndex = 0;
   const document = { id: documentId, ...validDocumentContent };
   const repository = {
-    createDocument: async () => ({ status: "not_found" as const }),
-    replaceDocument: async (_ownerId: string, _recipe: unknown, _revision: number) => ({
+    createRecipe: async () => ({ status: "not_found" as const }),
+    replaceRecipe: async (_ownerId: string, _recipe: unknown, _revision: number) => ({
       status: outcomes[outcomeIndex++],
     }),
     recordAudit: async (...args: unknown[]) => {
@@ -194,12 +194,12 @@ test("document invalid, conflict, and not-found outcomes do not record audit eve
   const audit = { requestId: "request-456", method: "PUT" };
 
   assert.equal(
-    (await service.createDocument("owner-a", validDocumentContent, audit)).status,
+    (await service.createRecipe("owner-a", validDocumentContent, audit)).status,
     "not_found",
   );
-  assert.equal((await service.replaceDocument("owner-a", document, 1, audit)).status, "invalid");
-  assert.equal((await service.replaceDocument("owner-a", document, 1, audit)).status, "conflict");
-  assert.equal((await service.replaceDocument("owner-a", document, 1, audit)).status, "not_found");
+  assert.equal((await service.replaceRecipe("owner-a", document, 1, audit)).status, "invalid");
+  assert.equal((await service.replaceRecipe("owner-a", document, 1, audit)).status, "conflict");
+  assert.equal((await service.replaceRecipe("owner-a", document, 1, audit)).status, "not_found");
   assert.deepEqual(auditCalls, []);
 });
 
@@ -208,7 +208,7 @@ test("document delete forwards owner, revision, and atomic audit metadata withou
   let auditRpcCalls = 0;
   const audit = { requestId: "delete-request", method: "DELETE" };
   const repository = {
-    deleteDocument: async (
+    deleteRecipe: async (
       ownerId: string,
       recipeId: string,
       revision: number,
@@ -224,7 +224,7 @@ test("document delete forwards owner, revision, and atomic audit metadata withou
   const service = new RecipeService(repository as never);
   const bound = new OwnerBoundRecipeService("verified-owner", service);
 
-  const result = await bound.deleteDocument(documentId, 5, audit);
+  const result = await bound.deleteRecipe(documentId, 5, audit);
 
   assert.deepEqual(result, { status: "deleted", recipeId: documentId, revision: 5 });
   assert.deepEqual(calls, [["verified-owner", documentId, 5, audit]]);
@@ -239,7 +239,7 @@ test("document delete conflict and missing outcomes do not trigger separate audi
   let deleteCalls = 0;
   let auditCalls = 0;
   const repository = {
-    deleteDocument: async () => {
+    deleteRecipe: async () => {
       deleteCalls++;
       return nextResult;
     },
@@ -250,15 +250,15 @@ test("document delete conflict and missing outcomes do not trigger separate audi
   const service = new RecipeService(repository as never);
   const audit = { requestId: "delete-request", method: "DELETE" };
 
-  assert.deepEqual(await service.deleteDocument("owner-a", documentId, 5, audit), {
+  assert.deepEqual(await service.deleteRecipe("owner-a", documentId, 5, audit), {
     status: "conflict",
     revision: 6,
   });
   nextResult = { status: "not_found" };
-  assert.deepEqual(await service.deleteDocument("owner-a", documentId, 5, audit), {
+  assert.deepEqual(await service.deleteRecipe("owner-a", documentId, 5, audit), {
     status: "not_found",
   });
-  assert.deepEqual(await service.deleteDocument("owner-a", documentId, 0, audit), {
+  assert.deepEqual(await service.deleteRecipe("owner-a", documentId, 0, audit), {
     status: "invalid",
   });
   assert.equal(deleteCalls, 2);

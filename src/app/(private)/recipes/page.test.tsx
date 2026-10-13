@@ -5,14 +5,14 @@ import { RecipeFilters } from "./_components/recipe-filters";
 import { RecipesHeaderActions } from "./_components/recipes-header-actions";
 import RecipesPage from "./page";
 
-const { replaceMock, listDocumentPageMock } = vi.hoisted(() => ({
+const { replaceMock, listRecipesMock } = vi.hoisted(() => ({
   replaceMock: vi.fn(),
-  listDocumentPageMock: vi.fn(),
+  listRecipesMock: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: replaceMock }) }));
 vi.mock("@/lib/auth/require-user", () => ({ requireUser: async () => ({ id: "owner-ada" }) }));
 vi.mock("@/lib/recipes", () => ({
-  getRecipeService: async () => ({ listDocumentPage: listDocumentPageMock }),
+  getRecipeService: async () => ({ listRecipes: listRecipesMock }),
 }));
 
 const allRecipes = Array.from({ length: 53 }, (_, index) => ({
@@ -38,7 +38,7 @@ function listedRecipes() {
 }
 
 beforeEach(() => {
-  listDocumentPageMock.mockReset();
+  listRecipesMock.mockReset();
   replaceMock.mockReset();
 });
 afterEach(() => cleanup());
@@ -84,7 +84,7 @@ test("keeps website and PDF import available in the recipe menu", async () => {
 });
 
 test("limits results to 25 and moves through pages in recipe order", async () => {
-  listDocumentPageMock.mockImplementation(async (_ownerId, { page, pageSize }) => ({
+  listRecipesMock.mockImplementation(async (_ownerId, { page, pageSize }) => ({
     items: allRecipes.slice((page - 1) * pageSize, page * pageSize),
     total: allRecipes.length,
   }));
@@ -94,7 +94,7 @@ test("limits results to 25 and moves through pages in recipe order", async () =>
   expect(listedRecipes()[0]).toHaveTextContent("Recipe 1");
   expect(screen.getByText("Page 1 of 3 · 53 recipes")).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Next" })).toHaveAttribute("href", "/recipes?page=2");
-  expect(listDocumentPageMock).toHaveBeenCalledWith("owner-ada", {
+  expect(listRecipesMock).toHaveBeenCalledWith("owner-ada", {
     search: undefined,
     tags: [],
     page: 1,
@@ -117,7 +117,7 @@ test("limits results to 25 and moves through pages in recipe order", async () =>
 });
 
 test("keeps search and repeated tags in page links", async () => {
-  listDocumentPageMock.mockResolvedValue({ items: allRecipes.slice(25, 50), total: 53 });
+  listRecipesMock.mockResolvedValue({ items: allRecipes.slice(25, 50), total: 53 });
   await renderPage({ q: "soup", tag: ["quick", "vegetarian"], page: "2" });
 
   expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute(
@@ -128,7 +128,7 @@ test("keeps search and repeated tags in page links", async () => {
     "href",
     "/recipes?q=soup&tag=quick&tag=vegetarian&page=3",
   );
-  expect(listDocumentPageMock).toHaveBeenCalledWith("owner-ada", {
+  expect(listRecipesMock).toHaveBeenCalledWith("owner-ada", {
     search: "soup",
     tags: ["quick", "vegetarian"],
     page: 2,
@@ -137,7 +137,7 @@ test("keeps search and repeated tags in page links", async () => {
 });
 
 test("shows all matches without navigation when they fit on one page", async () => {
-  listDocumentPageMock.mockResolvedValue({ items: allRecipes.slice(0, 25), total: 25 });
+  listRecipesMock.mockResolvedValue({ items: allRecipes.slice(0, 25), total: 25 });
   await renderPage();
 
   expect(listedRecipes()).toHaveLength(25);
@@ -145,14 +145,14 @@ test("shows all matches without navigation when they fit on one page", async () 
 });
 
 test("invalid pages start at page 1 and stale pages show the last page", async () => {
-  listDocumentPageMock.mockImplementation(async (_ownerId, { page, pageSize }) => ({
+  listRecipesMock.mockImplementation(async (_ownerId, { page, pageSize }) => ({
     items: allRecipes.slice((page - 1) * pageSize, page * pageSize),
     total: allRecipes.length,
   }));
 
   await renderPage({ page: ["2", "3"] });
   expect(listedRecipes()[0]).toHaveTextContent("Recipe 1");
-  expect(listDocumentPageMock).toHaveBeenLastCalledWith("owner-ada", {
+  expect(listRecipesMock).toHaveBeenLastCalledWith("owner-ada", {
     search: undefined,
     tags: [],
     page: 1,
@@ -164,7 +164,7 @@ test("invalid pages start at page 1 and stale pages show the last page", async (
   expect(listedRecipes()).toHaveLength(3);
   expect(listedRecipes()[0]).toHaveTextContent("Recipe 51");
   expect(screen.getByText("Page 3 of 3 · 53 recipes")).toBeInTheDocument();
-  expect(listDocumentPageMock).toHaveBeenLastCalledWith("owner-ada", {
+  expect(listRecipesMock).toHaveBeenLastCalledWith("owner-ada", {
     search: undefined,
     tags: [],
     page: 3,
@@ -173,7 +173,7 @@ test("invalid pages start at page 1 and stale pages show the last page", async (
 });
 
 test("large valid pages never send an out-of-range database offset", async () => {
-  listDocumentPageMock.mockImplementation(async (_ownerId, { page, pageSize }) => {
+  listRecipesMock.mockImplementation(async (_ownerId, { page, pageSize }) => {
     expect((page - 1) * pageSize).toBeLessThanOrEqual(2_147_483_647);
     return {
       items: allRecipes.slice((page - 1) * pageSize, page * pageSize),
@@ -182,26 +182,26 @@ test("large valid pages never send an out-of-range database offset", async () =>
   });
 
   await renderPage({ page: "85899346" });
-  expect(listDocumentPageMock).toHaveBeenNthCalledWith(
+  expect(listRecipesMock).toHaveBeenNthCalledWith(
     1,
     "owner-ada",
     expect.objectContaining({ page: 85_899_346, pageSize: 25 }),
   );
-  expect(listDocumentPageMock).toHaveBeenNthCalledWith(
+  expect(listRecipesMock).toHaveBeenNthCalledWith(
     2,
     "owner-ada",
     expect.objectContaining({ page: 3, pageSize: 25 }),
   );
   cleanup();
-  listDocumentPageMock.mockClear();
+  listRecipesMock.mockClear();
 
   await renderPage({ page: "9007199254740991" });
-  expect(listDocumentPageMock).toHaveBeenNthCalledWith(
+  expect(listRecipesMock).toHaveBeenNthCalledWith(
     1,
     "owner-ada",
     expect.objectContaining({ page: 1, pageSize: 25 }),
   );
-  expect(listDocumentPageMock).toHaveBeenNthCalledWith(
+  expect(listRecipesMock).toHaveBeenNthCalledWith(
     2,
     "owner-ada",
     expect.objectContaining({ page: 3, pageSize: 25 }),
@@ -210,13 +210,13 @@ test("large valid pages never send an out-of-range database offset", async () =>
 });
 
 test("keeps the empty and error states without page navigation", async () => {
-  listDocumentPageMock.mockResolvedValue({ items: [], total: 0 });
+  listRecipesMock.mockResolvedValue({ items: [], total: 0 });
   render(await RecipesPage({ searchParams: Promise.resolve({ q: "absent", page: "8" }) }));
   expect(await screen.findByRole("heading", { name: "No recipes found" })).toBeInTheDocument();
   expect(screen.queryByRole("navigation", { name: "Recipe pages" })).not.toBeInTheDocument();
 
   cleanup();
-  listDocumentPageMock.mockRejectedValue(new Error("unavailable"));
+  listRecipesMock.mockRejectedValue(new Error("unavailable"));
   render(await RecipesPage({ searchParams: Promise.resolve({}) }));
   expect(await screen.findByText("Recipes could not be loaded")).toBeInTheDocument();
   expect(screen.queryByRole("navigation", { name: "Recipe pages" })).not.toBeInTheDocument();

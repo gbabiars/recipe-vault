@@ -7,7 +7,7 @@ import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout
 export default async function EditRecipePage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
   const { id } = await params;
-  const snapshot = await (await getRecipeService()).getDocument(user.id, id);
+  const snapshot = await (await getRecipeService()).getRecipe(user.id, id);
   if (!snapshot) notFound();
   return (
     <PageLayout>

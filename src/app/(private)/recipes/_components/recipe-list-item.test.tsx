@@ -1,10 +1,10 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
-import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
+import type { RecipeSummary } from "@/lib/db/recipe-repository";
 import { List } from "@/components/ui/list";
 import { RecipeListItem } from "./recipe-list-item";
 
-const documentSummary: RecipeDocumentListSummary = {
+const documentSummary: RecipeSummary = {
   id: "orange-shortbread",
   title: "Orange shortbread",
   description: "Crisp cookies with orange zest.",

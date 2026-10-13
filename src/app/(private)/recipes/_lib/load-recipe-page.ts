@@ -1,7 +1,7 @@
 import type { RecipeService } from "@/lib/recipes/recipe-service";
 import { MAX_RECIPE_PAGE_WITH_DB_OFFSET, RECIPE_PAGE_SIZE } from "./recipe-pagination";
 
-type RecipePageReader = Pick<RecipeService, "listDocumentPage">;
+type RecipePageReader = Pick<RecipeService, "listRecipes">;
 
 function pageCount(total: number) {
   return Math.min(MAX_RECIPE_PAGE_WITH_DB_OFFSET, Math.max(1, Math.ceil(total / RECIPE_PAGE_SIZE)));
@@ -21,7 +21,7 @@ export async function loadRecipePage(
   },
 ) {
   const options = { search, tags, pageSize: RECIPE_PAGE_SIZE };
-  const loadPage = (page: number) => recipeService.listDocumentPage(ownerId, { ...options, page });
+  const loadPage = (page: number) => recipeService.listRecipes(ownerId, { ...options, page });
 
   let page = requestedPage > MAX_RECIPE_PAGE_WITH_DB_OFFSET ? 1 : requestedPage;
   let result = await loadPage(page);

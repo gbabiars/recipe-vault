@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
+import type { RecipeSummary } from "@/lib/db/recipe-repository";
 import { List } from "@/components/ui/list";
 
 import { RecipeListItem } from "./recipe-list-item";
 
-const documentSummary: RecipeDocumentListSummary = {
+const documentSummary: RecipeSummary = {
   id: "tomato-soup",
   title: "Tomato soup",
   description: "A simple soup with fresh basil.",

@@ -7,18 +7,18 @@ import {
 } from "@/lib/validation/recipe";
 
 export type AuditMetadata = { requestId: string; method: string };
-export type RecipeDocumentSnapshot = { recipe: ValidatedRecipe; revision: number };
-export type RecipeDocumentListSummary = Pick<
+export type RecipeSnapshot = { recipe: ValidatedRecipe; revision: number };
+export type RecipeSummary = Pick<
   ValidatedRecipe,
   "id" | "title" | "description" | "yield" | "time" | "tags"
 > & { revision: number; createdAt: string; updatedAt: string };
-export type RecipeDocumentPage = { items: RecipeDocumentListSummary[]; total: number };
-export type RecipeDocumentWriteResult =
-  | ({ status: "saved" } & RecipeDocumentSnapshot)
+export type RecipePage = { items: RecipeSummary[]; total: number };
+export type RecipeWriteResult =
+  | ({ status: "saved" } & RecipeSnapshot)
   | { status: "conflict"; revision?: number }
   | { status: "not_found" }
   | { status: "invalid" };
-export type RecipeDocumentDeleteResult =
+export type RecipeDeleteResult =
   | { status: "deleted"; recipeId: string; revision: number }
   | { status: "conflict"; revision: number }
   | { status: "not_found" }
@@ -42,7 +42,7 @@ type DatabaseRecipeRow = {
   equipment: unknown;
 };
 
-type DatabaseRecipeDocumentSummary = {
+type DatabaseRecipeSummary = {
   id: string;
   document: unknown;
   revision: number;
@@ -50,19 +50,19 @@ type DatabaseRecipeDocumentSummary = {
   updated_at: string;
 };
 
-type RecipeDocumentSearchRpcResult = {
+type RecipeSearchRpcResult = {
   items: unknown;
   total: unknown;
 };
 
-type RecipeDocumentWriteRpcResult = {
-  status: RecipeDocumentWriteResult["status"];
+type RecipeWriteRpcResult = {
+  status: RecipeWriteResult["status"];
   recipe_id: string | null;
   revision: number | null;
   document: unknown | null;
 };
 
-function mapRecipeDocument(row: DatabaseRecipeRow): RecipeDocumentSnapshot {
+function mapRecipe(row: DatabaseRecipeRow): RecipeSnapshot {
   if (!Number.isSafeInteger(row.revision) || row.revision < 1 || row.revision > 2_147_483_647) {
     throw new Error("Could not load this recipe.");
   }
@@ -91,11 +91,7 @@ function mapRecipeDocument(row: DatabaseRecipeRow): RecipeDocumentSnapshot {
   };
 }
 
-function mapWrittenRecipeDocument(
-  id: string,
-  revision: number,
-  document: unknown,
-): RecipeDocumentSnapshot {
+function mapWrittenRecipe(id: string, revision: number, document: unknown): RecipeSnapshot {
   if (!Number.isSafeInteger(revision) || revision < 1 || revision > 2_147_483_647) {
     throw new Error("Could not load this recipe.");
   }
@@ -103,8 +99,8 @@ function mapWrittenRecipeDocument(
   return { recipe: recipeSchema.parse({ id, ...content }), revision };
 }
 
-function mapRecipeDocumentSummary(row: DatabaseRecipeDocumentSummary): RecipeDocumentListSummary {
-  const { recipe } = mapWrittenRecipeDocument(row.id, row.revision, row.document);
+function mapRecipeSummary(row: DatabaseRecipeSummary): RecipeSummary {
+  const { recipe } = mapWrittenRecipe(row.id, row.revision, row.document);
   return {
     id: recipe.id,
     title: recipe.title,
@@ -122,7 +118,7 @@ function mapRecipeDocumentSummary(row: DatabaseRecipeDocumentSummary): RecipeDoc
 export class RecipeRepository {
   constructor(private readonly client: SupabaseClient) {}
 
-  async getDocument(ownerId: string, id: string): Promise<RecipeDocumentSnapshot | null> {
+  async getRecipe(ownerId: string, id: string): Promise<RecipeSnapshot | null> {
     const { data, error } = await this.client
       .from("recipes")
       .select(
@@ -132,16 +128,16 @@ export class RecipeRepository {
       .eq("id", id)
       .maybeSingle();
     if (error) throw new Error("Could not load this recipe.");
-    return data ? mapRecipeDocument(data as DatabaseRecipeRow) : null;
+    return data ? mapRecipe(data as DatabaseRecipeRow) : null;
   }
 
-  async listDocumentPage(
+  async listRecipes(
     ownerId: string,
     search: string | undefined,
     tags: string[],
     offset: number,
     limit: number,
-  ): Promise<RecipeDocumentPage> {
+  ): Promise<RecipePage> {
     const { data, error } = await this.client.rpc("recipe_vault_search_recipe_documents", {
       target_owner_id: ownerId,
       target_search: search ?? null,
@@ -153,7 +149,7 @@ export class RecipeRepository {
     if (!data || typeof data !== "object" || Array.isArray(data)) {
       throw new Error("Could not load recipes.");
     }
-    const result = data as RecipeDocumentSearchRpcResult;
+    const result = data as RecipeSearchRpcResult;
     if (
       !Array.isArray(result.items) ||
       !Number.isSafeInteger(result.total) ||
@@ -162,7 +158,7 @@ export class RecipeRepository {
       throw new Error("Could not load recipes.");
     }
     return {
-      items: (result.items as DatabaseRecipeDocumentSummary[]).map(mapRecipeDocumentSummary),
+      items: (result.items as DatabaseRecipeSummary[]).map(mapRecipeSummary),
       total: result.total as number,
     };
   }
@@ -172,7 +168,7 @@ export class RecipeRepository {
     id: string | null,
     content: RecipeContent,
     expectedRevision: number | null,
-  ): Promise<RecipeDocumentWriteResult> {
+  ): Promise<RecipeWriteResult> {
     const { data, error } = await this.client.rpc("recipe_vault_write_recipe_document", {
       target_owner_id: ownerId,
       target_recipe_id: id,
@@ -181,7 +177,7 @@ export class RecipeRepository {
     });
     if (error) throw new Error("Could not save this recipe.");
 
-    const result = (Array.isArray(data) ? data[0] : data) as RecipeDocumentWriteRpcResult | null;
+    const result = (Array.isArray(data) ? data[0] : data) as RecipeWriteRpcResult | null;
     if (!result || !["saved", "conflict", "not_found", "invalid"].includes(result.status)) {
       throw new Error("Could not save this recipe.");
     }
@@ -195,29 +191,29 @@ export class RecipeRepository {
     }
     return {
       status: "saved",
-      ...mapWrittenRecipeDocument(result.recipe_id, result.revision, result.document),
+      ...mapWrittenRecipe(result.recipe_id, result.revision, result.document),
     };
   }
 
-  createDocument(ownerId: string, content: RecipeContent): Promise<RecipeDocumentWriteResult> {
+  createRecipe(ownerId: string, content: RecipeContent): Promise<RecipeWriteResult> {
     return this.writeDocument(ownerId, null, content, null);
   }
 
-  replaceDocument(
+  replaceRecipe(
     ownerId: string,
     recipe: ValidatedRecipe,
     expectedRevision: number,
-  ): Promise<RecipeDocumentWriteResult> {
+  ): Promise<RecipeWriteResult> {
     const { id, ...content } = recipe;
     return this.writeDocument(ownerId, id, recipeContentSchema.parse(content), expectedRevision);
   }
 
-  async deleteDocument(
+  async deleteRecipe(
     ownerId: string,
     recipeId: string,
     expectedRevision: number,
     audit?: AuditMetadata,
-  ): Promise<RecipeDocumentDeleteResult> {
+  ): Promise<RecipeDeleteResult> {
     const { data, error } = await this.client.rpc("recipe_vault_delete_recipe_document", {
       target_owner_id: ownerId,
       target_recipe_id: recipeId,

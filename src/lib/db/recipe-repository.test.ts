@@ -60,7 +60,7 @@ test("document reads assemble the row ID and revision while scoping by owner", a
   };
   const repository = new RecipeRepository({ from: () => query } as never);
 
-  const current = await repository.getDocument("owner-a", documentId);
+  const current = await repository.getRecipe("owner-a", documentId);
 
   assert.deepEqual(calls, [
     [
@@ -104,7 +104,7 @@ test("column reads omit absent optional yield, source URL, and time values", asy
   const repository = new RecipeRepository({
     from: () => query,
   } as never);
-  const current = await repository.getDocument("owner-a", documentId);
+  const current = await repository.getRecipe("owner-a", documentId);
   assert.deepEqual(current?.recipe, {
     id: documentId,
     title: recipeContent.title,
@@ -141,7 +141,7 @@ test("document list summaries use the owner-scoped search RPC and validate its p
     },
   } as never);
 
-  const page = await repository.listDocumentPage(
+  const page = await repository.listRecipes(
     "owner-a",
     "rice%_\\",
     ["weeknight dinner", "baking"],
@@ -194,7 +194,7 @@ test("document list summaries preserve omitted yields and reject malformed docum
   const noYieldContent = { ...recipeContent };
   delete noYieldContent.yield;
   const repository = new RecipeRepository(makeClient(noYieldContent, 1) as never);
-  const page = await repository.listDocumentPage("owner-a", undefined, [], 0, 25);
+  const page = await repository.listRecipes("owner-a", undefined, [], 0, 25);
   assert.equal("yield" in page.items[0], false);
 
   const malformedRepository = new RecipeRepository({
@@ -214,7 +214,7 @@ test("document list summaries preserve omitted yields and reject malformed docum
       error: null,
     }),
   } as never);
-  await assert.rejects(malformedRepository.listDocumentPage("owner-a", undefined, [], 0, 25));
+  await assert.rejects(malformedRepository.listRecipes("owner-a", undefined, [], 0, 25));
 
   const invalidRevisionRepository = new RecipeRepository({
     rpc: async () => ({
@@ -233,12 +233,12 @@ test("document list summaries preserve omitted yields and reject malformed docum
       error: null,
     }),
   } as never);
-  await assert.rejects(invalidRevisionRepository.listDocumentPage("owner-a", undefined, [], 0, 25));
+  await assert.rejects(invalidRevisionRepository.listRecipes("owner-a", undefined, [], 0, 25));
 
   const invalidCountRepository = new RecipeRepository({
     rpc: async () => ({ data: { items: [], total: -1 }, error: null }),
   } as never);
-  await assert.rejects(invalidCountRepository.listDocumentPage("owner-a", undefined, [], 0, 25));
+  await assert.rejects(invalidCountRepository.listRecipes("owner-a", undefined, [], 0, 25));
 });
 
 test("document create sends id-free content and owner to the atomic RPC", async () => {
@@ -250,7 +250,7 @@ test("document create sends id-free content and owner to the atomic RPC", async 
     },
   } as never);
 
-  const result = await repository.createDocument("owner-a", recipeContent);
+  const result = await repository.createRecipe("owner-a", recipeContent);
 
   assert.deepEqual(rpcCall, {
     name: "recipe_vault_write_recipe_document",
@@ -279,7 +279,7 @@ test("document replacement sends the immutable row ID and expected revision", as
   } as never);
 
   const recipe = { id: documentId, ...recipeContent };
-  const result = await repository.replaceDocument("owner-a", recipe, 8);
+  const result = await repository.replaceRecipe("owner-a", recipe, 8);
 
   assert.deepEqual(rpcArgs, {
     target_owner_id: "owner-a",
@@ -302,11 +302,11 @@ test("document write preserves explicit not-found and invalid outcomes", async (
     }),
   } as never);
 
-  assert.deepEqual(await repository.createDocument("owner-a", recipeContent), {
+  assert.deepEqual(await repository.createRecipe("owner-a", recipeContent), {
     status: "invalid",
   });
   assert.deepEqual(
-    await repository.replaceDocument("owner-a", { id: documentId, ...recipeContent }, 1),
+    await repository.replaceRecipe("owner-a", { id: documentId, ...recipeContent }, 1),
     { status: "not_found" },
   );
 });
@@ -324,7 +324,7 @@ test("document delete binds owner, recipe, revision, and optional audit metadata
   } as never);
   const audit = { requestId: "request-123", method: "DELETE" };
 
-  const result = await repository.deleteDocument("owner-a", documentId, 4, audit);
+  const result = await repository.deleteRecipe("owner-a", documentId, 4, audit);
 
   assert.deepEqual(call, {
     name: "recipe_vault_delete_recipe_document",
@@ -345,16 +345,16 @@ test("document delete preserves conflict, missing, and invalid outcomes", async 
     rpc: async () => ({ data: [outcome], error: null }),
   } as never);
 
-  assert.deepEqual(await repository.deleteDocument("owner-a", documentId, 6), {
+  assert.deepEqual(await repository.deleteRecipe("owner-a", documentId, 6), {
     status: "conflict",
     revision: 7,
   });
   outcome = { status: "not_found", recipe_id: null, revision: null };
-  assert.deepEqual(await repository.deleteDocument("owner-a", documentId, 6), {
+  assert.deepEqual(await repository.deleteRecipe("owner-a", documentId, 6), {
     status: "not_found",
   });
   outcome = { status: "invalid", recipe_id: null, revision: null };
-  assert.deepEqual(await repository.deleteDocument("owner-a", documentId, 0), {
+  assert.deepEqual(await repository.deleteRecipe("owner-a", documentId, 0), {
     status: "invalid",
   });
 });
@@ -366,12 +366,12 @@ test("document delete rejects malformed RPC results and hides database errors", 
       error: null,
     }),
   } as never);
-  await assert.rejects(invalidRepository.deleteDocument("owner-a", documentId, 4));
+  await assert.rejects(invalidRepository.deleteRecipe("owner-a", documentId, 4));
 
   const failedRepository = new RecipeRepository({
     rpc: async () => ({ data: null, error: new Error("sensitive database detail") }),
   } as never);
-  await assert.rejects(failedRepository.deleteDocument("owner-a", documentId, 4), {
+  await assert.rejects(failedRepository.deleteRecipe("owner-a", documentId, 4), {
     message: "Could not delete this recipe.",
   });
 });

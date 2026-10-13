@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { Card } from "@/components/ui/card";
 import { Stack } from "@/components/ui/stack";
-import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
+import type { RecipeSummary } from "@/lib/db/recipe-repository";
 
 import { RecipeList, RecipeListSkeleton } from "./recipe-list";
 
-const documentSummaries: RecipeDocumentListSummary[] = [
+const documentSummaries: RecipeSummary[] = [
   {
     id: "lemon-garlic-chicken",
     title: "Lemon garlic chicken",

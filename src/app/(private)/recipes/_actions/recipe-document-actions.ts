@@ -69,7 +69,7 @@ export async function saveRecipeDocumentAction(
     try {
       const result = await (
         await getRecipeService()
-      ).createDocument(user.id, parsedContent.data, {
+      ).createRecipe(user.id, parsedContent.data, {
         requestId: randomUUID(),
         method: "SERVER_ACTION_CREATE",
       });
@@ -105,7 +105,7 @@ export async function saveRecipeDocumentAction(
   try {
     const result = await (
       await getRecipeService()
-    ).replaceDocument(user.id, parsedRecipe.data, context.expectedRevision, {
+    ).replaceRecipe(user.id, parsedRecipe.data, context.expectedRevision, {
       requestId: randomUUID(),
       method: "SERVER_ACTION_REPLACE",
     });
@@ -137,7 +137,7 @@ export async function deleteRecipeDocumentAction(
   try {
     const result = await (
       await getRecipeService()
-    ).deleteDocument(user.id, recipeId, expectedRevision, {
+    ).deleteRecipe(user.id, recipeId, expectedRevision, {
       requestId: randomUUID(),
       method: "SERVER_ACTION_DELETE",
     });

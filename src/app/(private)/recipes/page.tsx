@@ -14,7 +14,7 @@ import { loadRecipePage } from "./_lib/load-recipe-page";
 import { parseRecipePage, recipePageHref } from "./_lib/recipe-pagination";
 import { requireUser } from "@/lib/auth/require-user";
 import { getRecipeService } from "@/lib/recipes";
-import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
+import type { RecipeSummary } from "@/lib/db/recipe-repository";
 
 export default async function RecipesPage({
   searchParams,
@@ -56,7 +56,7 @@ async function RecipeResults({
   requestedPage: number;
 }) {
   const user = await requireUser();
-  let documentSummaries: RecipeDocumentListSummary[];
+  let documentSummaries: RecipeSummary[];
   let total = 0;
   let displayedPage = 1;
   let pageCount = 1;

@@ -1,10 +1,10 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
-import type { RecipeDocumentListSummary } from "@/lib/db/recipe-repository";
+import type { RecipeSummary } from "@/lib/db/recipe-repository";
 import { RecipeList } from "./recipe-list";
 
 test("renders document summaries in a stable semantic list", () => {
-  const summaries: RecipeDocumentListSummary[] = [
+  const summaries: RecipeSummary[] = [
     {
       id: "orange-shortbread",
       title: "Orange shortbread",

@@ -18,7 +18,7 @@ test("document tag inventory passes an owner, filters, and usage/name cursor", a
     },
   } as never);
 
-  const page = await repository.listFromDocuments("owner-a", {
+  const page = await repository.listTags("owner-a", {
     search: "  night ",
     sort: "usage_desc",
     limit: 2,
@@ -65,7 +65,7 @@ test("document tag inventory returns reverse cursor rows in display order", asyn
     },
   } as never);
 
-  const page = await repository.listFromDocuments("owner-a", {
+  const page = await repository.listTags("owner-a", {
     sort: "name_asc",
     limit: 2,
     before: { name: "zucchini" },
@@ -93,7 +93,7 @@ test("document tag inventory maps only canonical name and positive usage count",
   } as never);
 
   await assert.rejects(
-    repository.listFromDocuments("owner-a", { sort: "name_asc", limit: 25 }),
+    repository.listTags("owner-a", { sort: "name_asc", limit: 25 }),
     /Could not load tags/,
   );
 });
@@ -108,7 +108,7 @@ test("document tag filtering passes the explicit owner and exact name", async ()
     },
   } as never);
 
-  assert.deepEqual(await repository.listRecipeIdsWithDocumentTag("owner-a", "dinner"), [recipeId]);
+  assert.deepEqual(await repository.listRecipeIdsWithTag("owner-a", "dinner"), [recipeId]);
   assert.deepEqual(calls, [
     {
       name: "recipe_vault_list_recipe_ids_by_document_tag",
@@ -126,7 +126,7 @@ test("document tag name sorting accepts a name-only cursor", async () => {
     },
   } as never);
 
-  await repository.listFromDocuments("owner-a", {
+  await repository.listTags("owner-a", {
     sort: "name_asc",
     limit: 25,
     after: { name: "dinner" },
@@ -143,7 +143,7 @@ test("document tag usage sorting requires the usage/name cursor pair", async () 
   } as never);
 
   await assert.rejects(
-    repository.listFromDocuments("owner-a", {
+    repository.listTags("owner-a", {
       sort: "usage_desc",
       limit: 25,
       after: { name: "dinner" },
@@ -161,7 +161,7 @@ test("document tag name replacement passes explicit owner and canonical names", 
     },
   } as never);
 
-  assert.deepEqual(await repository.replaceDocumentTagName("owner-a", "quick meals", "weeknight"), {
+  assert.deepEqual(await repository.replaceRecipeTagName("owner-a", "quick meals", "weeknight"), {
     status: "replaced",
     changedRecipes: 3,
   });
@@ -182,7 +182,7 @@ test("document tag name replacement maps a missing source without exposing IDs",
     rpc: async () => ({ data: [{ status: "source_missing", changed_recipes: 0 }], error: null }),
   } as never);
 
-  assert.deepEqual(await repository.replaceDocumentTagName("owner-a", "quick meals", "weeknight"), {
+  assert.deepEqual(await repository.replaceRecipeTagName("owner-a", "quick meals", "weeknight"), {
     status: "source_missing",
   });
 });
@@ -193,7 +193,7 @@ test("document tag name replacement rejects malformed RPC results", async () => 
   } as never);
 
   await assert.rejects(
-    repository.replaceDocumentTagName("owner-a", "quick meals", "weeknight"),
+    repository.replaceRecipeTagName("owner-a", "quick meals", "weeknight"),
     /Could not rename tag/,
   );
 });

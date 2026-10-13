@@ -1,34 +1,31 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export type DocumentTagSortOrder = "name_asc" | "usage_desc" | "usage_asc";
-export type DocumentTagCursor = { name: string; usageCount?: number };
-export type DocumentTagInventoryOptions = {
+export type TagSortOrder = "name_asc" | "usage_desc" | "usage_asc";
+export type TagCursor = { name: string; usageCount?: number };
+export type TagInventoryOptions = {
   search?: string;
-  sort: DocumentTagSortOrder;
+  sort: TagSortOrder;
   limit: number;
-  after?: DocumentTagCursor;
-  before?: DocumentTagCursor;
+  after?: TagCursor;
+  before?: TagCursor;
 };
-export type DocumentTagInventoryItem = { name: string; usageCount: number };
-export type DocumentTagInventoryPage = {
-  tags: DocumentTagInventoryItem[];
+export type TagInventoryItem = { name: string; usageCount: number };
+export type TagInventoryPage = {
+  tags: TagInventoryItem[];
   hasMore: boolean;
 };
-export type DocumentTagNameReplacementResult =
+export type TagNameReplacementResult =
   | { status: "replaced"; changedRecipes: number }
   | { status: "source_missing" };
 
-type DatabaseDocumentTagInventory = { name: string; usage_count: number | string };
+type DatabaseTagInventory = { name: string; usage_count: number | string };
 
 /** Owns aggregate tag queries, including the explicit owner filter in the RPC. */
 export class TagRepository {
   constructor(private readonly client: SupabaseClient) {}
 
   /** Reads names and counts derived only from the owner's recipe documents. */
-  async listFromDocuments(
-    ownerId: string,
-    options: DocumentTagInventoryOptions,
-  ): Promise<DocumentTagInventoryPage> {
+  async listTags(ownerId: string, options: TagInventoryOptions): Promise<TagInventoryPage> {
     if (
       (options.after && options.before) ||
       (options.sort === "name_asc" &&
@@ -51,7 +48,7 @@ export class TagRepository {
     });
     if (error || !Array.isArray(data)) throw new Error("Could not load tags.");
 
-    const rows = data as DatabaseDocumentTagInventory[];
+    const rows = data as DatabaseTagInventory[];
     const pageRows = rows.slice(0, options.limit);
     if (options.before) pageRows.reverse();
     const tags = pageRows.map((row) => {
@@ -64,7 +61,7 @@ export class TagRepository {
   }
 
   /** Returns recipe IDs whose document tags contain this exact canonical name. */
-  async listRecipeIdsWithDocumentTag(ownerId: string, tagName: string): Promise<string[]> {
+  async listRecipeIdsWithTag(ownerId: string, tagName: string): Promise<string[]> {
     const { data, error } = await this.client.rpc("recipe_vault_list_recipe_ids_by_document_tag", {
       target_owner_id: ownerId,
       target_tag_name: tagName,
@@ -77,11 +74,11 @@ export class TagRepository {
   }
 
   /** Renames or merges one canonical name across the owner's recipe documents. */
-  async replaceDocumentTagName(
+  async replaceRecipeTagName(
     ownerId: string,
     sourceName: string,
     targetName: string,
-  ): Promise<DocumentTagNameReplacementResult> {
+  ): Promise<TagNameReplacementResult> {
     const { data, error } = await this.client.rpc("recipe_vault_replace_document_tag", {
       target_owner_id: ownerId,
       source_name: sourceName,

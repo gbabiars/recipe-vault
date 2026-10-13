@@ -79,7 +79,7 @@ function encodeCursor(
 }
 
 /** GET /api/v1/tags reads only the authenticated owner's document-derived inventory. */
-export function createDocumentTagApi(deps: ApiDependencies) {
+export function createRecipeTagApi(deps: ApiDependencies) {
   return {
     async list(request: Request) {
       const id = requestId(request);
