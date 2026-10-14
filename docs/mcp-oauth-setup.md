@@ -120,199 +120,9 @@ OAuth access tokens are short lived. Requesting `offline_access` allows a client
 to obtain a refresh token and renew access without requiring another sign-in on
 every access-token expiration.
 
-## 6. Deploy the Supabase migration
+## 6. Configure and deploy Vercel
 
-### 6.1 Current repository state
-
-As verified on 2026-09-19, this checkout is linked to the Supabase project named
-`Recipe Vault`, project reference `twctwhuasfrkcsbjxkzk`. The remote migration
-history contains the first three repository migrations. The one pending remote
-migration is:
-
-```text
-20260919000000_multi_user_clerk_oauth.sql
-```
-
-Do not infer that this project is production from its name. Before any remote
-write, open the Supabase Dashboard and verify that the project reference in the
-browser URL is exactly `twctwhuasfrkcsbjxkzk` and that this is the environment
-you intend to change.
-
-### 6.2 Choose exactly one migration deployment mechanism
-
-First open **Supabase Dashboard → Project Settings → Integrations → GitHub**.
-
-- If **Deploy to production** is enabled for this repository's `main` branch,
-  merging or pushing the migration to `main` applies it automatically. Do not
-  also run `db push` manually. Require the Supabase deployment check to pass.
-- If that integration is absent or production deployment is disabled, use the
-  manual CLI procedure below.
-
-The repository has no GitHub Actions migration workflow. Vercel does not apply
-Supabase migrations. A Vercel deployment and a database migration are separate
-operations.
-
-For this one-time authorization change, a controlled manual push is the clearest
-option if automatic Supabase production deployment is not already configured.
-For future work, Supabase recommends its GitHub integration or a dedicated CI
-pipeline so only one actor deploys migrations.
-
-### 6.3 Run the production data preflight
-
-In **Supabase Dashboard → SQL Editor**, select the exact target project and run
-these read-only queries:
-
-```sql
-select count(*) as recipe_count,
-       count(distinct owner_id) as distinct_owner_count
-from public.recipes;
-
-select owner_id, count(*) as recipe_count
-from public.recipes
-group by owner_id
-order by owner_id;
-
-select user_id
-from public.recipe_vault_private_owners
-order by user_id;
-
-select distinct recipes.owner_id
-from public.recipes
-left join public.recipe_vault_private_owners owners
-  on owners.user_id = recipes.owner_id
-where owners.user_id is null;
-
-select distinct owner_id
-from public.recipes
-where owner_id !~ '^user_[A-Za-z0-9]+$';
-```
-
-Stop if either of the last two queries returns a row. For every distinct
-`owner_id`, open **Clerk Dashboard → Users**, find the production user, and
-confirm its Clerk user ID is an exact match. Do not guess or transform an ID.
-If a mapping is required, create and review a separate data migration with the
-explicit old-to-new mapping before applying this policy migration.
-
-The migration does not rewrite recipes. It:
-
-1. Drops the policies that require membership in the single-owner allow-list.
-2. Creates per-user policies comparing `owner_id` to the verified Clerk `sub`
-   claim for recipes, ingredients, steps, and audit events.
-3. Replaces the audit function so any authenticated Clerk user can audit only
-   their own recipe; the trusted service-role MCP adapter remains supported.
-4. Drops `recipe_vault_is_private_owner()`.
-5. Drops `recipe_vault_private_owners`.
-
-It runs inside a PostgreSQL transaction. A SQL error rolls back the migration,
-but a successful migration intentionally removes the old allow-list table.
-
-### 6.4 Confirm a recoverable backup
-
-For a paid Supabase project, open **Database → Backups** and confirm a completed
-backup or PITR recovery point exists from immediately before the deployment.
-Record its timestamp.
-
-For a project without a restorable Dashboard backup, create logical dumps into
-an encrypted directory outside this repository. Do not commit them:
-
-```sh
-mkdir -p ../recipe-vault-backup-2026-09-19
-pnpm exec supabase db dump --linked --file ../recipe-vault-backup-2026-09-19/schema.sql
-pnpm exec supabase db dump --linked --role-only --file ../recipe-vault-backup-2026-09-19/roles.sql
-pnpm exec supabase db dump --linked --data-only --use-copy --file ../recipe-vault-backup-2026-09-19/data.sql
-```
-
-The CLI may request the target project's database password. Supabase database
-backups do not contain Storage objects; back up Storage separately if the
-project begins using it.
-
-### 6.5 Preview the exact remote change
-
-From the repository root, authenticate with the Supabase CLI if needed, then
-verify the target and migration history:
-
-```sh
-pnpm exec supabase login
-pnpm exec supabase link --project-ref twctwhuasfrkcsbjxkzk
-pnpm exec supabase migration list --linked
-pnpm exec supabase db push --linked --dry-run
-```
-
-The dry run must list only `20260919000000_multi_user_clerk_oauth.sql`. Stop if
-it lists an older migration, reports a remote-only migration, targets a different
-project, or proposes seed data. Do not use `--include-seed`.
-
-Never run `supabase db reset --linked`; that command destroys and rebuilds the
-remote database.
-
-### 6.6 Apply the migration manually
-
-Only when the preflight and backup are complete, and only if the GitHub
-integration is not deploying this migration, run:
-
-```sh
-pnpm exec supabase db push --linked
-```
-
-Read the confirmation prompt and verify the project and migration name before
-accepting. Do not use `--include-all` to bypass a history mismatch. If the CLI
-suggests `migration repair`, stop and investigate rather than repairing history
-blindly.
-
-Then verify local and remote history match:
-
-```sh
-pnpm exec supabase migration list --linked
-```
-
-### 6.7 Verify the resulting policies
-
-Run this read-only SQL in the Supabase SQL Editor:
-
-```sql
-select to_regclass('public.recipe_vault_private_owners') is null
-  as old_allow_list_removed;
-
-select to_regprocedure('public.recipe_vault_is_private_owner()') is null
-  as old_owner_function_removed;
-
-select tablename, policyname, cmd
-from pg_policies
-where schemaname = 'public'
-  and tablename in (
-    'recipes',
-    'recipe_ingredients',
-    'recipe_steps',
-    'recipe_audit_events'
-  )
-order by tablename, policyname;
-
-select version
-from supabase_migrations.schema_migrations
-where version = '20260919000000';
-```
-
-Both Boolean checks must be `true`, the policies must have names beginning
-`Clerk users can`, and the migration-history query must return one row.
-
-Do not run the repository's `recipe_rls_verification.sql` against production:
-although it rolls back its fixtures, it intentionally performs write attempts.
-Run that verification only against local or disposable preview databases.
-
-### 6.8 Rollback rule
-
-If the migration fails, its transaction should leave the previous schema in
-place; capture the error and do not run `migration repair` automatically.
-
-If the migration succeeds but production verification fails before users create
-new data, restore the recorded backup and redeploy the previous application
-commit together. If users have written data after migration, do not restore an
-old backup blindly because that would discard their writes. Freeze writes and
-create a reviewed forward recovery migration instead.
-
-## 7. Configure and deploy Vercel
-
-### 7.1 What is and is not currently configured
+### 6.1 What is and is not currently configured
 
 This repository contains no `vercel.json`, no committed Vercel project metadata,
 and no Vercel deployment workflow. The local checkout is not linked through a
@@ -325,7 +135,7 @@ are supported directly by Vercel, `/mcp` explicitly uses the Node.js runtime,
 and the MCP tools perform bounded database operations. Do not increase function
 duration unless a future MCP tool performs genuinely long-running work.
 
-### 7.2 Create or inspect the Vercel project
+### 6.2 Create or inspect the Vercel project
 
 1. Open the Vercel Dashboard and locate a project connected to
    `gbabiars/recipe-vault`.
@@ -350,7 +160,7 @@ gate: if the log does not show pnpm 11.23.0 or dependency installation fails,
 stop. Do not silently let Vercel select an older pnpm or change the repository's
 pin without a separate compatibility decision.
 
-### 7.3 Use separate environment credentials
+### 6.3 Use separate environment credentials
 
 Open **Vercel Project → Settings → Environment Variables**. Add the following
 to Production with production values:
@@ -383,7 +193,7 @@ development.
 Vercel environment-variable edits affect only new deployments. Redeploy after
 every relevant variable change.
 
-### 7.4 Configure the production domain
+### 6.4 Configure the production domain
 
 Clerk requires a customer-owned domain for a production instance; a
 `*.vercel.app` URL is not sufficient for production.
@@ -403,21 +213,21 @@ Clerk requires a customer-owned domain for a production instance; a
 Use Clerk's default Account Portal consent page unless there is a concrete need
 for a custom consent route.
 
-### 7.5 Controlled release sequence
+### 6.5 Controlled release sequence
 
 1. Complete Clerk production OAuth, scope, domain, DCR/CIMD, and Supabase
    integration settings.
 2. Complete Vercel Production variables and the custom domain.
 3. Produce a Vercel Preview deployment with isolated development/staging
    credentials and confirm the build log uses Node 24 and pnpm 11.23.0.
-4. Complete the Supabase preflight and backup.
+4. Review pending Supabase migrations, confirm the target project, and complete a pre-deployment backup.
 5. Choose one release path:
-   - **Manual Supabase push:** apply the migration with `db push`, verify it,
-     then push the application commit to the Vercel production branch.
+   - **Manual Supabase push:** apply reviewed pending migrations with `db push`
+     and verify migration history before deploying the application commit.
    - **Supabase GitHub integration:** merge the tested branch to `main` once.
-     That merge triggers both Supabase and Vercel. Monitor both deployment
-     checks and do not test or announce the release until the Supabase migration
-     and Vercel deployment have both succeeded.
+     Monitor Supabase and Vercel deployment checks, and do not test or announce
+     the release until both the database migration and application deployment
+     have succeeded.
 6. Confirm Vercel reports the deployment as **Ready**. Inspect runtime logs for
    Clerk, MCP, or Supabase errors without logging credentials.
 7. Verify these public endpoints return successful JSON responses:
@@ -428,7 +238,7 @@ for a custom consent route.
    get, and save.
 9. Repeat the isolation test with two admitted production test users.
 
-## 8. Credential model
+## 7. Credential model
 
 - **Preferred:** `/mcp` with Clerk OAuth, CIMD when available, DCR as the broad
   compatibility path, PKCE, consent, custom scopes, and `offline_access`. This
