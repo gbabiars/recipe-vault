@@ -74,6 +74,20 @@ own bounded tasks; no agent represents a feature slice or an entire stage.
   require `workflow_reviewer` to check owner binding, scope enforcement, and
   credential boundaries before handing off the change.
 
+## Planning decisions
+
+- Before asking the user to choose a technical approach during planning, explain
+  the relevant goal and codebase facts, the viable options, and your recommended
+  option with its reason. State the tradeoffs that matter to this choice, such
+  as implementation effort, maintenance, compatibility, performance, or security.
+- Show a concise, realistic example for each materially different option so the
+  user can see what it would mean in this project. Use consuming code for APIs,
+  JSX for components, or a directory tree or data flow sketch when those are the
+  decision. Include enough detail to reveal the practical difference without
+  expanding routine choices into design documents.
+- Give this context before the choice prompt. Short option labels and one-line
+  descriptions in a question tool do not replace the explanation.
+
 ## API design
 
 - Show the consuming code whenever proposing or discussing an API. Include at

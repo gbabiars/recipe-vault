@@ -19,9 +19,12 @@ for bounded work, not one agent per stage.
    issue is supplied, read it when accessible; otherwise use supplied content
    or ask for the missing issue text. Never overwrite unrelated working changes.
 2. At Intake, research and inspect the relevant code, then use `$grilling` to
-   interview the human. Produce a readable spec and acceptance criteria. Format
-   the document, print its complete contents in chat when requesting approval,
-   and stop for explicit approval before recording the Intake handoff.
+   interview the human. Before any question about a technical choice in Intake or Plan,
+   follow the Planning decisions guidance in `AGENTS.md`; provide the options,
+   concrete examples, tradeoffs, and recommendation in chat before asking. Produce
+   a readable spec and acceptance criteria. Format the document, print its complete
+   contents in chat when requesting approval, and stop for explicit approval before
+   recording the Intake handoff.
 3. Produce an implementation plan in small steps. Show realistic consuming
    code for every new API or component shape. Format the document, print its
    complete contents in chat when requesting approval, and stop for explicit
