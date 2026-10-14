@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   classifyPdfError,
@@ -49,6 +50,17 @@ test("extracts text in page order", async () => {
     await readDocumentText(pdf(["First soup", "Second stew"])),
     /First soup\nSecond stew/,
   );
+});
+
+test("extracts text from the fried rice recipe PDF fixture", async () => {
+  const bytes = await readFile(new URL("./__fixtures__/fried-rice-recipe.pdf", import.meta.url));
+  const text = await readDocumentText(new Uint8Array(bytes));
+
+  assert.match(text, /Fried Rice/i);
+  assert.match(text, /rice/i);
+  assert.match(text, /soy sauce/i);
+  assert.match(text, /egg/i);
+  assert.ok(text.indexOf("Fried Rice") < text.indexOf("soy sauce"));
 });
 
 test("rejects malformed, image-only, oversized and over-page-limit PDFs", async () => {
