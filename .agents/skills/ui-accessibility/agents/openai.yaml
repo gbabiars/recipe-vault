@@ -1,0 +1,3 @@
+interface:
+  display_name: "UI Accessibility"
+  short_description: "Validate changed UI against the accessibility target"

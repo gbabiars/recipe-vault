@@ -152,6 +152,12 @@ consult Storybook's component guidance before answering or changing UI. Read
 `src/components/ui/README.md` and the linked family guide for local intent and
 token usage.
 
+Use `$ui-development` when building or changing UI. It routes to the current
+design-system docs, story guidance, and verification steps. Use
+`$ui-accessibility` for UI changes to select relevant accessibility checks; its
+shared target and criteria live in `docs/ui-accessibility.md`.
+Story ownership and coverage policy live in `docs/storybook-ui-authoring.md`.
+
 When designing a new reusable UI pattern or resolving a meaningful design
 choice, review relevant guidance from [shadcn/ui](https://ui.shadcn.com/),
 [Astryx](https://astryx.atmeta.com/),
@@ -167,8 +173,13 @@ Keep the local component API and tokens authoritative.
   consuming JSX example; ask the user when the choice needs a product decision.
   Never infer an existing prop from another library or a story title.
 - Before creating or updating stories, call `get-storybook-story-instructions`.
+- Story the composite root rather than each exported part. Recommend a story
+  for page UI; ask the user before omitting one when the page is vendor-owned,
+  redirect-only, or unusually difficult to isolate. Raise the question during
+  planning when possible, or during implementation if the reason emerges later.
 - After changing stories or components, use `test-run` to check the affected
-  stories.
+  stories. Use the accessibility skill to select focused browser or manual
+  checks; manual review is targeted to the changed behavior.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

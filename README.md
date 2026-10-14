@@ -122,31 +122,19 @@ For commits, follow the [message convention](AGENTS.md#commit-messages).
 ## Component development
 
 Run `pnpm storybook` and open `http://localhost:6006` to develop and review
-components in isolation. Storybook discovers `.stories.*` and `.mdx` files
-under `src`. Start with the [UI intent index](src/components/ui/README.md) to
-choose a component and read its colocated MDX guidance and stories.
-Select a story in the sidebar, then open the Code panel below its canvas to
-view the rendered source snippet with that story's args.
+components and page compositions. Storybook discovers `.stories.*` and `.mdx`
+files under `src`. Start with the [UI development guide](src/components/ui/README.md)
+or use the component docs tools to find the family guide and stories. See the
+[Storybook authoring guide](docs/storybook-ui-authoring.md) for story ownership
+and coverage rules, and [UI accessibility](docs/ui-accessibility.md) for the
+shared target and validation approach.
 
 With Storybook running, its MCP server at `http://localhost:6006/mcp` exposes
-`docs-list` and `docs-show` for component discovery, guidance, stories, and API.
-
-Keep component styling in CSS modules. `src/app/globals.css` contains shared
-tokens, sitewide element defaults, and the `.visually-hidden` accessibility
-utility. Use that global class to keep labels available to assistive technology
-when they should not appear visually.
-
-Use `--color-interaction-neutral-hover` and
-`--color-interaction-neutral-active` for neutral button and interactive Card
-state overlays. Their transparent colors blend with the surface beneath the
-control, including default and subtle cards. Use the solid `--color-background-*`
-tokens for surfaces themselves.
+`docs-list` and `docs-show` for component discovery, usage guidance, stories,
+and props.
 
 Use `pnpm build-storybook` to create a production Storybook build. Its output
 is written to `storybook-static/` and is not committed.
-
-The [UI intent index](src/components/ui/README.md) owns component and
-composition guidance, including page headers, fields, actions, cards, and lists.
 
 ## Security configuration
 

@@ -4,152 +4,35 @@ import { Meta } from "@storybook/addon-docs/blocks";
 
 # Token usage
 
-The token source is `src/app/globals.css`. Use semantic tokens for component
-meaning; the light, dark, and system-dark definitions keep that meaning across
-themes. This guide maps existing uses and does not add values.
+Use the design-system tokens and component props to keep UI consistent across
+the app and MCP views. `src/app/globals.css` owns token names, values, and theme
+definitions. This guide describes how to choose them; it does not duplicate the
+token catalog.
 
-Viewport breakpoints are defined in `src/components/ui/viewport.css` and are
-available in every CSS Module through PostCSS. Use `@media (--viewport-sm)` at
-640px and wider, `--viewport-md` at 768px and wider, `--viewport-lg` at 1024px
-and wider, or `--viewport-xl` at 1440px and wider. Use `--viewport-below-sm` for
-widths strictly below 640px and `--viewport-below-md` for widths strictly below
-768px. `GridItem`'s `sm` and `md` props use container widths, not these viewport
-breakpoints.
+## Prefer shared values
 
-Client Components can use `useBreakpoint` to conditionally render against the
-same minimum-width breakpoints. Its server snapshot assumes the smallest
-viewport, so each check starts as `false` and updates to the browser width after
-hydration. Negate a check for a below-breakpoint condition.
+1. Use a design-system component for a common UI job.
+2. Use its layout or appearance props when they express the need.
+3. Use semantic tokens in a CSS Module for local styling that remains.
 
-```tsx
-"use client";
+For example, use `Stack gap="200"` for standard vertical spacing. If a local
+value has no suitable prop or token, use a component-specific value. Add a
+shared token only when the value represents a reusable design role. Do not
+start a migration just because existing CSS contains literal values.
 
-import { useBreakpoint } from "@/components/ui/viewport";
+Choose semantic color tokens by meaning and state so light and dark themes keep
+the same intent. Use the existing focus tokens for focus treatment and pair
+color-coded states with text or another visible cue. Component family guides
+show the relevant choices for their controls and surfaces.
 
-function Navigation() {
-  const isMdUp = useBreakpoint("md");
+## Responsive layout
 
-  return isMdUp ? <DesktopNavigation /> : <MobileNavigation />;
-}
-```
+Use the shared responsive definitions in
+[`src/components/ui/viewport.css`](./viewport.css) from CSS Modules. In client
+components, `useBreakpoint` uses the same breakpoint names; see its component
+docs for the current API and behavior. `GridItem` responsive props use
+container widths, so consult its family guide when choosing between container
+and viewport behavior.
 
-<table>
-  <thead>
-    <tr>
-      <th>Need</th>
-      <th>Existing token family</th>
-      <th>Use</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Surfaces</td>
-      <td>
-        <code>--color-background-&#42;</code>
-      </td>
-      <td>
-        Canvas and component fills. Cards are content surfaces; dropdown and combobox popups and the
-        mobile drawer are floating surfaces. The alert dialog uses the overlay surface and the
-        backdrop token. Tooltips use an inverse surface that is dark in light mode and light in dark
-        mode. Skeleton placeholders use `--color-background-skeleton` for their resting fill.
-        Control, chip, status, and interaction fills keep their existing roles.
-      </td>
-    </tr>
-    <tr>
-      <td>Elevation</td>
-      <td>
-        <code>--shadow-subtle</code>, <code>--shadow-raised</code>, <code>--shadow-floating</code>
-      </td>
-      <td>
-        <code>subtle</code> is reserved for future card elevation; cards stay flat for now. Dropdown
-        and combobox popups use <code>raised</code>. The mobile drawer and future modal surfaces use{" "}
-        <code>floating</code>.
-      </td>
-    </tr>
-    <tr>
-      <td>Text and borders</td>
-      <td>
-        <code>--color-text-&#42;</code>, <code>--color-border-&#42;</code>
-      </td>
-      <td>
-        Choose by hierarchy and state. Text appearances and form controls consume these tokens.
-      </td>
-    </tr>
-    <tr>
-      <td>Actions</td>
-      <td>
-        <code>--color-action-&#42;</code>
-      </td>
-      <td>Button and IconButton variants use primary, secondary, ghost, and danger roles.</td>
-    </tr>
-    <tr>
-      <td>Neutral interaction overlay</td>
-      <td>
-        <code>--color-interaction-neutral-hover</code>,{" "}
-        <code>--color-interaction-neutral-active</code>
-      </td>
-      <td>Transparent states blend with default and subtle cards.</td>
-    </tr>
-    <tr>
-      <td>Choice and status</td>
-      <td>
-        <code>--color-choice-&#42;</code>, <code>--color-success-&#42;</code>,{" "}
-        <code>--color-warning-&#42;</code>, <code>--color-error-&#42;</code>
-      </td>
-      <td>Choice marks and feedback colors. Include words for states and errors.</td>
-    </tr>
-    <tr>
-      <td>Focus</td>
-      <td>
-        <code>--color-focus-ring</code>, <code>--color-focus-ring-outer</code>
-      </td>
-      <td>Visible focus treatment for interactive controls.</td>
-    </tr>
-    <tr>
-      <td>Typography</td>
-      <td>
-        <code>--font-heading-&#42;</code>, <code>--font-text-&#42;</code>, the individual heading
-        and text primitives, <code>--font-size-button</code>, and <code>--line-height-button</code>
-      </td>
-      <td>
-        Use the composite shorthand tokens for named heading and text scales; they include the font
-        family, size, line height, and weight primitives. Use individual primitives only for
-        deliberate overrides or component-specific typography. Button and IconButton use their
-        component-level text tokens. The HTML element still carries document semantics.
-      </td>
-    </tr>
-    <tr>
-      <td>Spacing</td>
-      <td>
-        <code>--space-0</code> through <code>--space-1200</code>; <code>--space-surface-&#42;</code>
-      </td>
-      <td>
-        Box, Stack, Inline, and Grid gap and padding props accept spacing keys without the{" "}
-        <code>--space-</code> prefix. Cards use surface spacing.
-      </td>
-    </tr>
-    <tr>
-      <td>Shape and size</td>
-      <td>
-        <code>--radius-&#42;</code>, <code>--height-button-&#42;</code>,{" "}
-        <code>--size-button-icon</code>, <code>--size-choice-control</code>
-      </td>
-      <td>Component CSS determines card, button, and choice control geometry.</td>
-    </tr>
-    <tr>
-      <td>Layout width</td>
-      <td>
-        <code>--width-sidebar</code>, <code>--width-content</code>
-      </td>
-      <td>Shared private layout widths.</td>
-    </tr>
-  </tbody>
-</table>
-
-`LayoutSpace`, `LayoutAlign`, and `LayoutJustify` in `layout.ts` type the layout
-props. A gap such as `gap="200"` resolves to `--space-200`. Use the component's
-spacing props when available, and use semantic tokens in CSS modules for new
-styles. See the [intent index](./README.md) for the component guidance.
-
-Some motion durations and page-specific spacing and radius values remain
-literal in the current CSS. Tokenization of those values is an open design task.
+See the [UI development guide](./README.md) for the full component-first styling
+rule and the [component index](./index.mdx) for family documentation.

@@ -85,13 +85,13 @@ Keep parallel work independent and give each editing file one owner. The
 coordinator runs repository-wide formatting and checks after integration. A
 skipped check is not a pass. Choose checks by the changed behavior:
 
-| Change                                     | Relevant verification                                                                                                             |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| Validation, services, API, or repositories | Focused `.test.ts` files; lint and typecheck when code spans those concerns                                                       |
-| UI interaction                             | Focused Vitest `components` browser test and affected Storybook stories; inspect the running UI when layout or navigation matters |
-| Database schema, RPC, or RLS               | Local migration and affected `supabase/tests`, including concurrency checks when relevant                                         |
-| MCP transport, tools, or views             | Focused MCP tests and the applicable smoke or browser check                                                                       |
-| Cross-boundary change                      | `pnpm check`; use `pnpm build` when Next.js integration or generated output is affected                                           |
+| Change                                     | Relevant verification                                                                                                                                                                                         |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Validation, services, API, or repositories | Focused `.test.ts` files; lint and typecheck when code spans those concerns                                                                                                                                   |
+| UI interaction                             | Use `$ui-development` and `$ui-accessibility` to select checks; run the focused Vitest `components` browser test and affected Storybook stories, and inspect the running UI when layout or navigation matters |
+| Database schema, RPC, or RLS               | Local migration and affected `supabase/tests`, including concurrency checks when relevant                                                                                                                     |
+| MCP transport, tools, or views             | Focused MCP tests and the applicable smoke or browser check                                                                                                                                                   |
+| Cross-boundary change                      | `pnpm check`; use `pnpm build` when Next.js integration or generated output is affected                                                                                                                       |
 
 `pnpm check` excludes `test:db` and `test:e2e`. Authenticated browser tests
 require `E2E_EMAIL` and `E2E_PASSWORD`; report when those tests are unavailable.
