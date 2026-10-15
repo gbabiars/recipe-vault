@@ -1,0 +1,45 @@
+{
+  "title": "Fried Rice on the Blackstone Griddle",
+  "description": "This Blackstone fried rice is super easy to prepare on your griddle. Start with cooked and cooled white rice, add in your favorite vegetables and some seasonings, and you've got a delicious fried rice that's perfect for serving with your hibachi dinner!",
+  "yield": {
+    "amount": 4,
+    "unit": "people"
+  },
+  "time": {
+    "prepMinutes": 5,
+    "cookMinutes": 15,
+    "totalMinutes": 20
+  },
+  "ingredients": [
+    { "name": "cooked white rice", "amount": "6 cups", "note": "cooled" },
+    { "name": "avocado oil", "amount": "1 tablespoon", "note": "or your favorite cooking oil" },
+    { "name": "frozen peas and diced carrots", "amount": "1 cup" },
+    { "name": "diced onions", "amount": "1 cup" },
+    { "name": "butter", "amount": "1/2 stick" },
+    { "name": "soy sauce", "amount": "1/2 cup" },
+    { "name": "garlic powder", "amount": "1-2 tablespoons" },
+    { "name": "salt and pepper", "amount": "to taste" },
+    { "name": "eggs", "amount": "2", "note": "optional" }
+  ],
+  "equipment": [],
+  "instructions": [
+    "Preheat griddle on low until it reaches about 375-425 degrees F.",
+    "Add about 1 tablespoon of avocado oil (or your favorite cooking oil) to the heated griddle and spread it around a bit with your spatula. Add the diced onions and peas and carrots blend to the oiled surface and sauté until tender.",
+    "When the vegetables are about halfway cooked through, move them to the side of the griddle, and add the cooled rice to the hotter zone on the griddle. The rice will probably be a bit clumpy since it is cooled, so use your spatula to loosen it and sauté it as it heats.",
+    "When rice is heated through, make a \"well\" in the center of the rice and add half a stick of butter. As the butter melts in the middle, add the soy sauce, garlic powder, salt, and pepper to the rice. Add the cooked vegetables to the rice. Mix everything together. Add more soy sauce and seasonings at this time if you wish.",
+    "Cook two lightly beaten eggs on the griddle. Chop up the cooked eggs and mix them into the fried rice and vegetable mixture.",
+    "Continue to cook the fried rice on the griddle until it is crispy and done to your liking. Then, remove the fried rice from the griddle and serve warm with your favorite sauces or green onion garnish."
+  ],
+  "notes": [
+    "The amounts listed for soy sauce and garlic powder can be adjusted based on your tastes. When all of the fried rice is mixed together, taste for seasoning. If you like more soy sauce or salt and pepper in your fried rice, go ahead and add it. And remember, you can always add seasonings and sauces, but you can't take them away, so don't overdo the soy sauce and seasonings right off the bat.",
+    "Two cups of uncooked rice should yield about 6 cups of cooked rice."
+  ],
+  "tags": [
+    "main course",
+    "side dish",
+    "japanese",
+    "blackstone fried rice",
+    "fried rice on the blackstone",
+    "griddle fried rice"
+  ]
+}

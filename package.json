@@ -19,6 +19,7 @@
     "test:storybook": "vitest run --project storybook",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "eval:recipe-pdf": "node --env-file-if-exists=.env.local --import tsx scripts/evaluate-pdf-recipe.ts",
     "test:mcp:openai": "tsx scripts/mcp-openai-smoke.ts",
     "supabase": "supabase",
     "supabase:start": "supabase start",
