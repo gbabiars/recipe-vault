@@ -58,7 +58,11 @@ export async function extractRecipeDocumentContent(
 ): Promise<RecipeContent> {
   let output: z.infer<typeof extractedDocumentContentSchema>;
   try {
-    if (!process.env.OPENAI_API_KEY) throw new Error("OpenAI key missing");
+    if (!process.env.OPENAI_API_KEY) {
+      const error = new Error();
+      error.name = "MissingOpenAIKeyError";
+      throw error;
+    }
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const result = await client.responses.parse(
       {
