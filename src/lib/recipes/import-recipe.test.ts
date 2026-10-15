@@ -25,6 +25,28 @@ test("document extraction omits unstated yield and defaults absent collections",
   assert.equal("sourceUrl" in recipe, false);
 });
 
+test("document extraction maps null structured fields to recipe defaults", () => {
+  const recipe = mapExtractedDocumentContent({
+    title: "Quick pickled onions",
+    description: null,
+    yield: null,
+    time: { prepMinutes: null, cookMinutes: null, totalMinutes: null },
+    ingredients: [{ name: "red onion", amount: null, note: null }],
+    equipment: null,
+    instructions: ["Put the onion in a jar."],
+    notes: null,
+    tags: null,
+  });
+
+  assert.equal(recipe.description, "");
+  assert.equal("yield" in recipe, false);
+  assert.deepEqual(recipe.time, {});
+  assert.deepEqual(recipe.ingredients, [{ name: "red onion" }]);
+  assert.deepEqual(recipe.equipment, []);
+  assert.deepEqual(recipe.notes, []);
+  assert.deepEqual(recipe.tags, []);
+});
+
 test("document extraction preserves a non-serving yield and supplied source URL", () => {
   const recipe = mapExtractedDocumentContent(
     {
