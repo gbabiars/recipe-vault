@@ -69,10 +69,11 @@ export function RecipeDocumentImportForm({
           )}
           <div>
             <Button
-              label={pending ? "Importing PDF…" : "Import PDF"}
+              label="Import PDF"
               type="submit"
               variant="primary"
-              disabled={pending || !file}
+              pending={pending}
+              disabled={!file}
             />
           </div>
         </Stack>

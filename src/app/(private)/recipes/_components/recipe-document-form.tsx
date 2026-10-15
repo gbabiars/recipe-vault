@@ -463,7 +463,7 @@ export function RecipeDocumentForm({
 
       <div>
         <Button
-          label={pending ? "Saving…" : recipe ? "Save changes" : "Create recipe"}
+          label={recipe ? "Save changes" : "Create recipe"}
           type="submit"
           variant="primary"
           pending={pending}
