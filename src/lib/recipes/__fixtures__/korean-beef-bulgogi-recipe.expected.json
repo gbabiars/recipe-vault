@@ -1,0 +1,45 @@
+{
+  "title": "Korean Beef Bulgogi",
+  "description": "This Korean beef bulgogi dish is an easy recipe for Korean BBQ with the most flavorful marinade! And the thin slices of meat cook so quickly!",
+  "yield": {
+    "amount": 6,
+    "unit": "servings"
+  },
+  "time": {
+    "prepMinutes": 165,
+    "cookMinutes": 15,
+    "totalMinutes": 180
+  },
+  "ingredients": [
+    { "name": "boneless ribeye steak", "amount": "1 1/2 pounds" },
+    { "name": "pear", "amount": "1/2 small", "note": "peeled and coarsely grated" },
+    { "name": "reduced sodium soy sauce", "amount": "1/4 cup" },
+    { "name": "brown sugar", "amount": "2 tablespoons" },
+    { "name": "toasted sesame oil", "amount": "2 tablespoons" },
+    { "name": "garlic", "amount": "3 cloves", "note": "minced" },
+    { "name": "freshly grated ginger", "amount": "1 tablespoon" },
+    { "name": "gochujang", "amount": "1 tablespoon", "note": "Korean red pepper paste" },
+    { "name": "vegetable oil", "amount": "2 tablespoons", "note": "divided" },
+    { "name": "green onions", "amount": "2", "note": "thinly sliced" },
+    { "name": "toasted sesame seeds", "amount": "1 teaspoon" }
+  ],
+  "equipment": [{ "name": "Cast Iron Grill Pan" }, { "name": "Cast Iron Skillet" }],
+  "instructions": [
+    "Wrap steak in plastic wrap, and place in the freezer for 30 minutes. Unwrap and slice across the grain into 1/4-inch thick slices.",
+    "In a medium bowl, combine pear, soy sauce, brown sugar, sesame oil, garlic, ginger and gochujang. In a gallon size Ziploc bag, combine soy sauce mixture and steak; marinate for at least 2 hours to overnight, turning the bag occasionally.",
+    "Heat 1 tablespoon vegetable oil in a cast iron grill pan over medium-high heat. Working in batches, add steak to the grill pan in a single layer and cook, flipping once, until charred and cooked through, about 2-3 minutes per side. Repeat with remaining 1 tablespoon vegetable oil and steak.",
+    "Serve immediately, garnished with green onions and sesame seeds, if desired."
+  ],
+  "notes": [
+    "Freeze the steak before slicing. The key to bulgogi is using paper thin slices of meat. Throwing the steak in the freezer for 20-30 minutes will make it easier to slice the meat into very thin, even pieces. Pre-sliced bulgogi beef is also readily available at Korean and Japanese grocery stores.",
+    "Slice against the grain. Always slice the beef perpendicular to the muscle fibers, shortening the fibers to allow for a more tender bite.",
+    "Pear adds maximum flavor. Adding coarsely grated pear will not only add a subtle sweetness to the marinade, but it will also help tenderize the meat. Korean pear or Bosc pear can be used.",
+    "Use reduced sodium soy sauce. Reduced sodium has less sodium and less salt without compromising flavor.",
+    "Watch the marinating time. Marinate the beef for at least 2 hours but no longer than 24 hours as the natural enzymes of the pear will break down the protein too much, resulting in mushy, mealy beef.",
+    "Use a hot cast iron grill pan. A heavy bottom pan, such as a cast iron grill pan, retains heat much better than a nonstick skillet, allowing for even cooking, a better sear and smoky, caramelized flavors.",
+    "Cook in batches. Work in batches to properly sear the meat for maximum caramelization and smoky flavors. An overcrowded pan will unfortunately steam the beef instead.",
+    "Freeze as needed. Marinated bulgogi is very freezer-friendly, great for meal prep and making weeknight meals even easier and quicker."
+  ],
+  "tags": ["main course", "korean"],
+  "sourceUrl": "https://damndelicious.net/2019/04/21/korean-beef-bulgogi/"
+}

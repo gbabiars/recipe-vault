@@ -75,6 +75,19 @@ test("extracts text from the smash burger recipe PDF fixture", async () => {
   assert.ok(text.indexOf("Smash Burger Recipe") < text.indexOf("ground beef"));
 });
 
+test("extracts text from the Korean beef bulgogi recipe PDF fixture", async () => {
+  const bytes = await readFile(
+    new URL("./__fixtures__/korean-beef-bulgogi-recipe.pdf", import.meta.url),
+  );
+  const text = await readDocumentText(new Uint8Array(bytes));
+
+  assert.match(text, /KOREAN BEEF BULGOGI/i);
+  assert.match(text, /boneless ribeye steak/i);
+  assert.match(text, /Cast Iron Grill Pan/i);
+  assert.match(text, /damndelicious\.net\/2019\/04\/21\/korean-beef-bulgogi/i);
+  assert.ok(text.indexOf("KOREAN BEEF BULGOGI") < text.indexOf("boneless ribeye steak"));
+});
+
 test("rejects malformed, image-only, oversized and over-page-limit PDFs", async () => {
   for (const [bytes, code] of [
     [new TextEncoder().encode("not a PDF"), "not_pdf"],

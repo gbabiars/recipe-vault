@@ -5,7 +5,7 @@ import { readDocumentText } from "../src/lib/recipes/read-document";
 import { recipeContentSchema, type RecipeContent } from "../src/lib/validation/recipe";
 
 const projectDirectory = process.cwd();
-const fixtures = ["fried-rice-recipe", "smash-burger-recipe"];
+const fixtures = ["fried-rice-recipe", "smash-burger-recipe", "korean-beef-bulgogi-recipe"];
 
 async function main() {
   const goldens = await Promise.all(
@@ -42,7 +42,8 @@ async function main() {
     const fixturePath = path.join(projectDirectory, `src/lib/recipes/__fixtures__/${fixture}.pdf`);
     const pdfBytes = new Uint8Array(await readFile(fixturePath));
     const documentText = await readDocumentText(pdfBytes);
-    const extracted = await extractRecipeDocumentContent(documentText);
+    const sourceUrl = extractSourceUrl(documentText);
+    const extracted = await extractRecipeDocumentContent(documentText, sourceUrl);
     const mismatches = compareRecipeContent(recipe, extracted);
 
     if (mismatches.length > 0) {
@@ -60,6 +61,18 @@ void main().catch((error: unknown) => {
   if (error instanceof Error) console.error(error.message);
   process.exitCode = 1;
 });
+
+function extractSourceUrl(text: string): string | undefined {
+  const candidate = text.match(/https?:\/\/[^\s]+/i)?.[0]?.replace(/[),.;]+$/, "");
+  if (!candidate) return undefined;
+
+  try {
+    const url = new URL(candidate);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 function compareRecipeContent(expected: RecipeContent, actual: RecipeContent): string[] {
   const mismatches: string[] = [];
