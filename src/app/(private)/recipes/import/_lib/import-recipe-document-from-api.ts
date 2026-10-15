@@ -37,7 +37,7 @@ export async function importRecipeDocumentFromApi(file: File): Promise<{ id: str
         : "We could not import this PDF. Please try again.",
     );
   }
-  if (typeof body?.data?.id !== "string" || !body.data.id)
+  if (typeof body?.data?.recipe?.id !== "string" || !body.data.recipe.id)
     throw new RecipeImportError("We could not import this PDF. Please try again.");
-  return { id: body.data.id };
+  return { id: body.data.recipe.id };
 }
