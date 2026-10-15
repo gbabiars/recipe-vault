@@ -1,0 +1,43 @@
+{
+  "title": "Smash Burger Recipe",
+  "description": "It’s easy to make restaurant-style Smash Burgers at home. These cook quickly and it’s one of the tastiest ways to prepare a burger. You’ll love the double patty with melted cheese in between, and the sauce is a must-try!",
+  "yield": {
+    "amount": 4,
+    "unit": "burgers"
+  },
+  "time": {
+    "prepMinutes": 18,
+    "cookMinutes": 12,
+    "totalMinutes": 30
+  },
+  "ingredients": [
+    {
+      "name": "ground beef",
+      "amount": "1 1/2 lbs",
+      "note": "80/20, divided into 8 portions (3oz each)"
+    },
+    { "name": "salt", "amount": "to taste" },
+    { "name": "black pepper", "amount": "to taste" },
+    { "name": "garlic powder", "amount": "to taste", "note": "optional" },
+    { "name": "medium cheddar cheese", "amount": "4 slices", "note": "we love thick-sliced" },
+    { "name": "mayonnaise", "amount": "1/3 cup" },
+    { "name": "yellow mustard", "amount": "1 tsp" },
+    { "name": "burger buns", "amount": "4", "note": "we used brioche buns" },
+    { "name": "iceberg lettuce", "amount": "2 cups", "note": "shredded" },
+    { "name": "tomato", "amount": "1 large", "note": "sliced" },
+    { "name": "red onion", "amount": "1/2", "note": "sliced into thin rings" },
+    { "name": "dill pickles", "amount": "2", "note": "cut into 12 slices" }
+  ],
+  "equipment": [],
+  "instructions": [
+    "Divide beef into 8 even portions, about 3 oz each. Loosely roll them into balls then cover and refrigerate while preparing remaining ingredients (you can prep and refrigerate the balls of meat 1-2 days ahead). The meat must be cold when it hits the grill.",
+    "Remove wilted leaves from lettuce to keep it crunchy then finely shred lettuce. Slice tomatoes, onions, and pickles.",
+    "Butter and toast buns over medium heat until golden on the buttered side.",
+    "Increase griddle to medium/high heat. Place 2-4 burger balls onto a hot griddle. Working quickly, place a square of parchment paper over the meat and use a burger press or spatula to firmly smash straight down into a thin patty.",
+    "Once patties are smashed, peel back and discard parchment papers and season patties with salt, pepper and garlic powder. Add 1/2 teaspoon of burger sauce. Cook 2 minutes on the first side or until seared and juices start to come to the surface.",
+    "Scrape under the burger with metal spatula facing down at a 45˚ angle to get under the caramelized part and flip. Cook another 1 minute. Top half of the patties with sliced cheese and cover cheese with the second patty. Repeat with remaining burgers and transfer them to a platter as they finish cooking.",
+    "Place sauce on bottom of bun. Top with 3 pickle slices, shredded lettuce, 2 tomato slices and thin sliced onion. Add double patty and top with bun."
+  ],
+  "notes": [],
+  "tags": []
+}

@@ -63,6 +63,18 @@ test("extracts text from the fried rice recipe PDF fixture", async () => {
   assert.ok(text.indexOf("Fried Rice") < text.indexOf("soy sauce"));
 });
 
+test("extracts text from the smash burger recipe PDF fixture", async () => {
+  const bytes = await readFile(new URL("./__fixtures__/smash-burger-recipe.pdf", import.meta.url));
+  const text = await readDocumentText(new Uint8Array(bytes));
+
+  assert.match(text, /Smash Burger Recipe/i);
+  assert.match(text, /ground beef/i);
+  assert.match(text, /mayonnaise/i);
+  assert.match(text, /burger buns/i);
+  assert.match(text, /natashaskitchen\.com\/smash-burger-recipe/i);
+  assert.ok(text.indexOf("Smash Burger Recipe") < text.indexOf("ground beef"));
+});
+
 test("rejects malformed, image-only, oversized and over-page-limit PDFs", async () => {
   for (const [bytes, code] of [
     [new TextEncoder().encode("not a PDF"), "not_pdf"],

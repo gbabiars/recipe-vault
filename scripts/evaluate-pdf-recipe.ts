@@ -5,47 +5,52 @@ import { readDocumentText } from "../src/lib/recipes/read-document";
 import { recipeContentSchema, type RecipeContent } from "../src/lib/validation/recipe";
 
 const projectDirectory = process.cwd();
-const fixturePath = path.join(
-  projectDirectory,
-  "src/lib/recipes/__fixtures__/fried-rice-recipe.pdf",
-);
-const goldenPath = path.join(
-  projectDirectory,
-  "src/lib/recipes/__fixtures__/fried-rice-recipe.expected.json",
-);
+const fixtures = ["fried-rice-recipe", "smash-burger-recipe"];
 
 async function main() {
-  const rawGolden: unknown = JSON.parse(await readFile(goldenPath, "utf8"));
-  const parsedGolden = recipeContentSchema.safeParse(rawGolden);
-  if (!parsedGolden.success) {
-    console.error("Golden recipe failed recipeContentSchema validation:");
-    for (const issue of parsedGolden.error.issues) {
-      console.error(`- ${issue.path.join(".") || "<root>"}: ${issue.message}`);
-    }
-    process.exitCode = 1;
-    return;
-  }
+  const goldens = await Promise.all(
+    fixtures.map(async (fixture) => {
+      const goldenPath = path.join(
+        projectDirectory,
+        `src/lib/recipes/__fixtures__/${fixture}.expected.json`,
+      );
+      const rawGolden: unknown = JSON.parse(await readFile(goldenPath, "utf8"));
+      const parsedGolden = recipeContentSchema.safeParse(rawGolden);
+      if (!parsedGolden.success) {
+        console.error(`${fixture} golden failed recipeContentSchema validation:`);
+        for (const issue of parsedGolden.error.issues) {
+          console.error(`- ${issue.path.join(".") || "<root>"}: ${issue.message}`);
+        }
+        process.exitCode = 1;
+        return null;
+      }
+      return { fixture, recipe: parsedGolden.data };
+    }),
+  );
+  if (goldens.some((golden) => golden === null)) return;
 
   if (!process.env.OPENAI_API_KEY?.trim()) {
     console.error(
-      "Golden recipe is valid. PDF recipe extraction evaluation requires OPENAI_API_KEY.",
+      "Golden recipes are valid. PDF recipe extraction evaluation requires OPENAI_API_KEY.",
     );
     process.exitCode = 1;
     return;
   }
 
-  {
+  for (const { fixture, recipe } of goldens) {
+    if (!recipe) continue;
+    const fixturePath = path.join(projectDirectory, `src/lib/recipes/__fixtures__/${fixture}.pdf`);
     const pdfBytes = new Uint8Array(await readFile(fixturePath));
     const documentText = await readDocumentText(pdfBytes);
     const extracted = await extractRecipeDocumentContent(documentText);
-    const mismatches = compareRecipeContent(parsedGolden.data, extracted);
+    const mismatches = compareRecipeContent(recipe, extracted);
 
     if (mismatches.length > 0) {
-      console.error(`PDF recipe extraction differs in ${mismatches.length} field(s):`);
+      console.error(`${fixture} extraction differs in ${mismatches.length} field(s):`);
       for (const mismatch of mismatches) console.error(`- ${mismatch}`);
       process.exitCode = 1;
     } else {
-      console.log("PDF recipe extraction matches the golden set.");
+      console.log(`${fixture} extraction matches the golden set.`);
     }
   }
 }
