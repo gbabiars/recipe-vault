@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Grid } from "@/components/ui/grid";
@@ -9,29 +11,27 @@ import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout
 import { Stack } from "@/components/ui/stack";
 import { Textarea } from "@/components/ui/textarea";
 import { Text } from "@/components/ui/text";
-import type { RecipeSummary } from "@/lib/db/recipe-repository";
+import type { RecipeChatMessage } from "@/lib/recipes/recipe-chat-message";
 import { ChatMessageBubble } from "./_components/chat-message-bubble";
 import { RecipePreviewCard } from "./_components/recipe-preview-card";
 import styles from "./page.module.css";
 
-type RecipeSearchResponse = {
-  data: RecipeSummary[];
-  meta: { total: number };
-};
+const chatTransport = new DefaultChatTransport<RecipeChatMessage>({
+  api: "/api/v1/recipes/chat",
+});
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
-  const [submittedQuery, setSubmittedQuery] = useState<string>();
-  const [recipes, setRecipes] = useState<RecipeSummary[]>([]);
-  const [total, setTotal] = useState(0);
-  const [pending, setPending] = useState(false);
-  const [requestError, setRequestError] = useState(false);
   const [inputError, setInputError] = useState<string>();
+  const { messages, sendMessage, status } = useChat<RecipeChatMessage>({
+    transport: chatTransport,
+  });
 
-  const hasSearched = submittedQuery !== undefined;
+  const hasSearched = messages.some((message) => message.role === "user");
+  const pending = status === "submitted" || status === "streaming";
   const canSubmit = query.trim().length > 0;
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending) return;
 
@@ -44,32 +44,7 @@ export default function SearchPage() {
 
     setInputError(undefined);
     setQuery("");
-    setSubmittedQuery(search);
-    setRecipes([]);
-    setTotal(0);
-    setRequestError(false);
-    setPending(true);
-
-    try {
-      const response = await fetch("/api/v1/recipes/search", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ prompt: search }),
-        cache: "no-store",
-      });
-      if (!response.ok) throw new Error("Recipe search failed.");
-
-      const result = (await response.json()) as RecipeSearchResponse;
-      if (!Array.isArray(result.data) || typeof result.meta?.total !== "number") {
-        throw new Error("Recipe search returned an invalid response.");
-      }
-      setRecipes(result.data);
-      setTotal(result.meta.total);
-    } catch {
-      setRequestError(true);
-    } finally {
-      setPending(false);
-    }
+    void sendMessage({ text: search });
   }
 
   return (
@@ -79,39 +54,57 @@ export default function SearchPage() {
         <PageContent className={hasSearched ? styles.resultsPageContent : undefined}>
           <div className={`${styles.pageBody} ${hasSearched ? styles.resultsPageBody : ""}`}>
             {hasSearched && (
-              <section aria-label="Search results" aria-busy={pending} className={styles.results}>
-                <ChatMessageBubble message={submittedQuery} />
+              <section aria-label="Conversation" aria-busy={pending} className={styles.results}>
+                {messages.map((message) => {
+                  if (message.role === "user") {
+                    const text = message.parts
+                      .flatMap((part) => (part.type === "text" ? [part.text] : []))
+                      .join("");
+                    return <ChatMessageBubble key={message.id} message={text} />;
+                  }
+
+                  const results = message.parts.find(
+                    (part) => part.type === "data-recipe-search-results",
+                  );
+                  if (!results || results.type !== "data-recipe-search-results") return null;
+
+                  return (
+                    <div key={message.id}>
+                      {results.data.recipes.length === 0 ? (
+                        <Stack gap="100">
+                          <Heading as="h2" level={5}>
+                            No recipes found
+                          </Heading>
+                          <Text as="p" role="status" aria-live="polite">
+                            Try a different ingredient or phrase.
+                          </Text>
+                        </Stack>
+                      ) : (
+                        <Stack gap="150">
+                          <Text as="p" role="status" aria-live="polite">
+                            Showing {results.data.recipes.length} of {results.data.total} recipes
+                          </Text>
+                          <Grid columns={{ minWidth: 280, max: 2 }} gap="200">
+                            {results.data.recipes.map((recipe) => (
+                              <RecipePreviewCard key={recipe.id} recipe={recipe} />
+                            ))}
+                          </Grid>
+                        </Stack>
+                      )}
+                    </div>
+                  );
+                })}
                 {pending ? (
                   <Text as="p" role="status" aria-live="polite">
                     Searching your recipes…
                   </Text>
-                ) : requestError ? (
+                ) : status === "error" ? (
                   <Alert
                     title="Search could not be completed"
                     description="Please try again."
                     variant="danger"
                   />
-                ) : recipes.length === 0 ? (
-                  <Stack gap="100">
-                    <Heading as="h2" level={5}>
-                      No recipes found
-                    </Heading>
-                    <Text as="p" role="status" aria-live="polite">
-                      Try a different ingredient or phrase.
-                    </Text>
-                  </Stack>
-                ) : (
-                  <Stack gap="150">
-                    <Text as="p" role="status" aria-live="polite">
-                      Showing {recipes.length} of {total} recipes
-                    </Text>
-                    <Grid columns={{ minWidth: 280, max: 2 }} gap="200">
-                      {recipes.map((recipe) => (
-                        <RecipePreviewCard key={recipe.id} recipe={recipe} />
-                      ))}
-                    </Grid>
-                  </Stack>
-                )}
+                ) : null}
               </section>
             )}
 

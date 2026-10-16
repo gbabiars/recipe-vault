@@ -1,7 +1,9 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { userEvent } from "vitest/browser";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
+import type { RecipeChatMessage } from "@/lib/recipes/recipe-chat-message";
 import SearchPage from "./page";
 
 const recipe: RecipeSummary = {
@@ -16,7 +18,17 @@ const recipe: RecipeSummary = {
 };
 
 const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-  Response.json({ data: [recipe], meta: { total: 1, page: 1, pageSize: 25 } }),
+  createUIMessageStreamResponse({
+    stream: createUIMessageStream<RecipeChatMessage>({
+      execute({ writer }) {
+        writer.write({ type: "start" });
+        writer.write({
+          type: "data-recipe-search-results",
+          data: { recipes: [recipe], total: 1 },
+        });
+      },
+    }),
+  }),
 );
 
 beforeEach(() => {
@@ -28,7 +40,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-test("submits the natural-language prompt to the recipe search API", async () => {
+test("submits the natural-language prompt to the recipe chat API", async () => {
   render(<SearchPage />);
 
   const input = screen.getByRole("textbox", { name: "Search your recipes" });
@@ -36,12 +48,15 @@ test("submits the natural-language prompt to the recipe search API", async () =>
   await userEvent.click(screen.getByRole("button", { name: "Search" }));
 
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-  expect(fetchMock).toHaveBeenCalledWith("/api/v1/recipes/search", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ prompt: "Japanese chicken" }),
-    cache: "no-store",
-  });
+  expect(fetchMock).toHaveBeenCalledWith(
+    "/api/v1/recipes/chat",
+    expect.objectContaining({ method: "POST", headers: { "content-type": "application/json" } }),
+  );
+  const requestInit = fetchMock.mock.calls[0]?.[1];
+  const requestBody = JSON.parse(String(requestInit?.body));
+  const submittedMessage = requestBody.messages.at(-1);
+  expect(submittedMessage.role).toBe("user");
+  expect(submittedMessage.parts).toEqual([{ type: "text", text: "Japanese chicken" }]);
   expect(await screen.findByText("Japanese chicken")).toBeVisible();
   expect(await screen.findByRole("link", { name: "View Japanese chicken curry" })).toBeVisible();
   expect(input).toHaveValue("");

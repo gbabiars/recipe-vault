@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { expect, userEvent } from "storybook/test";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
+import type { RecipeChatMessage } from "@/lib/recipes/recipe-chat-message";
 import SearchPage from "./page";
 
 const recipe: RecipeSummary = {
@@ -28,7 +30,17 @@ const meta = {
     globalThis.fetch = async (input, init) => {
       requestedSearchUrl = String(input);
       requestedSearchInit = init;
-      return Response.json({ data: [recipe], meta: { total: 1, page: 1, pageSize: 25 } });
+      return createUIMessageStreamResponse({
+        stream: createUIMessageStream<RecipeChatMessage>({
+          execute({ writer }) {
+            writer.write({ type: "start" });
+            writer.write({
+              type: "data-recipe-search-results",
+              data: { recipes: [recipe], total: 1 },
+            });
+          },
+        }),
+      });
     };
     return () => {
       globalThis.fetch = originalFetch;
@@ -55,10 +67,11 @@ export const SearchResults: Story = {
     ).not.toBeInTheDocument();
     await expect(canvas.getByText("Japanese chicken")).toBeVisible();
     await expect(input).toHaveValue("");
-    await expect(requestedSearchUrl).toBe("/api/v1/recipes/search");
+    await expect(requestedSearchUrl).toBe("/api/v1/recipes/chat");
     await expect(requestedSearchInit?.method).toBe("POST");
-    await expect(JSON.parse(String(requestedSearchInit?.body))).toEqual({
-      prompt: "Japanese chicken",
-    });
+    const requestBody = JSON.parse(String(requestedSearchInit?.body));
+    const submittedMessage = requestBody.messages.at(-1);
+    await expect(submittedMessage.role).toBe("user");
+    await expect(submittedMessage.parts).toEqual([{ type: "text", text: "Japanese chicken" }]);
   },
 };
