@@ -19,6 +19,7 @@
     "test:storybook": "vitest run --project storybook",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "eval": "pnpm run eval:recipe-pdf && pnpm run eval:recipe-search-parser",
     "eval:recipe-pdf": "node --env-file-if-exists=.env.local --import tsx scripts/evaluate-pdf-recipe.ts",
     "eval:recipe-search-parser": "node --env-file-if-exists=.env.local --import tsx scripts/evaluate-recipe-search-parser.ts",
     "test:mcp:openai": "tsx scripts/mcp-openai-smoke.ts",

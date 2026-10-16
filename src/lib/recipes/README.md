@@ -29,11 +29,11 @@ those terms and phrases as quoted PostgreSQL web-search alternatives joined by
 owner ID. Each submission is independent; the parser receives no earlier
 prompts or recipe records. The prompt is sent to OpenAI, while retrieved recipe
 data stays in the existing owner-scoped service and database path.
-The versioned parser eval cases live in
-`scripts/recipe-search-parser-eval.json`; run them with
-`pnpm eval:recipe-search-parser` when changing the parser prompt or model. This
-live eval requires `OPENAI_API_KEY`. The deterministic query serializer tests
-run with the regular unit tests.
+Run all live model evals with `pnpm eval` (currently PDF extraction and recipe
+search parsing). The evals require `OPENAI_API_KEY`. The versioned parser cases
+live in `scripts/recipe-search-parser-eval.json`; use
+`pnpm eval:recipe-search-parser` for focused parser iteration. Deterministic
+query serializer tests run with the regular unit tests.
 
 Tag names are canonical lowercase ASCII. Normalization trims surrounding
 whitespace and collapses repeated internal ASCII spaces; duplicate names are
