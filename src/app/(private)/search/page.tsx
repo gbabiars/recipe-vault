@@ -10,6 +10,7 @@ import { Stack } from "@/components/ui/stack";
 import { Textarea } from "@/components/ui/textarea";
 import { Text } from "@/components/ui/text";
 import type { RecipeSummary } from "@/lib/db/recipe-repository";
+import { ChatMessageBubble } from "./_components/chat-message-bubble";
 import { RecipePreviewCard } from "./_components/recipe-preview-card";
 import styles from "./page.module.css";
 
@@ -28,19 +29,21 @@ export default function SearchPage() {
   const [inputError, setInputError] = useState<string>();
 
   const hasSearched = submittedQuery !== undefined;
+  const canSubmit = query.trim().length > 0;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending) return;
 
-    const search = query.trim();
-
-    if (search.length === 0) {
+    if (!canSubmit) {
       setInputError("Enter a recipe or ingredient to search.");
       return;
     }
 
+    const search = query.trim();
+
     setInputError(undefined);
+    setQuery("");
     setSubmittedQuery(search);
     setRecipes([]);
     setTotal(0);
@@ -77,9 +80,7 @@ export default function SearchPage() {
           <div className={`${styles.pageBody} ${hasSearched ? styles.resultsPageBody : ""}`}>
             {hasSearched && (
               <section aria-label="Search results" aria-busy={pending} className={styles.results}>
-                <Heading as="h2" level={4}>
-                  Results for “{submittedQuery}”
-                </Heading>
+                <ChatMessageBubble message={submittedQuery} />
                 {pending ? (
                   <Text as="p" role="status" aria-live="polite">
                     Searching your recipes…
@@ -92,7 +93,7 @@ export default function SearchPage() {
                   />
                 ) : recipes.length === 0 ? (
                   <Stack gap="100">
-                    <Heading as="h3" level={5}>
+                    <Heading as="h2" level={5}>
                       No recipes found
                     </Heading>
                     <Text as="p" role="status" aria-live="polite">
@@ -140,7 +141,13 @@ export default function SearchPage() {
                 textareaClassName={styles.input}
               />
               <div className={styles.actions}>
-                <Button label="Search" type="submit" variant="primary" pending={pending} />
+                <Button
+                  label="Search"
+                  type="submit"
+                  variant="primary"
+                  pending={pending}
+                  disabled={!canSubmit}
+                />
               </div>
             </form>
           </div>

@@ -31,10 +31,8 @@ afterEach(() => {
 test("submits the natural-language prompt to the recipe search API", async () => {
   render(<SearchPage />);
 
-  await userEvent.type(
-    screen.getByRole("textbox", { name: "Search your recipes" }),
-    "Japanese chicken",
-  );
+  const input = screen.getByRole("textbox", { name: "Search your recipes" });
+  await userEvent.type(input, "Japanese chicken");
   await userEvent.click(screen.getByRole("button", { name: "Search" }));
 
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
@@ -44,8 +42,7 @@ test("submits the natural-language prompt to the recipe search API", async () =>
     body: JSON.stringify({ prompt: "Japanese chicken" }),
     cache: "no-store",
   });
-  expect(
-    await screen.findByRole("heading", { name: "Results for “Japanese chicken”" }),
-  ).toBeVisible();
+  expect(await screen.findByText("Japanese chicken")).toBeVisible();
   expect(await screen.findByRole("link", { name: "View Japanese chicken curry" })).toBeVisible();
+  expect(input).toHaveValue("");
 });

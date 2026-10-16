@@ -1,0 +1,18 @@
+.row {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.bubble {
+  max-width: min(100%, 40rem);
+  padding: var(--space-150) var(--space-300);
+  border-radius: var(--radius-200);
+  background-color: var(--color-background-surface-subtle);
+}
+
+.message {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}

@@ -53,7 +53,8 @@ export const SearchResults: Story = {
     await expect(
       canvas.queryByRole("heading", { name: "What sounds good tonight?" }),
     ).not.toBeInTheDocument();
-    await expect(input).toHaveValue("Japanese chicken");
+    await expect(canvas.getByText("Japanese chicken")).toBeVisible();
+    await expect(input).toHaveValue("");
     await expect(requestedSearchUrl).toBe("/api/v1/recipes/search");
     await expect(requestedSearchInit?.method).toBe("POST");
     await expect(JSON.parse(String(requestedSearchInit?.body))).toEqual({
