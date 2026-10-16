@@ -81,21 +81,19 @@ async function RecipeResults({
           variant="danger"
         />
       ) : documentSummaries.length === 0 ? (
-        <Card as="section" padding="large">
-          <Stack gap="150">
-            <Heading as="h2" level={3}>
-              No recipes found
-            </Heading>
-            <Text as="p">
-              {q || tags.length > 0
-                ? "Try a different search or filter."
-                : "Start your private collection with your first recipe."}
-            </Text>
-            <div>
-              <Button label="Create a recipe" href="/recipes/new" />
-            </div>
-          </Stack>
-        </Card>
+        <Stack as="section" gap="150" padding="100">
+          <Heading as="h2" level={3}>
+            No recipes found
+          </Heading>
+          <Text as="p">
+            {q || tags.length > 0
+              ? "Try a different search or filter."
+              : "Start your private collection with your first recipe."}
+          </Text>
+          <div>
+            <Button label="Create a recipe" href="/recipes/new" />
+          </div>
+        </Stack>
       ) : (
         <Stack gap="200">
           <RecipeList documentSummaries={documentSummaries} />
