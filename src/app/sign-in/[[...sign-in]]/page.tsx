@@ -10,7 +10,7 @@ type Props = {
 export default async function SignInPage({ searchParams }: Props) {
   const user = await getCurrentUser();
   const next = (await searchParams).next;
-  const destination = next?.startsWith("/") && !next.startsWith("//") ? next : "/recipes";
+  const destination = next?.startsWith("/") && !next.startsWith("//") ? next : "/search";
 
   if (user) redirect(destination);
 

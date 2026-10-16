@@ -1,0 +1,41 @@
+.page {
+  display: grid;
+  min-height: calc(100dvh - 2 * var(--space-300));
+  place-items: center;
+}
+
+.content {
+  width: min(100%, 40rem);
+}
+
+.content header {
+  text-align: center;
+}
+
+.composer {
+  padding: var(--space-100);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-100);
+  background: var(--color-background-surface);
+}
+
+.composer:focus-within {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.input {
+  border: 0;
+  padding: var(--space-100);
+  resize: none;
+}
+
+.input:focus-visible {
+  border: 0;
+  outline: none;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}

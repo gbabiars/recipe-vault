@@ -21,6 +21,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Recipes: Story = {};
+export const Search: Story = { args: { pathname: "/search" } };
 export const RecipeDetail: Story = { args: { pathname: "/recipes/example" } };
 export const Tags: Story = { args: { pathname: "/tags" } };
 export const Settings: Story = { args: { pathname: "/settings" } };

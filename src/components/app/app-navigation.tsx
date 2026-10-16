@@ -5,6 +5,7 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  Search,
   Settings,
   Tags,
 } from "lucide-react";
@@ -44,6 +45,7 @@ export function AppNavigation({
   onToggleCollapse,
 }: AppNavigationProps) {
   const recipesActive = pathname === "/recipes" || pathname.startsWith("/recipes/");
+  const searchActive = pathname === "/search" || pathname.startsWith("/search/");
   const tagsActive = pathname === "/tags" || pathname.startsWith("/tags/");
   const settingsActive = pathname === "/settings" || pathname.startsWith("/settings/");
   const accountMenuTriggerClassName = settingsActive
@@ -74,6 +76,16 @@ export function AppNavigation({
         <AppBrand onClick={onSelect} />
       ) : null}
       <nav className={styles.nav} aria-label="Primary">
+        <AppNavLink
+          href="/search"
+          icon={Search}
+          active={searchActive}
+          current={searchActive}
+          collapsed={collapsed}
+          onClick={onSelect}
+        >
+          Search
+        </AppNavLink>
         <AppNavLink
           href="/recipes"
           icon={BookOpen}
