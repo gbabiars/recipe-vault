@@ -10,11 +10,15 @@ repository validates rows and returns the shared `Recipe` shape. Writes use
 owner-bound database functions to create recipes and revision-check replacements.
 
 `RecipeRepository.listRecipes(ownerId, search, tags, offset, limit)` returns
-owned summaries and a pre-pagination total. Search matches a literal,
-case-insensitive substring within one title, description, ingredient name,
-equipment name, or tag. Selected exact tag names match any selected value and
-combine with text search using AND. The database function keeps an explicit
-owner predicate and runs with the caller's RLS context.
+owned summaries and a pre-pagination total. Search uses PostgreSQL English
+full-text search over title, description, ingredient names, equipment names,
+and tags. Unquoted terms are ANDed and may match across fields; quoted phrases,
+`OR`, and `-` exclusions use PostgreSQL web-search syntax. Title and tag
+matches receive more weight than description, ingredient, and equipment matches. Recipe
+notes and ingredient/equipment notes are not searched. Selected exact tag names
+match any selected value and combine with text search using AND. The database
+function keeps an explicit owner predicate and runs with the caller's RLS
+context.
 
 `tag-repository.ts` owns tag inventory and name replacement. `listTags(ownerId,
 options)` returns canonical names with exact recipe usage counts. Inventory pages

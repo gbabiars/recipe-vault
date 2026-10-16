@@ -24,6 +24,18 @@ begin
       '2026-01-02T00:00:00Z'
     ),
     (
+      'recipe_document_search_owner_a',
+      'Cinnamon toast ' || suffix,'An older cinnamon recipe.',9,
+      '[{"name":"bread"}]'::jsonb,'[]'::jsonb,array['Toast.'],array[]::text[],array['toast'],
+      '2026-01-01T00:00:00Z'
+    ),
+    (
+      'recipe_document_search_owner_a',
+      'Recent recipe ' || suffix,'A newer recipe with cinnamon in its description.',null,
+      '[{"name":"rice"}]'::jsonb,'[]'::jsonb,array['Mix.'],array[]::text[],array['new'],
+      '2026-01-04T00:00:00Z'
+    ),
+    (
       'recipe_document_search_owner_b',
       'Other owner ' || suffix,'Crisp cookies with orange zest.',null,
       '[{"name":"unsalted butter"}]'::jsonb,'[{"name":"baking sheet"}]'::jsonb,array['Bake.'],array[]::text[],array['baking'],
@@ -58,6 +70,16 @@ begin
   if result ->> 'total' <> '1' then raise exception 'Description search failed: %', result; end if;
 
   result := public.recipe_vault_search_recipe_documents(
+    'recipe_document_search_owner_a', 'cookie', '{}'::text[], 0, 20
+  );
+  if result ->> 'total' <> '1' then raise exception 'English stemming search failed: %', result; end if;
+
+  result := public.recipe_vault_search_recipe_documents(
+    'recipe_document_search_owner_a', 'shortbread orange', '{}'::text[], 0, 20
+  );
+  if result ->> 'total' <> '1' then raise exception 'Multiple-term search failed: %', result; end if;
+
+  result := public.recipe_vault_search_recipe_documents(
     'recipe_document_search_owner_a', 'butter', '{}'::text[], 0, 20
   );
   if result ->> 'total' <> '1' then raise exception 'Ingredient-name search failed: %', result; end if;
@@ -70,12 +92,27 @@ begin
   result := public.recipe_vault_search_recipe_documents(
     'recipe_document_search_owner_a', 'BAK', '{}'::text[], 0, 20
   );
-  if result ->> 'total' <> '1' then raise exception 'Tag substring search failed: %', result; end if;
+  if result ->> 'total' <> '0' then raise exception 'Partial-token search unexpectedly matched: %', result; end if;
+
+  result := public.recipe_vault_search_recipe_documents(
+    'recipe_document_search_owner_a', 'baking', '{}'::text[], 0, 20
+  );
+  if result ->> 'total' <> '1' then raise exception 'Tag full-text search failed: %', result; end if;
 
   result := public.recipe_vault_search_recipe_documents(
     'recipe_document_search_owner_a', 'olive oil', '{}'::text[], 0, 20
   );
-  if result ->> 'total' <> '0' then raise exception 'Phrase incorrectly bridged fields: %', result; end if;
+  if result ->> 'total' <> '1' then raise exception 'Terms across fields did not match: %', result; end if;
+
+  result := public.recipe_vault_search_recipe_documents(
+    'recipe_document_search_owner_a', '"olive oil"', '{}'::text[], 0, 20
+  );
+  if result ->> 'total' <> '0' then raise exception 'Quoted phrase incorrectly bridged fields: %', result; end if;
+
+  result := public.recipe_vault_search_recipe_documents(
+    'recipe_document_search_owner_a', 'orange OR olive', '{}'::text[], 0, 20
+  );
+  if result ->> 'total' <> '2' then raise exception 'Web-search OR syntax failed: %', result; end if;
 
   result := public.recipe_vault_search_recipe_documents(
     'recipe_document_search_owner_a', 'secret note phrase', '{}'::text[], 0, 20
@@ -115,9 +152,18 @@ begin
   result := public.recipe_vault_search_recipe_documents(
     'recipe_document_search_owner_a', null, '{}'::text[], 0, 1
   );
-  if result ->> 'total' <> '2' or pg_catalog.jsonb_array_length(result -> 'items') <> 1 then
+  if result ->> 'total' <> '4' or pg_catalog.jsonb_array_length(result -> 'items') <> 1 then
     raise exception 'Unfiltered count or pagination failed: %', result;
   end if;
+
+  result := public.recipe_vault_search_recipe_documents(
+    'recipe_document_search_owner_a', 'cinnamon', '{}'::text[], 0, 20
+  );
+  if result ->> 'total' <> '2'
+    or result -> 'items' -> 0 -> 'document' ->> 'title' not like 'Cinnamon toast %' then
+    raise exception 'Title-weighted relevance ranking failed: %', result;
+  end if;
+
 end;
 $verify$;
 
@@ -141,6 +187,32 @@ begin
   end if;
 end;
 $cross_owner$;
+
+reset role;
+update public.recipes
+set title = 'Updated search title ' || current_setting('test.recipe_document_search_token')
+where owner_id = 'recipe_document_search_owner_a'
+  and title = 'Separate phrase parts ' || current_setting('test.recipe_document_search_token');
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"recipe_document_search_owner_a","role":"authenticated"}',
+  true
+);
+
+do $verify_generated_document_update$
+declare
+  result jsonb;
+begin
+  result := public.recipe_vault_search_recipe_documents(
+    'recipe_document_search_owner_a', 'updated search title', '{}'::text[], 0, 20
+  );
+  if result ->> 'total' <> '1' then
+    raise exception 'Generated search document did not update: %', result;
+  end if;
+end;
+$verify_generated_document_update$;
 
 reset role;
 do $permissions$

@@ -15,10 +15,12 @@ a name and optional text amount and note. Equipment entries have a name and an
 optional note. Yield contains a positive amount and unit and remains optional.
 
 `RecipeService.listRecipes(ownerId, { search, tags, page, pageSize })` provides
-literal, case-insensitive substring search across title, description, ingredient
-names, equipment names, and tags. The complete trimmed phrase occurs within one
-field. Exact selected tags match any selected tag and combine with text search
-using AND.
+PostgreSQL English full-text search across title, description, ingredient names,
+equipment names, and tags. Unquoted terms are ANDed and may match across fields;
+quoted phrases, `OR`, and `-` exclusions use PostgreSQL web-search syntax.
+Title and tag matches receive more weight than description, ingredient, and
+equipment matches. Recipe notes and ingredient/equipment notes are not searched. Exact
+selected tags match any selected tag and combine with text search using AND.
 
 Tag names are canonical lowercase ASCII. Normalization trims surrounding
 whitespace and collapses repeated internal ASCII spaces; duplicate names are
