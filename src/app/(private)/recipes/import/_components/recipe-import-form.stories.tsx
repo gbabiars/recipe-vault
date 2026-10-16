@@ -59,8 +59,10 @@ export const Pending: Story = {
       canvas.getByRole("textbox", { name: "Recipe website URL" }),
       "https://example.com/recipes/soup",
     );
-    await userEvent.click(canvas.getByRole("button", { name: "Import recipe" }));
-    await expect(canvas.getByRole("button", { name: "Importing…" })).toBeDisabled();
+    const submit = canvas.getByRole("button", { name: "Import recipe" });
+    await userEvent.click(submit);
+    await expect(submit).toBeDisabled();
+    await expect(submit.getAttribute("aria-busy")).toBe("true");
     pendingControl.finish({ id: "new-recipe" });
   },
 };

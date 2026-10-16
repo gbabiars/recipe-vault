@@ -65,8 +65,10 @@ export const Pending: Story = {
   args: { importRecipe: pending },
   play: async ({ canvas }) => {
     await userEvent.upload(canvas.getByLabelText("Recipe PDF"), pdf);
-    await userEvent.click(canvas.getByRole("button", { name: "Import PDF" }));
-    await expect(canvas.getByRole("button", { name: "Importing PDF…" })).toBeDisabled();
+    const submit = canvas.getByRole("button", { name: "Import PDF" });
+    await userEvent.click(submit);
+    await expect(submit).toBeDisabled();
+    await expect(submit.getAttribute("aria-busy")).toBe("true");
     pendingControl.finish({ id: "new-recipe" });
   },
 };

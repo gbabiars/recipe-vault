@@ -59,8 +59,13 @@ test("disables PDF submission while pending", async () => {
   );
   render(<RecipeDocumentImportForm importRecipe={importRecipe} />);
   selectPdf(screen.getByLabelText("Recipe PDF"));
-  fireEvent.click(screen.getByRole("button", { name: "Import PDF" }));
-  expect(screen.getByRole("button", { name: "Importing PDF…" })).toBeDisabled();
+  const submit = screen.getByRole("button", { name: "Import PDF" });
+  fireEvent.click(submit);
+  expect(screen.getByRole("button", { name: "Import PDF" })).toBeDisabled();
+  expect(submit).toHaveAttribute("aria-busy", "true");
   finish({ id: "new" });
-  await waitFor(() => expect(screen.getByRole("button", { name: "Import PDF" })).toBeEnabled());
+  await waitFor(() => {
+    expect(submit).toBeEnabled();
+    expect(submit).not.toHaveAttribute("aria-busy");
+  });
 });

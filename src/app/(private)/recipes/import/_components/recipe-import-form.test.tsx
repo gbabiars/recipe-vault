@@ -55,8 +55,13 @@ test("disables submission while import is pending", async () => {
   fireEvent.change(screen.getByRole("textbox", { name: "Recipe website URL" }), {
     target: { value: "https://example.com/soup" },
   });
-  fireEvent.click(screen.getByRole("button", { name: "Import recipe" }));
-  expect(screen.getByRole("button", { name: "Importing…" })).toBeDisabled();
+  const submit = screen.getByRole("button", { name: "Import recipe" });
+  fireEvent.click(submit);
+  expect(screen.getByRole("button", { name: "Import recipe" })).toBeDisabled();
+  expect(submit).toHaveAttribute("aria-busy", "true");
   finish({ id: "new" });
-  await waitFor(() => expect(screen.getByRole("button", { name: "Import recipe" })).toBeEnabled());
+  await waitFor(() => {
+    expect(submit).toBeEnabled();
+    expect(submit).not.toHaveAttribute("aria-busy");
+  });
 });
