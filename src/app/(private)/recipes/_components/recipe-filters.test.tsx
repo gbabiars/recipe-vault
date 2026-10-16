@@ -67,10 +67,10 @@ test("keeps search focus when route filter props update", async () => {
   fireEvent.change(search, { target: { value: "soup " } });
 
   await waitFor(() =>
-    expect(replaceMock).toHaveBeenLastCalledWith("/recipes?q=soup", { scroll: false }),
+    expect(replaceMock).toHaveBeenLastCalledWith("/recipes?q=soup+", { scroll: false }),
   );
 
-  rerender(<RecipeFilters q="soup" />);
+  rerender(<RecipeFilters q="soup " />);
 
   expect(screen.getByRole("searchbox", { name: "Search" })).toBe(search);
   expect(document.activeElement).toBe(search);

@@ -22,8 +22,7 @@ export function recipePageHref({
   page: number;
 }): string {
   const params = new URLSearchParams();
-  const search = q?.trim();
-  if (search) params.set("q", search);
+  if (q) params.set("q", q);
   for (const tag of tags) params.append("tag", tag);
   if (page > 1) params.set("page", String(page));
 

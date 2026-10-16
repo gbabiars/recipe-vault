@@ -26,10 +26,10 @@ export function RecipeFilters(props: { q?: string; tag?: string | string[] }) {
   const applyFilters = useCallback(
     (search: string, tags: string[]) => {
       const params = new URLSearchParams();
-      const normalizedSearch = search.trim();
-      const nextFiltersKey = filtersKey(normalizedSearch, tags);
+      const querySearch = /\S/.test(search) ? search : "";
+      const nextFiltersKey = filtersKey(querySearch, tags);
       const currentFiltersKey = filtersKey(q ?? "", normalizeTags(tag));
-      if (normalizedSearch) params.set("q", normalizedSearch);
+      if (querySearch) params.set("q", search);
       for (const selectedTag of tags) params.append("tag", selectedTag);
       if (
         nextFiltersKey !== currentFiltersKey &&

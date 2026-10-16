@@ -31,17 +31,17 @@ for (const [value, expected] of [
   });
 }
 
-test("omits page 1 and builds the unfiltered first-page URL", () => {
+test("omits page 1 and preserves the raw search in the first-page URL", () => {
   assert.equal(recipePageHref({ tags: [], page: 1 }), "/recipes");
   assert.equal(
     recipePageHref({ q: "  curry night ", tags: [], page: 1 }),
-    "/recipes?q=curry+night",
+    "/recipes?q=++curry+night+",
   );
 });
 
-test("preserves trimmed search text and repeated tags on later pages", () => {
+test("preserves raw search text and repeated tags on later pages", () => {
   assert.equal(
     recipePageHref({ q: "  curry night ", tags: ["Dinner", "Quick & easy"], page: 3 }),
-    "/recipes?q=curry+night&tag=Dinner&tag=Quick+%26+easy&page=3",
+    "/recipes?q=++curry+night+&tag=Dinner&tag=Quick+%26+easy&page=3",
   );
 });
