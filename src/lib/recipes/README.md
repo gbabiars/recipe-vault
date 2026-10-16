@@ -22,6 +22,19 @@ Title and tag matches receive more weight than description, ingredient, and
 equipment matches. Recipe notes and ingredient/equipment notes are not searched. Exact
 selected tags match any selected tag and combine with text search using AND.
 
+`parseRecipeSearch(prompt)` uses the OpenAI provider through the Vercel AI SDK
+to extract a bounded `matchAny` list for one request. The caller serializes
+those terms and phrases as quoted PostgreSQL web-search alternatives joined by
+`OR`, then passes that query to `RecipeService.listRecipes` with the verified
+owner ID. Each submission is independent; the parser receives no earlier
+prompts or recipe records. The prompt is sent to OpenAI, while retrieved recipe
+data stays in the existing owner-scoped service and database path.
+Run all live model evals with `pnpm eval` (currently PDF extraction and recipe
+search parsing). The evals require `OPENAI_API_KEY`. The versioned parser cases
+live in `scripts/recipe-search-parser-eval.json`; use
+`pnpm eval:recipe-search-parser` for focused parser iteration. Deterministic
+query serializer tests run with the regular unit tests.
+
 Tag names are canonical lowercase ASCII. Normalization trims surrounding
 whitespace and collapses repeated internal ASCII spaces; duplicate names are
 removed. Each recipe stores its tags in `tags: string[]`. `TagService` derives

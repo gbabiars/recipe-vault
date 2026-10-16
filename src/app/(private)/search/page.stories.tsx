@@ -5,8 +5,8 @@ import SearchPage from "./page";
 
 const recipe: RecipeSummary = {
   id: "11111111-1111-4111-8111-111111111111",
-  title: "Chicken tacos",
-  description: "Quick tacos with seasoned chicken and lime.",
+  title: "Japanese chicken tacos",
+  description: "Quick tacos with seasoned chicken, miso, and lime.",
   time: { totalMinutes: 25 },
   tags: ["weeknight", "dinner"],
   revision: 1,
@@ -15,14 +15,21 @@ const recipe: RecipeSummary = {
 };
 
 const originalFetch = globalThis.fetch;
+let requestedSearchUrl: string | undefined;
+let requestedSearchInit: RequestInit | undefined;
 
 const meta = {
   title: "App/Search/SearchPage",
   component: SearchPage,
   parameters: { layout: "fullscreen" },
   beforeEach: () => {
-    globalThis.fetch = async () =>
-      Response.json({ data: [recipe], meta: { total: 1, page: 1, pageSize: 25 } });
+    requestedSearchUrl = undefined;
+    requestedSearchInit = undefined;
+    globalThis.fetch = async (input, init) => {
+      requestedSearchUrl = String(input);
+      requestedSearchInit = init;
+      return Response.json({ data: [recipe], meta: { total: 1, page: 1, pageSize: 25 } });
+    };
     return () => {
       globalThis.fetch = originalFetch;
     };
@@ -38,12 +45,19 @@ export const SearchResults: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("heading", { name: "What sounds good tonight?" })).toBeVisible();
     const input = canvas.getByRole("textbox", { name: "Search your recipes" });
-    await userEvent.type(input, "chicken");
+    await userEvent.type(input, "Japanese chicken");
     await userEvent.keyboard("{Meta>}{Enter}{/Meta}");
-    await expect(await canvas.findByRole("link", { name: "View Chicken tacos" })).toBeVisible();
+    await expect(
+      await canvas.findByRole("link", { name: "View Japanese chicken tacos" }),
+    ).toBeVisible();
     await expect(
       canvas.queryByRole("heading", { name: "What sounds good tonight?" }),
     ).not.toBeInTheDocument();
-    await expect(input).toHaveValue("chicken");
+    await expect(input).toHaveValue("Japanese chicken");
+    await expect(requestedSearchUrl).toBe("/api/v1/recipes/search");
+    await expect(requestedSearchInit?.method).toBe("POST");
+    await expect(JSON.parse(String(requestedSearchInit?.body))).toEqual({
+      prompt: "Japanese chicken",
+    });
   },
 };
