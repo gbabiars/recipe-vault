@@ -4,6 +4,10 @@
   place-items: center;
 }
 
+.resultsPage {
+  display: block;
+}
+
 .content {
   width: min(100%, 40rem);
 }
@@ -12,11 +16,48 @@
   text-align: center;
 }
 
+.resultsContent {
+  display: flex;
+  width: min(100%, 56rem);
+  min-height: calc(100dvh - 2 * var(--space-300));
+  flex-direction: column;
+  margin-inline: auto;
+}
+
+.resultsPageContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.pageBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.resultsPageBody {
+  flex: 1;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-200);
+  padding-block: var(--space-200);
+}
+
 .composer {
   padding: var(--space-100);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-100);
   background: var(--color-background-surface);
+}
+
+.composerAtBottom {
+  position: sticky;
+  bottom: var(--space-200);
+  z-index: 1;
+  margin-top: auto;
 }
 
 .composer:focus-within {
