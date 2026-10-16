@@ -1,0 +1,51 @@
+[
+  {
+    "id": "ingredient-filler",
+    "prompt": "I want chicken tonight",
+    "expectedAlternatives": ["chicken"],
+    "forbiddenTerms": ["tonight", "want"]
+  },
+  {
+    "id": "cuisine-filler",
+    "prompt": "I feel like Japanese food tonight",
+    "expectedAlternatives": ["japanese"],
+    "forbiddenTerms": ["tonight", "feel like"]
+  },
+  {
+    "id": "multiple-independent-terms",
+    "prompt": "Japanese beef",
+    "expectedAlternatives": ["japanese", "beef"]
+  },
+  {
+    "id": "recipe-title-phrase",
+    "prompt": "Show me my smash burger recipe",
+    "expectedAlternatives": ["smash burger"],
+    "forbiddenTerms": ["show me", "recipe"]
+  },
+  {
+    "id": "cuisine-alternatives",
+    "prompt": "I could go for Thai or Italian",
+    "expectedAlternatives": ["thai", "italian"]
+  },
+  {
+    "id": "obvious-recipe-title-typo",
+    "prompt": "Show me my teryaki chicken recipe",
+    "expectedAlternatives": ["teriyaki chicken"],
+    "forbiddenTerms": ["teryaki", "show me", "recipe"]
+  },
+  {
+    "id": "generic-dinner-request",
+    "prompt": "What should I make for dinner?",
+    "expectedAlternatives": []
+  },
+  {
+    "id": "unsupported-negative-constraint",
+    "prompt": "I do not want beef",
+    "expectedAlternatives": []
+  },
+  {
+    "id": "unsupported-time-constraint",
+    "prompt": "Show me Japanese recipes I can make in under 30 minutes",
+    "expectedAlternatives": []
+  }
+]

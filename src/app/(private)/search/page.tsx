@@ -48,8 +48,10 @@ export default function SearchPage() {
     setPending(true);
 
     try {
-      const params = new URLSearchParams({ search, pageSize: "25" });
-      const response = await fetch(`/api/v1/recipes?${params.toString()}`, {
+      const response = await fetch("/api/v1/recipes/search", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ prompt: search }),
         cache: "no-store",
       });
       if (!response.ok) throw new Error("Recipe search failed.");

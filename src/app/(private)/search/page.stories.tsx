@@ -16,6 +16,7 @@ const recipe: RecipeSummary = {
 
 const originalFetch = globalThis.fetch;
 let requestedSearchUrl: string | undefined;
+let requestedSearchInit: RequestInit | undefined;
 
 const meta = {
   title: "App/Search/SearchPage",
@@ -23,8 +24,10 @@ const meta = {
   parameters: { layout: "fullscreen" },
   beforeEach: () => {
     requestedSearchUrl = undefined;
-    globalThis.fetch = async (input) => {
+    requestedSearchInit = undefined;
+    globalThis.fetch = async (input, init) => {
       requestedSearchUrl = String(input);
+      requestedSearchInit = init;
       return Response.json({ data: [recipe], meta: { total: 1, page: 1, pageSize: 25 } });
     };
     return () => {
@@ -51,9 +54,10 @@ export const SearchResults: Story = {
       canvas.queryByRole("heading", { name: "What sounds good tonight?" }),
     ).not.toBeInTheDocument();
     await expect(input).toHaveValue("Japanese chicken");
-    const requestUrl = new URL(requestedSearchUrl!, "http://localhost");
-    await expect(requestUrl.pathname).toBe("/api/v1/recipes");
-    await expect(requestUrl.searchParams.get("search")).toBe("Japanese chicken");
-    await expect(requestUrl.searchParams.get("pageSize")).toBe("25");
+    await expect(requestedSearchUrl).toBe("/api/v1/recipes/search");
+    await expect(requestedSearchInit?.method).toBe("POST");
+    await expect(JSON.parse(String(requestedSearchInit?.body))).toEqual({
+      prompt: "Japanese chicken",
+    });
   },
 };

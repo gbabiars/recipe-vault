@@ -31,3 +31,4 @@ export class InMemoryRateLimiter implements RateLimiter {
 export const defaultRateLimiter = new InMemoryRateLimiter();
 export const recipeReadLimit = { limit: 120, windowMs: 60_000 } as const;
 export const recipeWriteLimit = { limit: 30, windowMs: 60_000 } as const;
+export const recipeSearchLimit = { limit: 10, windowMs: 60_000 } as const;

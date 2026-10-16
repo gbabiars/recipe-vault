@@ -15,7 +15,7 @@ const recipe: RecipeSummary = {
   updatedAt: "2026-09-15T12:00:00.000Z",
 };
 
-const fetchMock = vi.fn(async (_input: RequestInfo | URL) =>
+const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
   Response.json({ data: [recipe], meta: { total: 1, page: 1, pageSize: 25 } }),
 );
 
@@ -28,7 +28,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-test("submits the full multi-term query to the full-text recipe search API", async () => {
+test("submits the natural-language prompt to the recipe search API", async () => {
   render(<SearchPage />);
 
   await userEvent.type(
@@ -38,7 +38,10 @@ test("submits the full multi-term query to the full-text recipe search API", asy
   await userEvent.click(screen.getByRole("button", { name: "Search" }));
 
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-  expect(fetchMock).toHaveBeenCalledWith("/api/v1/recipes?search=Japanese+chicken&pageSize=25", {
+  expect(fetchMock).toHaveBeenCalledWith("/api/v1/recipes/search", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ prompt: "Japanese chicken" }),
     cache: "no-store",
   });
   expect(
