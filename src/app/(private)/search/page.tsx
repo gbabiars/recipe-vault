@@ -11,9 +11,9 @@ import { PageContent, PageHeader, PageLayout } from "@/components/ui/page-layout
 import { Stack } from "@/components/ui/stack";
 import { Textarea } from "@/components/ui/textarea";
 import { Text } from "@/components/ui/text";
+import { RecipePreviewCard } from "@/components/shared/recipes/recipe-preview-card";
 import type { RecipeChatMessage } from "@/lib/recipes/recipe-chat-message";
 import { ChatMessageBubble } from "./_components/chat-message-bubble";
-import { RecipePreviewCard } from "./_components/recipe-preview-card";
 import styles from "./page.module.css";
 
 const chatTransport = new DefaultChatTransport<RecipeChatMessage>({
@@ -86,7 +86,11 @@ export default function SearchPage() {
                           </Text>
                           <Grid columns={{ minWidth: 280, max: 2 }} gap="200">
                             {results.data.recipes.map((recipe) => (
-                              <RecipePreviewCard key={recipe.id} recipe={recipe} />
+                              <RecipePreviewCard
+                                key={recipe.id}
+                                recipe={recipe}
+                                href={`/recipes/${encodeURIComponent(recipe.id)}`}
+                              />
                             ))}
                           </Grid>
                         </Stack>

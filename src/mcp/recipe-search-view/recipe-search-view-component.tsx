@@ -1,62 +1,11 @@
-import { Card } from "../../components/ui/card/card";
-import { Chip } from "../../components/ui/chip/chip";
+import { RecipePreviewCard } from "../../components/shared/recipes/recipe-preview-card";
+import { Grid } from "../../components/ui/grid/grid";
 import { Heading } from "../../components/ui/heading/heading";
-import { Inline } from "../../components/ui/inline/inline";
 import { Stack } from "../../components/ui/stack/stack";
 import { Text } from "../../components/ui/text/text";
-import type { RecipeSearchResult, RecipeSearchViewState } from "./recipe-search-view-state";
+import type { RecipeSearchViewState } from "./recipe-search-view-state";
 
 import "./recipe-search-view.css";
-
-function RecipeResultCard({ recipe }: { recipe: RecipeSearchResult }) {
-  const metadata = [
-    recipe.time.prepMinutes === undefined ? undefined : "Prep: " + recipe.time.prepMinutes + " min",
-    recipe.time.cookMinutes === undefined ? undefined : "Cook: " + recipe.time.cookMinutes + " min",
-    recipe.time.totalMinutes === undefined
-      ? undefined
-      : "Total: " + recipe.time.totalMinutes + " min",
-    recipe.yield === undefined
-      ? undefined
-      : "Yield: " + recipe.yield.amount + " " + recipe.yield.unit,
-  ].filter((detail): detail is string => detail !== undefined);
-
-  return (
-    <Card as="li" padding="medium">
-      <Stack gap="150">
-        <Stack gap="050">
-          <Heading as="h2" level={5}>
-            {recipe.title}
-          </Heading>
-          {recipe.description && (
-            <Text as="p" size="large">
-              {recipe.description}
-            </Text>
-          )}
-        </Stack>
-        {metadata.length > 0 && (
-          <Text as="p" size="small" appearance="secondary">
-            {metadata.join(" · ")}
-          </Text>
-        )}
-        {recipe.tags.length > 0 && (
-          <Inline
-            as="ul"
-            aria-label={"Tags for " + recipe.title}
-            gap="100"
-            rowGap="050"
-            style={{ listStyle: "none", margin: 0, padding: 0 }}
-          >
-            {recipe.tags.map((tag, index) => (
-              <li key={recipe.id + ":" + index + ":" + tag}>
-                <Chip>{tag}</Chip>
-              </li>
-            ))}
-          </Inline>
-        )}
-      </Stack>
-    </Card>
-  );
-}
 
 export function RecipeSearchView(props: RecipeSearchViewState) {
   const isLoading = props.state === "loading";
@@ -83,16 +32,20 @@ export function RecipeSearchView(props: RecipeSearchViewState) {
           </Text>
         )}
         {props.state === "recipes" && (
-          <Stack
+          <Grid
             as="ul"
             aria-label="Recipe search results"
-            gap="150"
+            columns={{ minWidth: 280, max: 2 }}
+            className="recipe-search-results"
+            gap="200"
             style={{ listStyle: "none", margin: 0, padding: 0 }}
           >
             {props.recipes.map((recipe) => (
-              <RecipeResultCard key={recipe.id} recipe={recipe} />
+              <li key={recipe.id}>
+                <RecipePreviewCard recipe={recipe} />
+              </li>
             ))}
-          </Stack>
+          </Grid>
         )}
       </Stack>
     </main>

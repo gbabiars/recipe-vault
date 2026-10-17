@@ -28,9 +28,8 @@ test("renders display-only recipe cards with optional recipe details", () => {
   expect(screen.getByRole("heading", { name: "Search results", level: 1 })).toBeInTheDocument();
   expect(screen.getByRole("heading", { name: "Tomato soup", level: 2 })).toBeInTheDocument();
   expect(screen.getByText("A simple soup with basil.")).toBeInTheDocument();
-  expect(
-    screen.getByText("Prep: 10 min · Cook: 20 min · Total: 30 min · Yield: 4 servings"),
-  ).toBeInTheDocument();
+  expect(screen.getByText("30 min")).toBeInTheDocument();
+  expect(screen.queryByText(/Prep:|Cook:|Total:|Yield:/u)).toBeNull();
   expect(screen.getByText("soup")).toBeInTheDocument();
   expect(screen.getByText("vegetarian")).toBeInTheDocument();
   expect(screen.queryByText(recipeId)).toBeNull();
@@ -58,9 +57,8 @@ test("accepts the document search_recipes structured payload", () => {
   render(<RecipeSearchView {...state} />);
   expect(screen.getByRole("heading", { name: "Crispy tofu bowls", level: 2 })).toBeInTheDocument();
   expect(screen.getByText("A weeknight bowl with gingery sauce.")).toBeInTheDocument();
-  expect(
-    screen.getByText("Prep: 15 min · Cook: 20 min · Total: 35 min · Yield: 2 bowls"),
-  ).toBeInTheDocument();
+  expect(screen.getByText("35 min")).toBeInTheDocument();
+  expect(screen.queryByText(/Prep:|Cook:|Total:|Yield:/u)).toBeNull();
   expect(screen.getByText("vegetarian")).toBeInTheDocument();
   expect(screen.queryByText(recipeId)).toBeNull();
   expect(screen.queryByText("7")).toBeNull();
@@ -130,7 +128,7 @@ test("uses different canvas tokens for light and dark host themes", () => {
       ]}
     />,
   );
-  const card = screen.getByRole("listitem");
+  const card = screen.getByRole("article");
   const lightCardBackground = getComputedStyle(card).backgroundColor;
 
   root.setAttribute("data-theme", "dark");
