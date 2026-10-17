@@ -5,6 +5,11 @@ import type { TagInventoryItem } from "@/lib/db/tag-repository";
 import type { OwnerBoundTagService } from "@/lib/recipes/tag-service";
 import type { OwnerBoundRecipeService } from "@/lib/recipes/recipe-service";
 import { recipeContentSchema, recipeSchema } from "@/lib/validation/recipe";
+import {
+  recipeExtractionGuidance,
+  recipeImportFieldGuidance,
+  recipeImportWorkflow,
+} from "@/lib/recipes/recipe-import-guidance";
 import { tagNameSchema } from "@/lib/validation/tag";
 import {
   defaultRateLimiter,
@@ -100,9 +105,26 @@ export const mcpSearchRecipesOutputSchema = z
 export const mcpGetRecipeOutputSchema = z
   .object({ recipe: mcpDocumentOutputSchema, revision: z.number().int().positive() })
   .strict();
+export const mcpRecipeImportGuidanceOutputSchema = z
+  .object({
+    workflow: z.string(),
+    extractionGuidance: z.string(),
+    fieldGuidance: z.string(),
+  })
+  .strict();
 
 function text(value: unknown, isError = false) {
   return { content: [{ type: "text" as const, text: JSON.stringify(value) }], isError };
+}
+
+/** Public, static guidance: no owner data or service-role access is involved. */
+export function getRecipeImportGuidance() {
+  const output = mcpRecipeImportGuidanceOutputSchema.parse({
+    workflow: recipeImportWorkflow,
+    extractionGuidance: recipeExtractionGuidance,
+    fieldGuidance: recipeImportFieldGuidance,
+  });
+  return { ...text(output), structuredContent: output };
 }
 
 function allowed(context: { userId: string; limiter?: RateLimiter }, write: boolean) {

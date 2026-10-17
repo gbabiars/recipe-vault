@@ -62,3 +62,5 @@ extract and validate recipe fields before saving through the recipe service.
 They preserve a supplied source URL, select the first complete recipe in source
 order, and leave yield absent when the source does not provide it. PDF reader
 errors return safe classifications without exposing parser exception text.
+The extraction policy in `recipe-import-guidance.ts` is shared with MCP guidance
+for agents that read and extract recipes from links, uploads, or pasted content.

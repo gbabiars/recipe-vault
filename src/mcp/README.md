@@ -29,6 +29,27 @@ if (selected) {
 }
 ```
 
+For a recipe supplied as a link, uploaded document, image, or pasted content,
+the consuming agent reads and extracts the source, then calls `save_recipe`.
+Server instructions and the `save_recipe` description direct the agent to read
+the public, read-only `get_recipe_import_guidance` tool first. Its response
+contains the extraction policy shared with the in-app PDF and website importer,
+plus the save field mapping. The MCP server does not fetch or extract the source:
+
+```ts
+const guidance = await get_recipe_import_guidance();
+const source = await agent.read(userSuppliedSource);
+const recipe = await agent.extract(source, guidance);
+await save_recipe({ ...recipe, ...(sourceUrl ? { sourceUrl } : {}) });
+```
+
+The server also publishes `skill://recipe-import/SKILL.md` with `skills/list`,
+`skills/get`, and `resources/read` for ChatGPT's static MCP skill import. The
+skill is generated from the same extraction policy. The installed MCP SDK
+negotiates protocol `2025-11-25`, so this implementation targets ChatGPT's
+documented import subset; it does not claim full `2026-07-28` Skills extension
+conformance. Hosts without that support can use the guidance tool.
+
 The server also exposes `list_tags` and `replace_tag_name`. Listing requires
 `recipes:read`; replacement requires `recipes:write`. Tag names live in each
 recipe's `tags` array, and inventory counts come from the authenticated owner's

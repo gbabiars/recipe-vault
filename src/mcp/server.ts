@@ -9,6 +9,7 @@ import { createMcpHandler } from "mcp-handler";
 import { RecipeRepository } from "@/lib/db/recipe-repository";
 import { TagRepository } from "@/lib/db/tag-repository";
 import { getOwnerBoundMcpRecipeService, getOwnerBoundMcpTagService } from "@/lib/recipes";
+import { recipeImportWorkflow } from "@/lib/recipes/recipe-import-guidance";
 import { OwnerBoundRecipeService, RecipeService } from "@/lib/recipes/recipe-service";
 import { OwnerBoundTagService, TagService } from "@/lib/recipes/tag-service";
 import { authorizeMcpTool, mcpScopes, type McpScope } from "./auth-policy";
@@ -16,9 +17,12 @@ import {
   createRecipeMcpTools,
   createTagMcpTools,
   mcpGetRecipeOutputSchema,
+  mcpRecipeImportGuidanceOutputSchema,
   mcpSearchRecipesOutputSchema,
   mcpToolSchemas,
+  getRecipeImportGuidance,
 } from "./tools";
+import { registerRecipeImportSkill } from "./recipe-import-skill";
 import { registerRecipeViewResource, recipeViewUri } from "./recipe-view-resource";
 import { registerSearchResultsResource, searchResultsViewUri } from "./search-results-resource";
 
@@ -60,7 +64,10 @@ export function createRecipeMcpHandler(
 ) {
   return createMcpHandler(
     (server) => registerRecipeTools(server, getService, getTagService),
-    { serverInfo: { name: "recipe-vault", version: "0.6.0" } },
+    {
+      serverInfo: { name: "recipe-vault", version: "0.6.0" },
+      instructions: `Before saving a recipe from a link, document, image, or pasted content, call get_recipe_import_guidance. ${recipeImportWorkflow}`,
+    },
     {
       streamableHttpEndpoint: endpoint,
       disableSse: true,
@@ -76,6 +83,19 @@ function registerRecipeTools(
 ) {
   registerRecipeViewResource(server);
   registerSearchResultsResource(server);
+  registerRecipeImportSkill(server);
+  server.registerTool(
+    "get_recipe_import_guidance",
+    {
+      title: "Get recipe import guidance",
+      description:
+        "Read Recipe Vault's extraction rules and save_recipe field mapping before saving a recipe from a link, uploaded document, image, or pasted content.",
+      inputSchema: {},
+      outputSchema: mcpRecipeImportGuidanceOutputSchema,
+      annotations: { readOnlyHint: true },
+    },
+    async () => getRecipeImportGuidance(),
+  );
   server.registerTool(
     "list_tags",
     {
@@ -157,7 +177,7 @@ function registerRecipeTools(
     {
       title: "Save recipe",
       description:
-        "Create a complete recipe document. Yield may be omitted when the source does not state it.",
+        "Create a complete recipe document. When extracting from a link, uploaded document, image, or pasted content, first call get_recipe_import_guidance, then pass the structured recipe here. Include sourceUrl only when a valid HTTP(S) recipe URL is known. Yield may be omitted when the source does not state it.",
       inputSchema: mcpToolSchemas.recipe,
       annotations: { readOnlyHint: false, idempotentHint: false, destructiveHint: false },
     },
@@ -190,7 +210,12 @@ export async function handleMcpRequest(
     sessionIdGenerator: undefined,
     enableJsonResponse: true,
   });
-  const server = new McpServer({ name: "recipe-vault", version: "0.6.0" });
+  const server = new McpServer(
+    { name: "recipe-vault", version: "0.6.0" },
+    {
+      instructions: `Before saving a recipe from a link, document, image, or pasted content, call get_recipe_import_guidance. ${recipeImportWorkflow}`,
+    },
+  );
   registerRecipeTools(
     server,
     () => service,
