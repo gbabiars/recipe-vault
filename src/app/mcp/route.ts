@@ -6,7 +6,7 @@ import { createRecipeMcpHandler } from "@/mcp/server";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const handler = createRecipeMcpHandler("/mcp");
+const handler = createRecipeMcpHandler();
 
 const authenticatedHandler = withMcpAuth(
   handler,

@@ -1,5 +1,5 @@
 import { RESOURCE_MIME_TYPE, registerAppResource } from "@modelcontextprotocol/ext-apps/server";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import searchResultsHtml from "@/mcp/generated/search-results";
 
 export const searchResultsViewUri = "ui://recipe-vault/search-results.html";

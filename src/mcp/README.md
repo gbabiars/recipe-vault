@@ -45,10 +45,11 @@ await save_recipe({ ...recipe, ...(sourceUrl ? { sourceUrl } : {}) });
 
 The server also publishes `skill://recipe-import/SKILL.md` with `skills/list`,
 `skills/get`, and `resources/read` for ChatGPT's static MCP skill import. The
-skill is generated from the same extraction policy. The installed MCP SDK
-negotiates protocol `2025-11-25`, so this implementation targets ChatGPT's
-documented import subset; it does not claim full `2026-07-28` Skills extension
-conformance. Hosts without that support can use the guidance tool.
+skill is generated from the same extraction policy. The MCP handler serves
+protocol `2026-07-28` and falls back to stateless Streamable HTTP for 2025-era
+clients. The skill implementation targets ChatGPT's documented import subset;
+it does not claim full `2026-07-28` Skills extension conformance. Hosts without
+skill support can use the guidance tool.
 
 The server also exposes `list_tags` and `replace_tag_name`. Listing requires
 `recipes:read`; replacement requires `recipes:write`. Tag names live in each

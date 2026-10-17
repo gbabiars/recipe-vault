@@ -1,8 +1,5 @@
-import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
-import type { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
-import type { ServerNotification, ServerRequest } from "@modelcontextprotocol/sdk/types.js";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import { McpServer, WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/server";
+import type { AuthInfo, ServerContext } from "@modelcontextprotocol/server";
 import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createMcpHandler } from "mcp-handler";
@@ -25,8 +22,8 @@ import {
 import { registerRecipeImportSkill } from "./recipe-import-skill";
 import { registerRecipeViewResource, recipeViewUri } from "./recipe-view-resource";
 import { registerSearchResultsResource, searchResultsViewUri } from "./search-results-resource";
+import { z } from "zod";
 
-type McpExtra = RequestHandlerExtra<ServerRequest, ServerNotification>;
 type OwnedServiceFactory = (userId: string) => OwnerBoundRecipeService;
 type OwnedTagServiceFactory = (userId: string) => OwnerBoundTagService;
 
@@ -37,18 +34,18 @@ function denied() {
   };
 }
 
-function toolContext(extra: McpExtra, scope: McpScope, getService: OwnedServiceFactory) {
-  const principal = authorizeMcpTool(extra.authInfo, scope);
+function toolContext(ctx: ServerContext, scope: McpScope, getService: OwnedServiceFactory) {
+  const principal = authorizeMcpTool(ctx.http?.authInfo, scope);
   if (!principal) return null;
   return {
     userId: principal.userId,
     service: getService(principal.userId),
-    requestId: String(extra.requestId),
+    requestId: String(ctx.mcpReq.id),
   };
 }
 
-function tagToolContext(extra: McpExtra, scope: McpScope, getService: OwnedTagServiceFactory) {
-  const principal = authorizeMcpTool(extra.authInfo, scope);
+function tagToolContext(ctx: ServerContext, scope: McpScope, getService: OwnedTagServiceFactory) {
+  const principal = authorizeMcpTool(ctx.http?.authInfo, scope);
   if (!principal) return null;
   return {
     userId: principal.userId,
@@ -56,24 +53,15 @@ function tagToolContext(extra: McpExtra, scope: McpScope, getService: OwnedTagSe
   };
 }
 
-/** Creates a stateless Streamable HTTP handler for one concrete route. */
+/** Creates the MCP handler mounted by the authenticated route. */
 export function createRecipeMcpHandler(
-  endpoint: string,
   getService: OwnedServiceFactory = getOwnerBoundMcpRecipeService,
   getTagService: OwnedTagServiceFactory = getOwnerBoundMcpTagService,
 ) {
-  return createMcpHandler(
-    (server) => registerRecipeTools(server, getService, getTagService),
-    {
-      serverInfo: { name: "recipe-vault", version: "0.6.0" },
-      instructions: `Before saving a recipe from a link, document, image, or pasted content, call get_recipe_import_guidance. ${recipeImportWorkflow}`,
-    },
-    {
-      streamableHttpEndpoint: endpoint,
-      disableSse: true,
-      sessionIdGenerator: undefined,
-    },
-  );
+  return createMcpHandler((server) => registerRecipeTools(server, getService, getTagService), {
+    serverInfo: { name: "recipe-vault", version: "0.6.0" },
+    instructions: `Before saving a recipe from a link, document, image, or pasted content, call get_recipe_import_guidance. ${recipeImportWorkflow}`,
+  });
 }
 
 function registerRecipeTools(
@@ -90,7 +78,7 @@ function registerRecipeTools(
       title: "Get recipe import guidance",
       description:
         "Read Recipe Vault's extraction rules and save_recipe field mapping before saving a recipe from a link, uploaded document, image, or pasted content.",
-      inputSchema: {},
+      inputSchema: z.object({}),
       outputSchema: mcpRecipeImportGuidanceOutputSchema,
       annotations: { readOnlyHint: true },
     },
@@ -105,8 +93,8 @@ function registerRecipeTools(
       inputSchema: mcpToolSchemas.tags,
       annotations: { readOnlyHint: true },
     },
-    async (input, extra) => {
-      const context = tagToolContext(extra, mcpScopes.read, getTagService);
+    async (input, ctx) => {
+      const context = tagToolContext(ctx, mcpScopes.read, getTagService);
       return context ? createTagMcpTools(context).list_tags(input) : denied();
     },
   );
@@ -119,8 +107,8 @@ function registerRecipeTools(
       inputSchema: mcpToolSchemas.replaceTagName,
       annotations: { readOnlyHint: false, idempotentHint: true, destructiveHint: true },
     },
-    async (input, extra) => {
-      const context = tagToolContext(extra, mcpScopes.write, getTagService);
+    async (input, ctx) => {
+      const context = tagToolContext(ctx, mcpScopes.write, getTagService);
       return context ? createTagMcpTools(context).replace_tag_name(input) : denied();
     },
   );
@@ -136,8 +124,8 @@ function registerRecipeTools(
       annotations: { readOnlyHint: true },
       _meta: { ui: { resourceUri: searchResultsViewUri, visibility: ["model"] } },
     },
-    async (input, extra) => {
-      const context = toolContext(extra, mcpScopes.read, getService);
+    async (input, ctx) => {
+      const context = toolContext(ctx, mcpScopes.read, getService);
       return context ? createRecipeMcpTools(context).search_recipes(input) : denied();
     },
   );
@@ -153,8 +141,8 @@ function registerRecipeTools(
       annotations: { readOnlyHint: true },
       _meta: { ui: { resourceUri: recipeViewUri, visibility: ["model"] } },
     },
-    async (input, extra) => {
-      const context = toolContext(extra, mcpScopes.read, getService);
+    async (input, ctx) => {
+      const context = toolContext(ctx, mcpScopes.read, getService);
       return context ? createRecipeMcpTools(context).get_recipe(input) : denied();
     },
   );
@@ -167,8 +155,8 @@ function registerRecipeTools(
       inputSchema: mcpToolSchemas.replaceRecipe,
       annotations: { readOnlyHint: false, idempotentHint: true, destructiveHint: false },
     },
-    async (input, extra) => {
-      const context = toolContext(extra, mcpScopes.write, getService);
+    async (input, ctx) => {
+      const context = toolContext(ctx, mcpScopes.write, getService);
       return context ? createRecipeMcpTools(context).replace_recipe(input) : denied();
     },
   );
@@ -181,8 +169,8 @@ function registerRecipeTools(
       inputSchema: mcpToolSchemas.recipe,
       annotations: { readOnlyHint: false, idempotentHint: false, destructiveHint: false },
     },
-    async (input, extra) => {
-      const context = toolContext(extra, mcpScopes.write, getService);
+    async (input, ctx) => {
+      const context = toolContext(ctx, mcpScopes.write, getService);
       return context ? createRecipeMcpTools(context).save_recipe(input) : denied();
     },
   );

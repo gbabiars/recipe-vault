@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { ServerCapabilities } from "@modelcontextprotocol/sdk/types.js";
+import type { McpServer, ServerCapabilities } from "@modelcontextprotocol/server";
 import {
   recipeExtractionGuidance,
   recipeImportFieldGuidance,
@@ -66,8 +65,6 @@ const skillEntry = {
 
 /** ChatGPT's static Skills import subset on the current MCP SDK protocol. */
 export function registerRecipeImportSkill(server: McpServer) {
-  // The installed SDK predates typed extension capabilities; its transport
-  // preserves this standards-shaped capability in the initialize response.
   server.server.registerCapabilities({
     extensions: { "io.modelcontextprotocol/skills": {} },
   } as ServerCapabilities);
@@ -80,21 +77,20 @@ export function registerRecipeImportSkill(server: McpServer) {
   );
 
   server.server.setRequestHandler(
-    z.object({
-      method: z.literal("skills/list"),
-      params: z.object({ cursor: z.string().optional() }).optional(),
-    }),
-    async (request) => ({
+    "skills/list",
+    { params: z.object({ cursor: z.string().optional() }).default({}) },
+    async (params) => ({
       resultType: "complete",
-      skills: request.params?.cursor ? [] : [skillEntry],
+      skills: params.cursor ? [] : [skillEntry],
       ttlMs: 300_000,
       cacheScope: "public",
     }),
   );
   server.server.setRequestHandler(
-    z.object({ method: z.literal("skills/get"), params: z.object({ uri: z.string() }) }),
-    async (request) => {
-      if (request.params.uri !== skillUri) throw new Error("Skill not found.");
+    "skills/get",
+    { params: z.object({ uri: z.string() }) },
+    async ({ uri }) => {
+      if (uri !== skillUri) throw new Error("Skill not found.");
       return { resultType: "complete", skill: skillEntry, ttlMs: 300_000, cacheScope: "public" };
     },
   );

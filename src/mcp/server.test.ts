@@ -1,20 +1,115 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { handleMcpRequest } from "./server";
+import { withMcpAuth } from "mcp-handler";
+import { createRecipeMcpHandler, handleMcpRequest } from "./server";
 
 const endpoint = "https://recipes.example.test/mcp";
 const userId = "00000000-0000-4000-8000-000000000001";
-function request(id: number, method: string, params: unknown) {
+function request(id: number, method: string, params: unknown, token?: string) {
   return new Request(endpoint, {
     method: "POST",
     headers: {
       "content-type": "application/json",
       accept: "application/json, text/event-stream",
       "mcp-protocol-version": "2025-11-25",
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({ jsonrpc: "2.0", id, method, params }),
   });
 }
+
+async function handlerResult(response: Response) {
+  const body = await response.text();
+  if (!response.headers.get("content-type")?.startsWith("text/event-stream"))
+    return JSON.parse(body).result;
+  const data = body.split("\n").find((line) => line.startsWith("data: "));
+  assert.ok(data, "MCP response should contain an SSE data event");
+  return JSON.parse(data.slice(6)).result;
+}
+
+test("production MCP auth wrapper forwards verified owner and scopes", async () => {
+  const owners: string[] = [];
+  const handler = createRecipeMcpHandler(
+    () => {
+      throw new Error("Recipe service should not be used.");
+    },
+    (ownerId) => {
+      owners.push(ownerId);
+      return {
+        listFromRecipes: async () => ({ tags: [], hasMore: false }),
+      } as never;
+    },
+  );
+  const authenticated = withMcpAuth(
+    handler,
+    async (_, token) =>
+      token === "verified-token"
+        ? {
+            token,
+            clientId: "verified-client",
+            scopes: ["recipes:read"],
+            extra: { userId, credentialType: "oauth" },
+          }
+        : undefined,
+    { required: true, resourceMetadataPath: "/.well-known/oauth-protected-resource/mcp" },
+  );
+
+  const anonymous = await authenticated(
+    request(20, "tools/call", {
+      name: "list_tags",
+      arguments: {},
+    }),
+  );
+  assert.equal(anonymous.status, 401);
+  assert.deepEqual(owners, []);
+
+  const allowed = await authenticated(
+    request(21, "tools/call", { name: "list_tags", arguments: {} }, "verified-token"),
+  );
+  assert.equal(allowed.status, 200);
+  assert.deepEqual(JSON.parse((await handlerResult(allowed)).content[0].text), { tags: [] });
+  assert.deepEqual(owners, [userId]);
+
+  const denied = await authenticated(
+    request(
+      22,
+      "tools/call",
+      { name: "replace_tag_name", arguments: { sourceName: "a", targetName: "b" } },
+      "verified-token",
+    ),
+  );
+  assert.equal((await handlerResult(denied)).isError, true);
+  assert.deepEqual(owners, [userId]);
+});
+
+test("production MCP handler serves the 2026 protocol discovery request", async () => {
+  const handler = createRecipeMcpHandler();
+  const response = await handler(
+    new Request(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+        "mcp-protocol-version": "2026-07-28",
+        "mcp-method": "server/discover",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 23,
+        method: "server/discover",
+        params: {
+          _meta: {
+            "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+            "io.modelcontextprotocol/clientCapabilities": {},
+          },
+        },
+      }),
+    }),
+  );
+  assert.equal(response.status, 200, await response.clone().text());
+  const result = await handlerResult(response);
+  assert.equal(result._meta["io.modelcontextprotocol/serverInfo"].name, "recipe-vault");
+});
 async function invoke(
   client: unknown,
   id: number,
@@ -31,6 +126,7 @@ test("MCP publishes the document recipe and derived tag contracts", async () => 
   assert.deepEqual(
     tools.map((tool: { name: string }) => tool.name),
     [
+      "get_recipe_import_guidance",
       "list_tags",
       "replace_tag_name",
       "search_recipes",
@@ -59,6 +155,28 @@ test("MCP publishes the document recipe and derived tag contracts", async () => 
   const search = tools.find((tool: { name: string }) => tool.name === "search_recipes");
   assert.ok(search.outputSchema.properties.recipes.items.properties.description);
   assert.ok(search.outputSchema.properties.recipes.items.properties.revision);
+});
+
+test("MCP publishes the recipe import skill through custom methods and a resource", async () => {
+  const listed = await invoke({} as never, 10, "skills/list", {});
+  const listResult = (await listed.json()).result;
+  assert.equal(listResult.resultType, "complete");
+  assert.equal(listResult.skills.length, 1);
+  const uri = listResult.skills[0].uri;
+  assert.equal(uri, "skill://recipe-import/SKILL.md");
+
+  const fetched = await invoke({} as never, 11, "skills/get", { uri });
+  const getResult = (await fetched.json()).result;
+  assert.deepEqual(getResult.skill, listResult.skills[0]);
+
+  const resource = await invoke({} as never, 12, "resources/read", { uri });
+  assert.match((await resource.json()).result.contents[0].text, /get_recipe_import_guidance/);
+
+  const nextPage = await invoke({} as never, 13, "skills/list", { cursor: "next" });
+  assert.deepEqual((await nextPage.json()).result.skills, []);
+
+  const noParams = await invoke({} as never, 14, "skills/list", undefined);
+  assert.equal((await noParams.json()).result.skills.length, 1);
 });
 
 test("scope denial covers every registered read and write tool", async () => {
