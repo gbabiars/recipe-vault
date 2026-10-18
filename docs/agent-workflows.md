@@ -7,8 +7,9 @@ integration, and final verification. Do not create an agent for each stage.
 
 ## App feature workflow
 
-Invoke `$app-feature-workflow` for an application feature. Its local run artifacts
-live in the ignored `workflows/<linear-id>-<prompt-summary>/` directory, or
+Use `$app-feature-workflow` only when the user explicitly invokes it. Ordinary
+application feature requests do not trigger this workflow automatically. Its
+local run artifacts live in the ignored `workflows/<linear-id>-<prompt-summary>/` directory, or
 `workflows/<prompt-summary>/` without a Linear issue. Lowercase and hyphenate the
 name. Use the Linear issue ID when available; summarize the requested behavior
 in the slug. Add a numeric suffix if the name already exists. Work in the

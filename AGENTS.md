@@ -50,8 +50,9 @@ vault. Keep the application deployable and add product behavior only when reques
 ## Multi-agent work
 
 For app features and change reviews, follow `docs/agent-workflows.md`. Use
-`$app-feature-workflow` for the full app feature lifecycle and `$feature-slicing`
-when an approved feature needs smaller implementation steps. Reusable agents
+`$app-feature-workflow` for the full app feature lifecycle only when the user
+explicitly invokes it. Use `$feature-slicing` when an approved feature needs
+smaller implementation steps. Reusable agents
 own bounded tasks; no agent represents a feature slice or an entire stage.
 
 - The root agent is the coordinator. It defines the outcome, assigns bounded

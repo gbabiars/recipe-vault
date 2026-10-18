@@ -1,13 +1,15 @@
 ---
 name: app-feature-workflow
-description: Coordinate a Recipe Vault app feature from approved specification and plan through implementation, review, and PR.
+description: Run the Recipe Vault app feature workflow only when the user explicitly invokes $app-feature-workflow.
 metadata:
   short-description: Run an app feature workflow
 ---
 
 # App feature workflow
 
-Use this skill for requested application behavior. Read `AGENTS.md` and
+Use this skill only when the user explicitly invokes `$app-feature-workflow`.
+Do not invoke it automatically for ordinary application feature requests. Read
+`AGENTS.md` and
 [`docs/agent-workflows.md`](../../../docs/agent-workflows.md) for the stage
 contract, run directory, handoff format, roles, retry limits, and checks. Keep
 the stage mechanics here; use `workflow_implementer` and `workflow_reviewer`
