@@ -90,6 +90,10 @@ access, or write behavior; it receives only recipe fields needed for display.
 MCP connections use the OAuth flow at `/mcp`; users sign in and grant consent
 from their MCP client.
 
+The private [Recipe Vault plugin](plugins/recipe-vault/README.md) packages a
+recipe import skill for local distribution. It uses a separately connected
+Recipe Vault MCP endpoint and is listed in the repository's local marketplace.
+
 See [OAuth MCP setup](docs/mcp-oauth-setup.md) for exact local, Clerk, Supabase,
 hosting, rollout, and verification instructions.
 

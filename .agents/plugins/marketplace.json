@@ -1,0 +1,20 @@
+{
+  "name": "recipe-vault-local",
+  "interface": {
+    "displayName": "Recipe Vault Local"
+  },
+  "plugins": [
+    {
+      "name": "recipe-vault",
+      "source": {
+        "source": "local",
+        "path": "./plugins/recipe-vault"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

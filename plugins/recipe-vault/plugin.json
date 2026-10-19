@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "recipe-vault",
+  "version": "0.1.0",
+  "description": "Work with recipes in a connected Recipe Vault account.",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Recipe Vault",
+        "shortDescription": "Save recipes to your vault",
+        "longDescription": "Import recipes from links, documents, images, or pasted content into your connected Recipe Vault account.",
+        "developerName": "Recipe Vault",
+        "category": "Productivity",
+        "capabilities": ["Import recipes"],
+        "defaultPrompt": ["Save this recipe to my Recipe Vault."]
+      }
+    }
+  }
+}
