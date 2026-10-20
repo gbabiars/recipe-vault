@@ -57,7 +57,8 @@ export const SearchResults: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("heading", { name: "What sounds good tonight?" })).toBeVisible();
     const input = canvas.getByRole("textbox", { name: "Search your recipes" });
-    await userEvent.type(input, "Japanese chicken");
+    await expect(input).toHaveAttribute("placeholder", "Try “easy chicken” or “quick dinner”...");
+    await userEvent.type(input, "quick Japanese chicken");
     await userEvent.keyboard("{Meta>}{Enter}{/Meta}");
     await expect(
       await canvas.findByRole("link", { name: "View Japanese chicken tacos" }),
@@ -65,13 +66,15 @@ export const SearchResults: Story = {
     await expect(
       canvas.queryByRole("heading", { name: "What sounds good tonight?" }),
     ).not.toBeInTheDocument();
-    await expect(canvas.getByText("Japanese chicken")).toBeVisible();
+    await expect(canvas.getByText("quick Japanese chicken")).toBeVisible();
     await expect(input).toHaveValue("");
     await expect(requestedSearchUrl).toBe("/api/v1/recipes/chat");
     await expect(requestedSearchInit?.method).toBe("POST");
     const requestBody = JSON.parse(String(requestedSearchInit?.body));
     const submittedMessage = requestBody.messages.at(-1);
     await expect(submittedMessage.role).toBe("user");
-    await expect(submittedMessage.parts).toEqual([{ type: "text", text: "Japanese chicken" }]);
+    await expect(submittedMessage.parts).toEqual([
+      { type: "text", text: "quick Japanese chicken" },
+    ]);
   },
 };

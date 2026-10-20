@@ -6,6 +6,7 @@ type EvalCase = {
   id: string;
   prompt: string;
   expectedAlternatives: string[];
+  expectedPreferences: Array<"easy" | "quick">;
   forbiddenTerms?: string[];
 };
 
@@ -25,9 +26,11 @@ async function main() {
 
   for (const evalCase of cases) {
     let actualAlternatives: string[];
+    let actualPreferences: Array<"easy" | "quick">;
     try {
       const parsed = await parseRecipeSearch(evalCase.prompt);
       actualAlternatives = parsed.matchAny.map(normalize);
+      actualPreferences = parsed.preferences;
     } catch (error) {
       failedCases++;
       console.error(`FAIL ${evalCase.id}: parser call failed (${errorName(error)}).`);
@@ -39,6 +42,8 @@ async function main() {
     const actualSet = new Set(actualAlternatives);
     const missing = expected.filter((alternative) => !actualSet.has(alternative));
     const unexpected = actualAlternatives.filter((alternative) => !expectedSet.has(alternative));
+    const preferencesMatch =
+      JSON.stringify(actualPreferences) === JSON.stringify(evalCase.expectedPreferences);
     const forbidden = actualAlternatives.filter((alternative) =>
       (evalCase.forbiddenTerms ?? []).some((term) => includesTerm(alternative, normalize(term))),
     );
@@ -46,13 +51,17 @@ async function main() {
     expectedCount += expected.length;
     matchedCount += expected.length - missing.length;
     extraCount += unexpected.length;
-    if (missing.length > 0 || unexpected.length > 0 || forbidden.length > 0) failedCases++;
+    if (missing.length > 0 || unexpected.length > 0 || forbidden.length > 0 || !preferencesMatch)
+      failedCases++;
 
     console.log(
-      `${missing.length === 0 && unexpected.length === 0 && forbidden.length === 0 ? "PASS" : "FAIL"} ${evalCase.id}`,
+      `${missing.length === 0 && unexpected.length === 0 && forbidden.length === 0 && preferencesMatch ? "PASS" : "FAIL"} ${evalCase.id}`,
     );
     console.log(`  expected: ${JSON.stringify(expected)}`);
     console.log(`  received: ${JSON.stringify(actualAlternatives)}`);
+    console.log(
+      `  preferences: expected ${JSON.stringify(evalCase.expectedPreferences)}, received ${JSON.stringify(actualPreferences)}`,
+    );
     if (missing.length > 0) console.log(`  missing: ${JSON.stringify(missing)}`);
     if (unexpected.length > 0) console.log(`  extra: ${JSON.stringify(unexpected)}`);
     if (forbidden.length > 0) console.log(`  filler/unsupported: ${JSON.stringify(forbidden)}`);

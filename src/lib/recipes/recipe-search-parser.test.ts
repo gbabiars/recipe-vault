@@ -1,6 +1,18 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { buildRecipeSearchQuery } from "./recipe-search-parser";
+import { recipeSearchParseSchema } from "@/lib/validation/recipe-search";
+
+test("validates ordered, unique easy and quick preferences", () => {
+  assert.deepEqual(
+    recipeSearchParseSchema.parse({ matchAny: ["chicken"], preferences: ["quick", "easy"] }),
+    { matchAny: ["chicken"], preferences: ["quick", "easy"] },
+  );
+  assert.equal(
+    recipeSearchParseSchema.safeParse({ matchAny: [], preferences: ["easy", "easy"] }).success,
+    false,
+  );
+});
 
 test("joins multiple search alternatives with OR", () => {
   assert.equal(buildRecipeSearchQuery(["Japanese", "beef"]), '"Japanese" OR "beef"');

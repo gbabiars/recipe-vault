@@ -56,12 +56,21 @@ syntax. Notes and ingredient/equipment notes are excluded. Exact selected tag
 names match any selected value and combine with text search using AND.
 
 `parseRecipeSearch(prompt)` uses the OpenAI provider through the Vercel AI SDK
-to extract a bounded `matchAny` list for one request. The caller serializes
-the terms and phrases as quoted web-search alternatives joined by `OR`, then
-passes the query to `RecipeService.listRecipes` with the verified owner ID.
-Submissions are independent: the parser receives no earlier prompts or recipe
-records. The prompt goes to OpenAI; retrieved recipe data stays in the
-owner-scoped service and database path.
+to extract a bounded `matchAny` list and an ordered list of `easy` and `quick`
+preferences for one request. The caller serializes text terms and phrases as
+quoted web-search alternatives joined by `OR`. An easy request includes only
+recipes with five or fewer saved ingredient entries (including pantry staples)
+and orders them by ingredient count. A quick request includes only recipes with
+saved total time below 30 minutes and orders them by total time; missing total
+time does not qualify. Combined requests apply both limits and use the
+first-mentioned preference as the primary order. Text matches and preferences
+combine, and a preference-only request searches the owner's whole vault.
+Without a preference, existing full-text relevance ordering applies.
+
+The caller passes the query and preference to `RecipeService.listRecipes` with
+the verified owner ID. Submissions are independent: the parser receives no
+earlier prompts or recipe records. The prompt goes to OpenAI; retrieved recipe
+data stays in the owner-scoped service and database path.
 
 Tag names are canonical lowercase ASCII. Normalization trims surrounding
 whitespace and collapses repeated internal ASCII spaces; duplicate names are

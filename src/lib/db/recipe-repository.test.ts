@@ -157,6 +157,7 @@ test("document list summaries use the owner-scoped search RPC and validate its p
       target_tags: ["weeknight dinner", "baking"],
       target_offset: 10,
       target_limit: 25,
+      target_preference: null,
     },
   });
   assert.deepEqual(page, {
@@ -174,6 +175,27 @@ test("document list summaries use the owner-scoped search RPC and validate its p
       },
     ],
     total: 1,
+  });
+});
+
+test("document list passes the requested preference to the owner-scoped RPC", async () => {
+  let rpcArgs: Record<string, unknown> | undefined;
+  const repository = new RecipeRepository({
+    rpc: async (_name: string, args: Record<string, unknown>) => {
+      rpcArgs = args;
+      return { data: { items: [], total: 0 }, error: null };
+    },
+  } as never);
+
+  await repository.listRecipes("owner-a", '"chicken"', [], 0, 25, "quick-easy");
+
+  assert.deepEqual(rpcArgs, {
+    target_owner_id: "owner-a",
+    target_search: '"chicken"',
+    target_tags: [],
+    target_offset: 0,
+    target_limit: 25,
+    target_preference: "quick-easy",
   });
 });
 

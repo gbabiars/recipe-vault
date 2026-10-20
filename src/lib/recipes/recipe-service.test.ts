@@ -61,8 +61,9 @@ test("document list service translates pages into offsets and binds the owner", 
       tags: string[],
       offset: number,
       limit: number,
+      preference?: string,
     ) => {
-      calls.push([ownerId, search, tags, offset, limit]);
+      calls.push([ownerId, search, tags, offset, limit, preference]);
       return page;
     },
   };
@@ -78,7 +79,20 @@ test("document list service translates pages into offsets and binds the owner", 
     }),
     page,
   );
-  assert.deepEqual(calls, [["verified-owner", "rice", ["weeknight"], 20, 10]]);
+  assert.deepEqual(
+    await boundService.listRecipes({
+      search: "rice",
+      preference: "easy-quick",
+      tags: ["weeknight"],
+      page: 1,
+      pageSize: 10,
+    }),
+    page,
+  );
+  assert.deepEqual(calls, [
+    ["verified-owner", "rice", ["weeknight"], 20, 10, undefined],
+    ["verified-owner", "rice", ["weeknight"], 0, 10, "easy-quick"],
+  ]);
 });
 
 test("document service rejects invalid content before repository writes", async () => {

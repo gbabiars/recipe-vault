@@ -44,7 +44,8 @@ test("submits the natural-language prompt to the recipe chat API", async () => {
   render(<SearchPage />);
 
   const input = screen.getByRole("textbox", { name: "Search your recipes" });
-  await userEvent.type(input, "Japanese chicken");
+  expect(input).toHaveAttribute("placeholder", "Try “easy chicken” or “quick dinner”...");
+  await userEvent.type(input, "quick Japanese chicken");
   await userEvent.click(screen.getByRole("button", { name: "Search" }));
 
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
@@ -56,8 +57,8 @@ test("submits the natural-language prompt to the recipe chat API", async () => {
   const requestBody = JSON.parse(String(requestInit?.body));
   const submittedMessage = requestBody.messages.at(-1);
   expect(submittedMessage.role).toBe("user");
-  expect(submittedMessage.parts).toEqual([{ type: "text", text: "Japanese chicken" }]);
-  expect(await screen.findByText("Japanese chicken")).toBeVisible();
+  expect(submittedMessage.parts).toEqual([{ type: "text", text: "quick Japanese chicken" }]);
+  expect(await screen.findByText("quick Japanese chicken")).toBeVisible();
   expect(await screen.findByRole("link", { name: "View Japanese chicken curry" })).toBeVisible();
   expect(input).toHaveValue("");
 });

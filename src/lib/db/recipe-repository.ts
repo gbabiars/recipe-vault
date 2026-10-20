@@ -5,6 +5,7 @@ import {
   type Recipe as ValidatedRecipe,
   type RecipeContent,
 } from "@/lib/validation/recipe";
+import type { RecipeSearchPreference } from "@/lib/validation/recipe-search";
 
 export type AuditMetadata = { requestId: string; method: string };
 export type RecipeSnapshot = { recipe: ValidatedRecipe; revision: number };
@@ -137,6 +138,7 @@ export class RecipeRepository {
     tags: string[],
     offset: number,
     limit: number,
+    preference?: RecipeSearchPreference,
   ): Promise<RecipePage> {
     const { data, error } = await this.client.rpc("recipe_vault_search_recipe_documents", {
       target_owner_id: ownerId,
@@ -144,6 +146,7 @@ export class RecipeRepository {
       target_tags: tags,
       target_offset: offset,
       target_limit: limit,
+      target_preference: preference ?? null,
     });
     if (error) throw new Error("Could not load recipes.");
     if (!data || typeof data !== "object" || Array.isArray(data)) {

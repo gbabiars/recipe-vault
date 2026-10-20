@@ -1,5 +1,9 @@
 import type { RecipeService } from "@/lib/recipes/recipe-service";
-import { recipeSearchRequestSchema, type RecipeSearchParse } from "@/lib/validation/recipe-search";
+import {
+  recipeSearchRequestSchema,
+  type RecipeSearchParse,
+  type RecipeSearchPreference,
+} from "@/lib/validation/recipe-search";
 import { buildRecipeSearchQuery } from "@/lib/recipes/recipe-search-parser";
 import type { RateLimiter } from "./rate-limit";
 import { defaultRateLimiter, recipeSearchLimit } from "./rate-limit";
@@ -22,6 +26,23 @@ function responseError(status: number, code: string, message: string, id: string
 function unexpected(id: string, event: string) {
   logApiEvent({ level: "error", requestId: id, event });
   return responseError(500, "internal_error", "Unable to search recipes.", id);
+}
+
+function searchPreference(
+  preferences: RecipeSearchParse["preferences"],
+): RecipeSearchPreference | undefined {
+  switch (preferences.join("-")) {
+    case "easy":
+      return "easy";
+    case "quick":
+      return "quick";
+    case "easy-quick":
+      return "easy-quick";
+    case "quick-easy":
+      return "quick-easy";
+    default:
+      return undefined;
+  }
 }
 
 export function createRecipeSearchApi(deps: ApiDependencies) {
@@ -65,9 +86,11 @@ export function createRecipeSearchApi(deps: ApiDependencies) {
       }
 
       let search: string | undefined;
+      let preference: RecipeSearchPreference | undefined;
       try {
         const parsed = await deps.parseSearch(requestBody.data.prompt);
         search = buildRecipeSearchQuery(parsed.matchAny);
+        preference = searchPreference(parsed.preferences);
       } catch {
         logApiEvent({ level: "error", requestId: id, event: "recipe_search_parse_failed" });
         return responseError(
@@ -78,7 +101,7 @@ export function createRecipeSearchApi(deps: ApiDependencies) {
         );
       }
 
-      if (!search) {
+      if (!search && !preference) {
         return Response.json(
           { data: [], meta: { page: 1, pageSize: 25, total: 0, requestId: id } },
           { headers: { "cache-control": "private, no-store" } },
@@ -89,6 +112,7 @@ export function createRecipeSearchApi(deps: ApiDependencies) {
         const service = await deps.getService();
         const page = await service.listRecipes(user.id, {
           search,
+          preference,
           tags: [],
           page: 1,
           pageSize: 25,
