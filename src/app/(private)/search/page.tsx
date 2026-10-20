@@ -119,7 +119,7 @@ export default function SearchPage() {
               <Textarea
                 label="Search your recipes"
                 visuallyHiddenLabel
-                placeholder="Search by ingredient or recipe name..."
+                placeholder="Try “easy chicken” or “quick dinner”..."
                 required
                 maxLength={200}
                 error={inputError}

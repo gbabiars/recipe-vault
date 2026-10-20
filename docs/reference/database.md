@@ -12,13 +12,15 @@ shared `Recipe` shape. Recipe rows store simple values in columns; `tags`,
 `equipment` use JSONB. Owner-bound database functions create recipes and
 perform revision-checked replacements.
 
-`RecipeRepository.listRecipes(ownerId, search, tags, offset, limit)` returns
+`RecipeRepository.listRecipes(ownerId, search, tags, offset, limit, preference?)` returns
 owned summaries and a pre-pagination total. PostgreSQL English full-text
 search covers title, description, ingredient names, equipment names, and
 tags. Title and tag matches carry more weight than description, ingredient,
 and equipment matches. The function keeps an explicit owner predicate and
-runs with the caller's RLS context. Search syntax and results visible to
-callers are in the [recipe reference](recipes.md#search-and-tags).
+runs with the caller's RLS context. The optional conversational-search preference
+filters and orders by saved ingredient count or total minutes before pagination;
+without it, full-text relevance remains the primary ordering key. Search syntax
+and results visible to callers are in the [recipe reference](recipes.md#search-and-tags).
 
 `src/lib/db/tag-repository.ts` owns tag inventory and name replacement.
 `listTags(ownerId, options)` returns canonical names with exact recipe usage

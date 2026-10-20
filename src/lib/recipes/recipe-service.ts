@@ -7,6 +7,7 @@ import type {
   RecipePage,
 } from "@/lib/db/recipe-repository";
 import { recipeContentSchema, recipeSchema } from "@/lib/validation/recipe";
+import type { RecipeSearchPreference } from "@/lib/validation/recipe-search";
 
 export type RecipeValidationIssue = {
   path: Array<string | number>;
@@ -43,6 +44,7 @@ export class RecipeService {
     ownerId: string,
     options: {
       search?: string;
+      preference?: RecipeSearchPreference;
       tags: string[];
       page: number;
       pageSize: number;
@@ -54,6 +56,7 @@ export class RecipeService {
       options.tags,
       (options.page - 1) * options.pageSize,
       options.pageSize,
+      options.preference,
     );
   }
   getRecipe(ownerId: string, recipeId: string): Promise<RecipeSnapshot | null> {

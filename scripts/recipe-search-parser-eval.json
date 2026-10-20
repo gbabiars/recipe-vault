@@ -3,49 +3,100 @@
     "id": "ingredient-filler",
     "prompt": "I want chicken tonight",
     "expectedAlternatives": ["chicken"],
-    "forbiddenTerms": ["tonight", "want"]
+    "forbiddenTerms": ["tonight", "want"],
+    "expectedPreferences": []
   },
   {
     "id": "cuisine-filler",
     "prompt": "I feel like Japanese food tonight",
     "expectedAlternatives": ["japanese"],
-    "forbiddenTerms": ["tonight", "feel like"]
+    "forbiddenTerms": ["tonight", "feel like"],
+    "expectedPreferences": []
   },
   {
     "id": "multiple-independent-terms",
     "prompt": "Japanese beef",
-    "expectedAlternatives": ["japanese", "beef"]
+    "expectedAlternatives": ["japanese", "beef"],
+    "expectedPreferences": []
   },
   {
     "id": "recipe-title-phrase",
     "prompt": "Show me my smash burger recipe",
     "expectedAlternatives": ["smash burger"],
-    "forbiddenTerms": ["show me", "recipe"]
+    "forbiddenTerms": ["show me", "recipe"],
+    "expectedPreferences": []
   },
   {
     "id": "cuisine-alternatives",
     "prompt": "I could go for Thai or Italian",
-    "expectedAlternatives": ["thai", "italian"]
+    "expectedAlternatives": ["thai", "italian"],
+    "expectedPreferences": []
   },
   {
     "id": "obvious-recipe-title-typo",
     "prompt": "Show me my teryaki chicken recipe",
     "expectedAlternatives": ["teriyaki chicken"],
-    "forbiddenTerms": ["teryaki", "show me", "recipe"]
+    "forbiddenTerms": ["teryaki", "show me", "recipe"],
+    "expectedPreferences": []
   },
   {
     "id": "generic-dinner-request",
     "prompt": "What should I make for dinner?",
-    "expectedAlternatives": []
+    "expectedAlternatives": [],
+    "expectedPreferences": []
   },
   {
     "id": "unsupported-negative-constraint",
     "prompt": "I do not want beef",
-    "expectedAlternatives": []
+    "expectedAlternatives": [],
+    "expectedPreferences": []
   },
   {
     "id": "unsupported-time-constraint",
     "prompt": "Show me Japanese recipes I can make in under 30 minutes",
-    "expectedAlternatives": []
+    "expectedAlternatives": ["japanese"],
+    "expectedPreferences": ["quick"]
+  },
+  {
+    "id": "easy-preference-only",
+    "prompt": "I want something easy",
+    "expectedAlternatives": [],
+    "expectedPreferences": ["easy"]
+  },
+  {
+    "id": "few-ingredients-easy",
+    "prompt": "Find a simple dinner with few ingredients",
+    "expectedAlternatives": [],
+    "expectedPreferences": ["easy"]
+  },
+  {
+    "id": "quick-paraphrase",
+    "prompt": "What can I make fast tonight?",
+    "expectedAlternatives": [],
+    "expectedPreferences": ["quick"]
+  },
+  {
+    "id": "easy-text-search",
+    "prompt": "Easy chicken",
+    "expectedAlternatives": ["chicken"],
+    "expectedPreferences": ["easy"]
+  },
+  {
+    "id": "both-preferences-easy-first",
+    "prompt": "Easy and quick chicken",
+    "expectedAlternatives": ["chicken"],
+    "expectedPreferences": ["easy", "quick"]
+  },
+  {
+    "id": "both-preferences-quick-first",
+    "prompt": "Quick but easy Japanese food",
+    "expectedAlternatives": ["japanese"],
+    "expectedPreferences": ["quick", "easy"]
+  },
+  {
+    "id": "negative-preference-remains-unsupported",
+    "prompt": "Easy chicken without dairy",
+    "expectedAlternatives": [],
+    "expectedPreferences": []
   }
 ]

@@ -20,6 +20,8 @@ export default defineConfig({
       "@clerk/nextjs/server",
       "launchdarkly-react-client-sdk",
       "@supabase/supabase-js",
+      "@ai-sdk/react",
+      "ai",
     ],
   },
   resolve: {

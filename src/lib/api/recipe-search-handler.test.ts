@@ -18,6 +18,7 @@ function makeApi(
   options: {
     user?: string | null;
     matchAny?: string[];
+    preferences?: Array<"easy" | "quick">;
     parseFailure?: boolean;
     listFailure?: boolean;
     limited?: boolean;
@@ -44,7 +45,10 @@ function makeApi(
     parseSearch: async (prompt) => {
       parsedPrompts.push(prompt);
       if (options.parseFailure) throw new Error("provider error");
-      return { matchAny: options.matchAny ?? ["Japanese", "beef"] };
+      return {
+        matchAny: options.matchAny ?? ["Japanese", "beef"],
+        preferences: options.preferences ?? [],
+      };
     },
     limiter: {
       check: () => ({ allowed: !options.limited, retryAfterSeconds: 3 }),
@@ -79,7 +83,16 @@ test("parses one prompt and searches the authenticated owner's recipes with OR",
   assert.equal(response.status, 200);
   assert.deepEqual(context.parsedPrompts, ["I want Japanese beef"]);
   assert.deepEqual(context.listCalls, [
-    ["owner-1", { search: '"Japanese" OR "beef"', tags: [], page: 1, pageSize: 25 }],
+    [
+      "owner-1",
+      {
+        search: '"Japanese" OR "beef"',
+        preference: undefined,
+        tags: [],
+        page: 1,
+        pageSize: 25,
+      },
+    ],
   ]);
   assert.deepEqual((await response.json()).data, [recipe]);
 });
@@ -113,6 +126,27 @@ test("does not query the recipe service when the parser finds no supported terms
     meta: { page: 1, pageSize: 25, total: 0, requestId: "recipe-search-test" },
   });
   assert.equal(context.serviceRequests, 0);
+});
+
+test("preference-only requests query owned recipes without a text term", async () => {
+  const context = makeApi({ matchAny: [], preferences: ["easy"] });
+  const response = await context.api.post(request({ prompt: "I want something easy" }));
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(context.listCalls, [
+    ["owner-1", { search: undefined, preference: "easy", tags: [], page: 1, pageSize: 25 }],
+  ]);
+  assert.deepEqual((await response.json()).data, [recipe]);
+});
+
+test("combined text and preferences preserve first-mentioned ranking priority", async () => {
+  const context = makeApi({ matchAny: ["chicken"], preferences: ["quick", "easy"] });
+  const response = await context.api.post(request({ prompt: "quick and easy chicken" }));
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(context.listCalls, [
+    ["owner-1", { search: '"chicken"', preference: "quick-easy", tags: [], page: 1, pageSize: 25 }],
+  ]);
 });
 
 test("rate limits before making an OpenAI request", async () => {
