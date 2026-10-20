@@ -36,51 +36,35 @@ begin
       '2026-01-04T00:00:00Z'
     ),
     (
-      'recipe_document_search_owner_a',
-      'Preference four ingredients ' || suffix,'Preference fixture.',null,25,
-      '[{"name":"a"},{"name":"b"},{"name":"c"},{"name":"d"}]'::jsonb,
-      '[]'::jsonb,array['Mix.'],array[]::text[],array['preference'],
-      '2026-01-05T00:00:00Z'
-    ),
-    (
-      'recipe_document_search_owner_a',
-      'Preference five ingredients ' || suffix,'Preference fixture.',null,20,
-      '[{"name":"a"},{"name":"b"},{"name":"c"},{"name":"d"},{"name":"e"}]'::jsonb,
-      '[]'::jsonb,array['Mix.'],array[]::text[],array['preference'],
-      '2026-01-06T00:00:00Z'
-    ),
-    (
-      'recipe_document_search_owner_a',
-      'Preference six ingredients ' || suffix,'Preference fixture.',null,10,
-      '[{"name":"a"},{"name":"b"},{"name":"c"},{"name":"d"},{"name":"e"},{"name":"f"}]'::jsonb,
-      '[]'::jsonb,array['Mix.'],array[]::text[],array['preference'],
-      '2026-01-07T00:00:00Z'
-    ),
-    (
-      'recipe_document_search_owner_a',
-      'Preference twenty-nine minutes ' || suffix,'Preference fixture.',null,29,
-      '[{"name":"a"},{"name":"b"},{"name":"c"},{"name":"d"},{"name":"e"},{"name":"f"}]'::jsonb,
-      '[]'::jsonb,array['Mix.'],array[]::text[],array['preference'],
-      '2026-01-07T12:00:00Z'
-    ),
-    (
-      'recipe_document_search_owner_a',
-      'Preference exactly thirty ' || suffix,'Preference fixture.',null,30,
-      '[{"name":"a"}]'::jsonb,'[]'::jsonb,array['Mix.'],array[]::text[],array['preference'],
-      '2026-01-08T00:00:00Z'
-    ),
-    (
-      'recipe_document_search_owner_a',
-      'Preference missing total ' || suffix,'Preference fixture.',null,null,
-      '[{"name":"a"}]'::jsonb,'[]'::jsonb,array['Mix.'],array[]::text[],array['preference'],
-      '2026-01-09T00:00:00Z'
-    ),
-    (
       'recipe_document_search_owner_b',
       'Other owner ' || suffix,'Crisp cookies with orange zest.',null,null,
       '[{"name":"unsalted butter"}]'::jsonb,'[{"name":"baking sheet"}]'::jsonb,array['Bake.'],array[]::text[],array['baking'],
       '2026-01-03T00:00:00Z'
     );
+
+  insert into public.recipes (owner_id,title,description,total_minutes,ingredients,equipment,instructions,notes,tags,updated_at)
+  select
+    'recipe_document_search_owner_a',
+    'Preference ' || fixture.label || ' ' || suffix,
+    'Preference fixture.',
+    fixture.total_minutes,
+    (
+      select pg_catalog.jsonb_agg(pg_catalog.jsonb_build_object('name', pg_catalog.chr(96 + item.number)))
+      from generate_series(1, fixture.ingredient_count) as item(number)
+    ),
+    '[]'::jsonb,
+    array['Mix.'],
+    array[]::text[],
+    array['preference'],
+    fixture.updated_at
+  from (values
+    ('four ingredients', 4, 25, '2026-01-05T00:00:00Z'::timestamptz),
+    ('five ingredients', 5, 20, '2026-01-06T00:00:00Z'::timestamptz),
+    ('six ingredients', 6, 10, '2026-01-07T00:00:00Z'::timestamptz),
+    ('twenty-nine minutes', 6, 29, '2026-01-07T12:00:00Z'::timestamptz),
+    ('exactly thirty', 1, 30, '2026-01-08T00:00:00Z'::timestamptz),
+    ('missing total', 1, null::integer, '2026-01-09T00:00:00Z'::timestamptz)
+  ) as fixture(label, ingredient_count, total_minutes, updated_at);
 
   insert into public.recipes (owner_id,title,description,total_minutes,ingredients,equipment,instructions,notes,tags,updated_at)
   select
@@ -109,6 +93,8 @@ do $verify$
 declare
   suffix text := current_setting('test.recipe_document_search_token');
   result jsonb;
+  easy_result jsonb;
+  test_case record;
 begin
   result := public.recipe_vault_search_recipe_documents(
     'recipe_document_search_owner_a', 'SHORTBREAD', '{}'::text[], 0, 20
@@ -118,90 +104,33 @@ begin
     raise exception 'Case-insensitive title search failed: %', result;
   end if;
 
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'orange zest', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '1' then raise exception 'Description search failed: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'cookie', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '1' then raise exception 'English stemming search failed: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'shortbread orange', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '1' then raise exception 'Multiple-term search failed: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'butter', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '1' then raise exception 'Ingredient-name search failed: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'baking sheet', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '1' then raise exception 'Equipment-name search failed: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'BAK', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '0' then raise exception 'Partial-token search unexpectedly matched: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'baking', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '1' then raise exception 'Tag full-text search failed: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'olive oil', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '1' then raise exception 'Terms across fields did not match: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', '"olive oil"', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '0' then raise exception 'Quoted phrase incorrectly bridged fields: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'orange OR olive', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '2' then raise exception 'Web-search OR syntax failed: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'secret note phrase', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '0' then raise exception 'Recipe notes unexpectedly matched: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'softened', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '0' then raise exception 'Ingredient notes unexpectedly matched: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', '100%', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '1' then raise exception 'Literal percent search failed: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'salt_and', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '1' then raise exception 'Literal underscore search failed: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'back\slash', '{}'::text[], 0, 20
-  );
-  if result ->> 'total' <> '1' then raise exception 'Literal backslash search failed: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'shortbread', array['slow', 'quick'], 0, 20
-  );
-  if result ->> 'total' <> '1' then raise exception 'Text plus any-selected-tag filter failed: %', result; end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'shortbread', array['qui'], 0, 20
-  );
-  if result ->> 'total' <> '0' then raise exception 'Selected tag matched a partial name: %', result; end if;
+  for test_case in select * from (values
+    ('orange zest', '{}'::text[], 1, 'Description search failed'),
+    ('cookie', '{}'::text[], 1, 'English stemming search failed'),
+    ('shortbread orange', '{}'::text[], 1, 'Multiple-term search failed'),
+    ('butter', '{}'::text[], 1, 'Ingredient-name search failed'),
+    ('baking sheet', '{}'::text[], 1, 'Equipment-name search failed'),
+    ('BAK', '{}'::text[], 0, 'Partial-token search unexpectedly matched'),
+    ('baking', '{}'::text[], 1, 'Tag full-text search failed'),
+    ('olive oil', '{}'::text[], 1, 'Terms across fields did not match'),
+    ('"olive oil"', '{}'::text[], 0, 'Quoted phrase incorrectly bridged fields'),
+    ('orange OR olive', '{}'::text[], 2, 'Web-search OR syntax failed'),
+    ('secret note phrase', '{}'::text[], 0, 'Recipe notes unexpectedly matched'),
+    ('softened', '{}'::text[], 0, 'Ingredient notes unexpectedly matched'),
+    ('100%', '{}'::text[], 1, 'Literal percent search failed'),
+    ('salt_and', '{}'::text[], 1, 'Literal underscore search failed'),
+    ('back\slash', '{}'::text[], 1, 'Literal backslash search failed'),
+    ('shortbread', array['slow', 'quick'], 1, 'Text plus any-selected-tag filter failed'),
+    ('shortbread', array['qui'], 0, 'Selected tag matched a partial name')
+  ) as cases(search_text, selected_tags, expected_total, error_message)
+  loop
+    result := public.recipe_vault_search_recipe_documents(
+      'recipe_document_search_owner_a', test_case.search_text, test_case.selected_tags, 0, 20
+    );
+    if (result ->> 'total')::integer <> test_case.expected_total then
+      raise exception '%: %', test_case.error_message, result;
+    end if;
+  end loop;
 
   result := public.recipe_vault_search_recipe_documents(
     'recipe_document_search_owner_a', null, '{}'::text[], 0, 1
@@ -210,45 +139,50 @@ begin
     raise exception 'Unfiltered count or pagination failed: %', result;
   end if;
 
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'preference', '{}'::text[], 0, 20, 'easy'
-  );
-  if result ->> 'total' <> '4'
-    or exists (
-      select 1 from pg_catalog.jsonb_array_elements(result -> 'items') as item
+  for test_case in select * from (values
+    ('easy', 4, 'Preference missing total %', 'Preference exactly thirty %', 'Preference four ingredients %', 'Preference five ingredients %'),
+    ('quick', 4, 'Preference six ingredients %', 'Preference five ingredients %', 'Preference four ingredients %', 'Preference twenty-nine minutes %')
+  ) as preferences(preference, expected_total, first_title, second_title, third_title, last_title)
+  loop
+    result := public.recipe_vault_search_recipe_documents(
+      'recipe_document_search_owner_a', 'preference', '{}'::text[], 0, 20, test_case.preference
+    );
+    if (result ->> 'total')::integer <> test_case.expected_total
+      or result -> 'items' -> 0 -> 'document' ->> 'title' not like test_case.first_title
+      or result -> 'items' -> 1 -> 'document' ->> 'title' not like test_case.second_title
+      or result -> 'items' -> 2 -> 'document' ->> 'title' not like test_case.third_title
+      or result -> 'items' -> 3 -> 'document' ->> 'title' not like test_case.last_title then
+      raise exception 'Preference eligibility or ordering failed for %: %', test_case.preference, result;
+    end if;
+    if test_case.preference = 'easy' then
+      easy_result := result;
+    end if;
+  end loop;
+
+  if not exists (
+      select 1 from pg_catalog.jsonb_array_elements(easy_result -> 'items') as item
+      where item -> 'document' ->> 'title' like 'Preference five ingredients %'
+    ) or exists (
+      select 1 from pg_catalog.jsonb_array_elements(easy_result -> 'items') as item
       where item -> 'document' ->> 'title' like 'Preference six ingredients %'
     ) then
-    raise exception 'Easy preference did not enforce the five-ingredient limit: %', result;
+    raise exception 'Easy preference did not include five and exclude six ingredients: %', easy_result;
   end if;
 
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'preference', '{}'::text[], 0, 20, 'quick'
-  );
-  if result ->> 'total' <> '4'
-    or result -> 'items' -> 0 -> 'document' ->> 'title' not like 'Preference six ingredients %'
-    or result -> 'items' -> 1 -> 'document' ->> 'title' not like 'Preference five ingredients %'
-    or result -> 'items' -> 2 -> 'document' ->> 'title' not like 'Preference four ingredients %'
-    or result -> 'items' -> 3 -> 'document' ->> 'title' not like 'Preference twenty-nine minutes %' then
-    raise exception 'Quick preference did not enforce the 29/30-minute boundary or exclude missing totals: %', result;
-  end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'preference', '{}'::text[], 0, 20, 'easy-quick'
-  );
-  if result ->> 'total' <> '2'
-    or result -> 'items' -> 0 -> 'document' ->> 'title' not like 'Preference four ingredients %'
-    or result -> 'items' -> 1 -> 'document' ->> 'title' not like 'Preference five ingredients %' then
-    raise exception 'Easy-quick did not apply both filters: %', result;
-  end if;
-
-  result := public.recipe_vault_search_recipe_documents(
-    'recipe_document_search_owner_a', 'preference', '{}'::text[], 0, 20, 'quick-easy'
-  );
-  if result ->> 'total' <> '2'
-    or result -> 'items' -> 0 -> 'document' ->> 'title' not like 'Preference five ingredients %'
-    or result -> 'items' -> 1 -> 'document' ->> 'title' not like 'Preference four ingredients %' then
-    raise exception 'Quick-easy did not reverse preference ranking: %', result;
-  end if;
+  for test_case in select * from (values
+    ('easy-quick', 'Preference four ingredients %', 'Preference five ingredients %'),
+    ('quick-easy', 'Preference five ingredients %', 'Preference four ingredients %')
+  ) as preferences(preference, first_title, second_title)
+  loop
+    result := public.recipe_vault_search_recipe_documents(
+      'recipe_document_search_owner_a', 'preference', '{}'::text[], 0, 20, test_case.preference
+    );
+    if result ->> 'total' <> '2'
+      or result -> 'items' -> 0 -> 'document' ->> 'title' not like test_case.first_title
+      or result -> 'items' -> 1 -> 'document' ->> 'title' not like test_case.second_title then
+      raise exception 'Combined preference filters or ranking failed for %: %', test_case.preference, result;
+    end if;
+  end loop;
 
   result := public.recipe_vault_search_recipe_documents(
     'recipe_document_search_owner_a', 'pagination', '{}'::text[], 0, 3, 'quick'
