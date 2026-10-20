@@ -1,11 +1,11 @@
-# Agent workflows
+# App feature workflow
 
-`AGENTS.md` remains the authority for Recipe Vault boundaries, security, formatting,
-and checks. Use a workflow skill for a repeatable unit of work and a small set of
-reusable agents for bounded tasks. The root coordinator owns state, decisions,
-integration, and final verification. Do not create an agent for each stage.
-
-## App feature workflow
+The [agent work](../standards/agent-work.md), [security and ownership](../standards/security-and-ownership.md),
+and [verification](../standards/verification.md) standards apply throughout
+this workflow. Use its [skill](../../.agents/skills/app-feature-workflow/SKILL.md)
+only when explicitly invoked. The root coordinator owns state, decisions,
+integration, and final verification. Reusable agents own bounded tasks, not a
+whole feature slice or stage.
 
 Use `$app-feature-workflow` only when the user explicitly invokes it. Ordinary
 application feature requests do not trigger this workflow automatically. Its
@@ -26,7 +26,7 @@ approval handoff records the document's SHA-256 digest (for example,
 approval even when the revision line was not updated. Never put credentials,
 private customer data, or raw secrets in
 workflow artifacts. Each handoff uses the schema in
-[`handoff.schema.json`](workflows/handoff.schema.json). Validate the folder with
+[`handoff.schema.json`](handoff.schema.json). Validate the folder with
 `pnpm workflow:validate workflows/<name>` before advancing a stage and before
 opening or updating the PR. Keep run artifacts local and out of feature commits
 and PRs. A validator can check the record; only the human's explicit message
@@ -97,13 +97,3 @@ skipped check is not a pass. Choose checks by the changed behavior:
 `pnpm check` excludes `test:db` and `test:e2e`. Authenticated browser tests
 require `E2E_EMAIL` and `E2E_PASSWORD`; report when those tests are unavailable.
 Use a disposable local database for migration and RLS verification.
-
-## Other work
-
-Refactors, upgrades, design-system work, and standalone change reviews may
-reuse the handoff format and roles, but should have their own workflow skills
-and stage rules when repeated. A small self-contained task can stay with one
-agent while following the same project checks. For a standalone diff review,
-fix the comparison point and provide the originating request or spec; ask the
-read-only reviewer for actionable findings with file, line, failure mode, and
-evidence.

@@ -2,100 +2,15 @@
 
 Recipe Vault is a private, multi-user recipe application built with Next.js,
 Clerk, and Supabase. Every authenticated Clerk user receives an isolated vault;
-the application has no public recipes, sharing, or cross-user access.
+there are no public recipes, sharing, or cross-user access.
 
-Private pages show a sidebar at 768px and wider. Below 768px, a Recipe Vault
-title bar opens a left navigation drawer. Both provide Recipes and an account
-menu with Settings and Sign out. Settings at `/settings` links to Profile
-(`/settings/profile`); sign-in remains a standalone page. The root URL redirects to
-`/recipes`.
-
-## Authentication and data access
-
-Clerk is the only identity provider. Browser and `/api/v1` requests use Clerk
-session tokens through Supabase's native third-party-auth `accessToken`
-integration. Supabase row-level security compares each row's text `owner_id`
-with `auth.jwt()->>'sub'`.
-
-MCP requests use Clerk OAuth at the Next.js boundary. OAuth access tokens are
-never sent to Supabase. After verification, the MCP adapter binds the Clerk
-user ID to a server-only recipe service; only that adapter can use the Supabase
-service-role credential.
-
-Account admission remains a Clerk setting. Dynamic Client Registration lets MCP
-clients register automatically, but it does not create Recipe Vault users or
-change the Clerk instance's sign-up policy.
-
-## Application API
-
-The authenticated API is under `/api/v1`. Identity always comes from Clerk and
-never from a request owner field.
-
-| Method   | Path                  | Behavior                                                         |
-| -------- | --------------------- | ---------------------------------------------------------------- |
-| `GET`    | `/api/v1/recipes`     | Paginated owned summaries with search and filters.               |
-| `GET`    | `/api/v1/tags`        | Paginated owned tag names and usage counts derived from recipes. |
-| `POST`   | `/api/v1/recipes`     | Creates an owned recipe.                                         |
-| `GET`    | `/api/v1/recipes/:id` | Returns one owned recipe and its revision.                       |
-| `PUT`    | `/api/v1/recipes/:id` | Replaces the complete recipe using an expected revision.         |
-| `DELETE` | `/api/v1/recipes/:id` | Deletes an owned recipe using an expected revision.              |
-
-The authenticated HTTP API uses `PUT` to replace a complete validated recipe,
-and reads include a revision for optimistic concurrency. A recipe has `id`,
-`title`, `description`, optional `yield` (`amount` and `unit`), `time` with
-optional `prepMinutes`, `cookMinutes`, and `totalMinutes`, ordered
-`ingredients` (each with `name` and optional text `amount` and `note`),
-`equipment` (each with `name` and optional `note`), ordered string
-`instructions`, ordered `notes`, `tags`, and optional `sourceUrl`. The server
-assigns the ID and binds ownership from Clerk. Yield remains optional.
-
-Tags are canonical names stored in each recipe's `tags` array. Inventory,
-search filters, and usage counts come from the authenticated owner's recipes;
-there is no separate tag catalog. Replacing a tag name updates affected recipes
-atomically, and deleting the last recipe that uses a name removes it from
-inventory. `GET /api/v1/tags` returns paginated
-`{ name, usageCount }` items with optional literal substring search.
-
-Successful writes record safe audit events. Recipe bodies, cookies,
-credentials, and request headers are never placed in audit metadata or
-application logs.
-
-## MCP
-
-The remote MCP endpoint is `/mcp`. It uses Clerk OAuth 2.1, PKCE,
-consent, automatic client onboarding (CIMD where available, with DCR for broad
-client compatibility), and the standard OAuth metadata endpoints:
-
-- `/.well-known/oauth-protected-resource/mcp`
-- `/.well-known/oauth-authorization-server`
-
-The server exposes `list_tags`, `replace_tag_name`, `search_recipes`,
-`get_recipe`, `save_recipe`, and `replace_recipe`. Read tools require
-`recipes:read`; mutations require `recipes:write`. `list_tags` returns only
-recipe tag names and exact recipe usage counts, with literal search,
-usage or name sorting, and cursor pagination. `replace_tag_name` replaces an
-explicitly selected canonical name in the authenticated user's recipes
-and deduplicates names where the target already exists. There are no tag IDs,
-descriptions, unused tags, or separate tag catalog.
-
-MCP recipe tools use the complete recipe shape. `save_recipe` creates a recipe;
-`replace_recipe` replaces one using its expected revision. Yield is optional.
-
-For MCP Apps-capable hosts, `get_recipe` also renders a portable, read-only
-recipe view after the model searches for and selects a recipe ID. The same tool
-continues to return its existing JSON text response in hosts without MCP Apps
-support. The view has no new scopes, authentication policy, external network
-access, or write behavior; it receives only recipe fields needed for display.
-
-MCP connections use the OAuth flow at `/mcp`; users sign in and grant consent
-from their MCP client.
-
-The private [Recipe Vault plugin](plugins/recipe-vault/README.md) packages a
-recipe import skill for local distribution. It uses a separately connected
-Recipe Vault MCP endpoint and is listed in the repository's local marketplace.
-
-See [OAuth MCP setup](docs/mcp-oauth-setup.md) for exact local, Clerk, Supabase,
-hosting, rollout, and verification instructions.
+The app supports recipe creation, editing, search, tags, and website and PDF
+imports. Private pages provide navigation to Recipes and Settings, while
+sign-in is standalone. See the [recipe contracts](docs/reference/recipes.md)
+for the current UI and HTTP API behavior, the [MCP contracts](docs/reference/mcp.md)
+for remote tools and views, and the [architecture overview](docs/architecture/overview.md)
+for the module map. The [security and ownership standard](docs/standards/security-and-ownership.md)
+defines required access boundaries.
 
 ## Local development
 
@@ -120,87 +35,55 @@ hosting, rollout, and verification instructions.
 7. Run `pnpm dev` for remote data or `pnpm dev:local` for local data, then open
    `http://localhost:3000`.
 
-After edits, run `pnpm format`, then `pnpm check` and `pnpm build`.
-For commits, follow the [message convention](AGENTS.md#commit-messages).
+Use the [verification standard](docs/standards/verification.md) for formatting,
+checks, tests, and commit messages. For MCP configuration and deployment, use
+the [OAuth setup guide](docs/guides/mcp-oauth-setup.md).
 
 ## Component development
 
 Run `pnpm storybook` and open `http://localhost:6006` to develop and review
 components and page compositions. Storybook discovers `.stories.*` and `.mdx`
-files under `src`. Start with the [UI development guide](src/components/ui/README.md)
-or use the component docs tools to find the family guide and stories. See the
-[Storybook authoring guide](docs/storybook-ui-authoring.md) for story ownership
-and coverage rules, and [UI accessibility](docs/ui-accessibility.md) for the
-shared target and validation approach.
+files under `src`. Start with the [component index](src/components/ui/index.mdx)
+and family guides or use Storybook's component docs tools. The
+[UI composition](docs/standards/ui/composition.md),
+[Storybook authoring](docs/standards/ui/storybook-authoring.md), and
+[accessibility](docs/standards/ui/accessibility.md) standards define shared
+rules. With Storybook running, its MCP server at `http://localhost:6006/mcp`
+exposes `docs-list` and `docs-show` for component discovery and prop guidance.
 
-With Storybook running, its MCP server at `http://localhost:6006/mcp` exposes
-`docs-list` and `docs-show` for component discovery, usage guidance, stories,
-and props.
+Use `pnpm build-storybook` to create a production Storybook build. Its
+`storybook-static/` output is not committed.
 
-Use `pnpm build-storybook` to create a production Storybook build. Its output
-is written to `storybook-static/` and is not committed.
-
-## Security configuration
+## Configuration and monitoring
 
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and
 `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` are public client configuration.
-`NEXT_PUBLIC_LD_CLIENT_ID` is the public LaunchDarkly client-side ID. Private
-pages use the Clerk user ID as the LaunchDarkly user context key, without sending
-the user's name or email. The server uses `LD_SDK_KEY` to sign that key for
-LaunchDarkly secure mode; keep it server-only and enable secure mode in each
-LaunchDarkly environment. Make each flag available to client-side SDKs before
-reading it in the browser.
+`NEXT_PUBLIC_LD_CLIENT_ID` is LaunchDarkly's public client-side ID. Private
+pages use the Clerk user ID as the LaunchDarkly user context key without
+sending a name or email. The server signs that key with `LD_SDK_KEY` for
+LaunchDarkly secure mode; enable secure mode in each environment and make each
+flag available to client-side SDKs before reading it in the browser.
 
 `CLERK_SECRET_KEY`, `LD_SDK_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are
-server-only. Never add a `NEXT_PUBLIC_` prefix to these secrets, expose them to
-an MCP client, or log them.
-
-## Error monitoring
+server-only. The [security standard](docs/standards/security-and-ownership.md)
+defines how they may be used and protected.
 
 The app reports browser, Node.js, and Edge errors to the `recipe-vault` Sentry
-project on Vercel Preview and Production deployments, with request tracing sampled
-at 10%. Sentry does not initialize in local development. `NEXT_PUBLIC_SENTRY_DSN`
-is public project configuration; configure it in deployed environments only. Set
-`SENTRY_DSN` only when a separate server-side value is useful. SDK user info is
-disabled, and event filters remove user objects and `user.*` tags. Telemetry also
-omits cookies, headers, request and response bodies, URL query values, database
-query data, and stack-frame local variables; URL query strings are removed from
-events, breadcrumbs, and spans. Session Replay is not enabled because pages can
-contain private recipes.
+project on Vercel Preview and Production deployments, with request tracing
+sampled at 10%. Sentry does not initialize in local development.
+`NEXT_PUBLIC_SENTRY_DSN` is public project configuration; configure it only
+in deployed environments. Set `SENTRY_DSN` only when a separate server-side
+value is useful. SDK user info is disabled; event filters remove user objects
+and `user.*` tags. Telemetry omits cookies, headers, request and response
+bodies, URL query values, database query data, and stack-frame local
+variables. Session Replay is disabled because pages can contain private
+recipes.
 
-Set `SENTRY_AUTH_TOKEN` as a build secret to upload source maps and create Sentry
-releases during production builds. The build detects the Git commit for the
-release by default; set `SENTRY_RELEASE` during the build to use a different
-identifier, such as the deployed commit SHA. Sentry telemetry remains disabled
-for local development even when the public DSN is configured.
+Set `SENTRY_AUTH_TOKEN` as a build secret to upload source maps and create
+Sentry releases during production builds. The build detects the Git commit
+for the release by default; set `SENTRY_RELEASE` during the build to use a
+different identifier, such as the deployed commit SHA.
 
-## Recipe imports
-
-The recipes menu offers manual creation and imports from a website or PDF. PDF
-imports accept one file up to 3 MB with embedded text, at most 20 pages and
-50,000 extracted characters. When a document has multiple recipes, the first
-complete recipe in document order is imported. Scanned image PDFs and encrypted
-PDFs are not supported. Documents are processed in memory and are not stored.
-
-## Architecture
-
-| Location                                                 | Responsibility                                                    |
-| -------------------------------------------------------- | ----------------------------------------------------------------- |
-| `src/app`                                                | Thin pages, API routes, OAuth metadata, and MCP route handlers.   |
-| `src/components/app`                                     | Shared private sidebar, navigation, brand, and providers.         |
-| `src/app/(private)/recipes` and `src/app/(private)/tags` | Colocated recipe and tag UI, forms, and route actions.            |
-| `src/lib/auth`                                           | Clerk identity, OAuth verification, and Supabase clients.         |
-| `src/lib/db`                                             | Recipe persistence and Supabase access.                           |
-| `src/lib/launchdarkly.ts`                                | Server-side LaunchDarkly context signing.                         |
-| `src/lib/recipes`                                        | Ownership-aware domain services.                                  |
-| `src/lib/validation`                                     | Shared input schemas.                                             |
-| `src/mcp`                                                | MCP transport composition, principals, scopes, and tool adapters. |
-
-## Design token follow-up
-
-The private layout uses shared sidebar and content width tokens alongside the
-existing semantic color, spacing, radius, and typography tokens. Text and
-heading variants use semantic font tokens backed by shared font-size,
-line-height, and weight primitives. Motion durations are still hard-coded,
-including 150ms transitions. Some page rules also use literal spacing and
-radius values.
+The private [Recipe Vault plugin](plugins/recipe-vault/README.md) packages a
+recipe import skill for local distribution. It connects to a separately
+configured Recipe Vault MCP endpoint.

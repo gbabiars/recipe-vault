@@ -8,9 +8,10 @@ description: Build or change Recipe Vault UI using the local design system, toke
 Use this skill for UI work in the Next.js app and MCP views. Keep the local
 design-system API and guidance authoritative.
 
-1. Read the [UI development guide](../../../src/components/ui/README.md) and the
-   README for the boundary being changed. Use `docs-list` to find relevant
-   components, then `docs-show` for the components you plan to compose. Read
+1. Read the [UI composition standard](../../../docs/standards/ui/composition.md)
+   and relevant architecture and reference pages routed by `AGENTS.md`. Use
+   `docs-list` to find relevant components, then `docs-show` for the components
+   you plan to compose. Read
    their family MDX and stories for local intent and examples.
 2. Prefer an existing design-system component and its supported props. Use
    layout props and semantic tokens before adding CSS. Follow the token guide
@@ -21,7 +22,7 @@ design-system API and guidance authoritative.
    for rendered page UI; ask the user before omitting it. Raise the question in
    planning when foreseeable, or during implementation if complexity or
    integration boundaries change the recommendation. Follow the repository's
-   [Storybook authoring guide](../../../docs/storybook-ui-authoring.md).
+   [Storybook authoring standard](../../../docs/standards/ui/storybook-authoring.md).
 4. Before authoring stories, call `get-storybook-story-instructions`. Show the
    normal state and distinct states or interactions owned by the story unit;
    mock services and routing at their boundaries with deterministic fixtures.

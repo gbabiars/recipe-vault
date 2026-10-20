@@ -7,7 +7,7 @@ description: Validate accessibility for changed Recipe Vault UI and report focus
 
 Use this skill when building or reviewing UI whose behavior, semantics, styling,
 or layout can affect accessibility. The target for new and changed UI is WCAG
-2.2 Level AA. Read the [shared accessibility guide](../../../docs/ui-accessibility.md)
+2.2 Level AA. Read the [accessibility standard](../../../docs/standards/ui/accessibility.md)
 and the affected component family guides before selecting checks.
 
 ## Select checks for the changed behavior

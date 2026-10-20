@@ -31,9 +31,8 @@ services, fetch, and routing at their boundaries with deterministic fixtures.
 Keep assertions focused on visible outcomes and use accessible roles or labels
 to find controls.
 
-Before creating or changing stories, consult the `recipe-vault-components`
-Storybook docs and call `get-storybook-story-instructions`. After changing a
-story or component, run `test-run` for the affected stories. Storybook's
-accessibility addon runs with error severity; use the
-[UI accessibility guide](./ui-accessibility.md) and
-accessibility skill to select checks beyond the automated scan.
+Consult the `recipe-vault-components` Storybook docs before creating or
+changing stories. Storybook's accessibility addon runs with error severity;
+follow the [UI accessibility standard](accessibility.md) for checks beyond
+the automated scan. The [UI development skill](../../../.agents/skills/ui-development/SKILL.md)
+describes tool calls and the working procedure.

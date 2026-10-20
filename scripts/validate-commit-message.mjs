@@ -55,7 +55,7 @@ if (!lines.slice(2).join("\n").trim()) {
 }
 
 if (errors.length > 0) {
-  console.error("Commit message does not follow AGENTS.md:\n");
+  console.error("Commit message does not follow docs/standards/verification.md:\n");
   for (const error of errors) {
     console.error(`- ${error}`);
   }

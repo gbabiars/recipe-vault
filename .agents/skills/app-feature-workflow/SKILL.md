@@ -7,54 +7,29 @@ metadata:
 
 # App feature workflow
 
-Use this skill only when the user explicitly invokes `$app-feature-workflow`.
-Do not invoke it automatically for ordinary application feature requests. Read
-`AGENTS.md` and
-[`docs/agent-workflows.md`](../../../docs/agent-workflows.md) for the stage
-contract, run directory, handoff format, roles, retry limits, and checks. Keep
-the stage mechanics here; use `workflow_implementer` and `workflow_reviewer`
-for bounded work, not one agent per stage.
+Use only when the user explicitly invokes `$app-feature-workflow`. Read the
+[feature workflow contract](../../../docs/workflows/app-feature.md),
+[agent work standard](../../../docs/standards/agent-work.md), and applicable
+security and verification standards. The contract owns stages, approvals,
+retry limits, run artifacts, roles, and checks.
 
-1. Use the current checkout and existing branch by default. Create or switch
-   to a branch or worktree only when the human explicitly requests one. Create
-   the local run folder under the ignored `workflows/` directory. If a Linear
-   issue is supplied, read it when accessible; otherwise use supplied content
-   or ask for the missing issue text. Never overwrite unrelated working changes.
-2. At Intake, research and inspect the relevant code, then use `$grilling` to
-   interview the human. Before any question about a technical choice in Intake or Plan,
-   follow the Planning decisions guidance in `AGENTS.md`; provide the options,
-   concrete examples, tradeoffs, and recommendation in chat before asking. Produce
-   a readable spec and acceptance criteria. Format the document, print its complete
-   contents in chat when requesting approval, and stop for explicit approval before
-   recording the Intake handoff.
-3. Produce an implementation plan in small steps. Show realistic consuming
-   code for every new API or component shape. Format the document, print its
-   complete contents in chat when requesting approval, and stop for explicit
-   approval before recording the Plan handoff. Do not modify app code until
-   both the current spec and plan have explicit human approval.
-4. Implement bounded slices and run focused verification. Review the full diff
-   independently, including functional and accessibility checks when relevant.
-   Route findings, CI failures, and human feedback through Verify/Fix under the
-   limits in the workflow guide. Reopen Intake if approved behavior changes.
-5. Validate JSON handoffs before advancing. After Review passes, open a
-   ready-for-review PR with a product summary, acceptance criteria, verification
-   evidence, and remaining limits. Keep run artifacts local; do not include them
-   in the PR.
-6. Route human review feedback or CI failures through Verify/Fix or Intake as
-   appropriate. At Human Review, present the PR and ask the human to approve
-   merging. Only an explicit approval allows work to advance to Complete.
-7. At Complete, merge with `gh pr merge --squash`, using a squash commit title
-   and body that follow the repository's commit conventions. Confirm the merge
-   succeeded before cleanup. Then remove this feature's run directory under
-   `workflows/`. If the current checkout is on the feature branch, switch to
-   `main` and delete that feature branch locally. Preserve unrelated workflow
-   directories and local branches. Record the terminal `human-review →
-   complete` handoff with the human's approval, merge confirmation, PR
-   evidence, and cleanup result.
+1. Work in the current checkout and branch unless the user requests another.
+   Create the ignored `workflows/<name>/` run folder; preserve unrelated work.
+2. At Intake, inspect the request and code, use `$grilling` for unsettled
+   product decisions, and prepare a spec with acceptance criteria. Present its
+   complete contents for explicit approval before advancing.
+3. At Plan, prepare small implementation steps, consuming call sites for new
+   APIs, and verification. Present the complete plan for explicit approval.
+   Do not edit app code until the current spec and plan are approved.
+4. Assign bounded implementation, run focused checks, and use a fresh
+   `workflow_reviewer` for independent review. Route findings or changed
+   requirements through the transitions in the workflow contract.
+5. Record and validate each handoff with `pnpm workflow:validate workflows/<name>`.
+   After review, open a ready-for-review PR with outcome and verification
+   evidence. Keep run artifacts local and out of the PR.
+6. At Human Review, ask for explicit merge approval. After approval, complete
+   the squash merge and feature-specific cleanup described in the contract.
 
-At the end of each stage, validate its handoff and finish the relevant checks
-before advancing. Keep handoffs in the local ignored run folder.
-
-Only the human's explicit message counts as a gate approval. A validator result
-does not grant approval. Report failed, skipped, and unavailable checks
-accurately. Keep secrets and private customer data out of workflow artifacts.
+Only the human's explicit message grants a gate approval. A validator result
+does not. Report failed, skipped, and unavailable checks accurately; keep
+secrets and private customer data out of workflow artifacts.

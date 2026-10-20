@@ -21,9 +21,11 @@ and caller-specific requirements.
 
 ## Choose validation for the change
 
-Storybook runs its accessibility addon as an error-level check. Run affected
-stories after UI changes and use interaction tests for behavior such as keyboard
-operation, focus handling, labels, and status updates.
+Storybook runs its accessibility addon as an error-level check. Affected
+stories must pass after UI changes; use interaction tests for behavior such as
+keyboard operation, focus handling, labels, and status updates. The
+[UI accessibility skill](../../../.agents/skills/ui-accessibility/SKILL.md)
+describes how to select and run checks.
 
 Add targeted manual or browser review when the change affects interactive
 controls, forms, navigation, overlays, asynchronous feedback, responsive layout,

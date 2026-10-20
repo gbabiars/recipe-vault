@@ -49,10 +49,8 @@ Select the Clerk instance for the environment you are configuring.
 ### 2.3 Enable automatic MCP client onboarding
 
 1. Open the OAuth application settings.
-2. If Clerk has enabled its beta **Client ID Metadata Document (CIMD)** support
-   for your account, enable **Publish CIMD support** and allow compatible
-   clients according to your client-admission policy. Clerk currently requires
-   contacting support to enable this beta.
+2. Enable **Publish CIMD support** for compatible clients and allow them
+   according to your client-admission policy.
 3. Enable **Publish DCR support** for clients that do not support CIMD. DCR is
    the broad-compatibility path and remains necessary for those clients.
 4. Include `recipes:read`, `recipes:write`, and `offline_access` in the allowed
@@ -114,7 +112,7 @@ single-owner allow-list and changes row-level security to per-user ownership.
    client supports DCR.
 5. Complete the Clerk sign-in and consent flow. Confirm search, get, and save
    operate only on that Clerk user's recipes.
-6. Run `pnpm format`, `pnpm check`, `pnpm peers check`, and `pnpm build`.
+6. Run `pnpm format`, `pnpm check`, and `pnpm build`.
 
 OAuth access tokens are short lived. Requesting `offline_access` allows a client
 to obtain a refresh token and renew access without requiring another sign-in on
@@ -124,11 +122,9 @@ every access-token expiration.
 
 ### 6.1 What is and is not currently configured
 
-This repository contains no `vercel.json`, no committed Vercel project metadata,
-and no Vercel deployment workflow. The local checkout is not linked through a
-`.vercel/project.json` file, and the Vercel CLI is not installed locally. Those
-facts do not prove that a Vercel project does not already exist; verify in the
-Vercel Dashboard.
+This repository contains no `vercel.json`, committed Vercel project metadata,
+or Vercel deployment workflow. Check the Vercel Dashboard for an existing
+project before creating one.
 
 No `vercel.json` is required for the current application. Next.js route handlers
 are supported directly by Vercel, `/mcp` explicitly uses the Node.js runtime,
@@ -240,6 +236,10 @@ for a custom consent route.
 
 ## 7. Credential model
 
+The [security and ownership standard](../standards/security-and-ownership.md)
+defines the credential boundary. These setup reminders apply when configuring
+an MCP deployment:
+
 - **Preferred:** `/mcp` with Clerk OAuth, CIMD when available, DCR as the broad
   compatibility path, PKCE, consent, custom scopes, and `offline_access`. This
   works for every admitted user without per-user app registration.
@@ -250,6 +250,7 @@ for a custom consent route.
 
 Official references:
 
+- [Clerk: CIMD general availability](https://clerk.com/changelog)
 - [Clerk: Build an MCP server in Next.js](https://clerk.com/docs/nextjs/guides/ai/mcp/build-mcp-server)
 - [Clerk: How Clerk implements OAuth](https://clerk.com/docs/guides/configure/auth-strategies/oauth/how-clerk-implements-oauth)
 - [Supabase: Clerk third-party authentication](https://supabase.com/docs/guides/auth/third-party/clerk)

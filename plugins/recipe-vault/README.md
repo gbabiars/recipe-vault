@@ -20,5 +20,5 @@ available from this repository. Add future skills under `skills/<name>/SKILL.md`
 the portable plugin format discovers them from `skills/`. Keep authorization
 and recipe data operations in the existing MCP server.
 
-See [the MCP boundary](../../src/mcp/README.md) for tool behavior and
-[the OAuth setup guide](../../docs/mcp-oauth-setup.md) for connecting a deployment.
+See the [MCP contracts](../../docs/reference/mcp.md) for tool behavior and
+the [OAuth setup guide](../../docs/guides/mcp-oauth-setup.md) for connecting a deployment.

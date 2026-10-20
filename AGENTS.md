@@ -1,186 +1,41 @@
 # Recipe Vault Agent Guide
 
-## Project
+Recipe Vault is a private, multi-user Next.js 16 application. Each authenticated
+Clerk user has an isolated recipe vault. Keep the application deployable and add
+product behavior only when requested.
 
-Recipe Vault is a private, multi-user recipe application built with Next.js 16,
-React 19, TypeScript, Clerk, and Supabase. Each authenticated user has an isolated
-vault. Keep the application deployable and add product behavior only when requested.
+## Start here
 
-## Setup and checks
+- Use Node.js 24 or newer and pnpm 11.23.0. On a pnpm store mismatch, preserve
+  the existing store and `node_modules`; stop and request specific approval
+  before changing install state or store settings.
+- Read the [architecture overview](docs/architecture/overview.md) and the
+  applicable standards below before changing code. Use the
+  [verification standard](docs/standards/verification.md) for formatting,
+  checks, tests, and commit messages.
+- Treat [skills](.agents/skills/) as procedures. Their linked standards and
+  workflow contracts own the durable rules. The ignored `workflows/` directory
+  holds task-specific run records, not shared guidance.
 
-- Use Node.js 24 or newer and `pnpm` (pinned to 11.23.0) for dependency and
-  script commands.
-- On a pnpm store mismatch, preserve the existing store and `node_modules`
-  state. Stop before changing install state or store settings, and ask the user
-  for specific approval before any workaround.
-- Run the narrowest relevant check while working: `pnpm lint`, `pnpm typecheck`,
-  `pnpm test`, or `pnpm build`. Run `pnpm check` for changes that span linting,
-  types, and tests.
-- Run `pnpm format` after making changes, before running checks or handing off
-  work. In a multi-agent task, the coordinating agent runs it once after edits
-  are integrated; workers must not run repository-wide formatting concurrently.
-  The pre-commit hook formats staged files as a safeguard, but does not replace
-  this step.
-- Add or update focused tests when changing observable behavior. Colocate each
-  test file with the module it exercises; use `.test.tsx` for component tests
-  and `.test.ts` for unit tests.
-- Test UI interactions with the real components in Vitest's Playwright-backed
-  `components` browser project. Do not mock a UI component whose rendering or
-  interaction is under test; mock unrelated server or service boundaries.
-- Run a focused browser component test with
-  `pnpm exec vitest run --project components path/to/file.test.tsx`.
-- Do not hand-edit generated files such as `next-env.d.ts` or `.next/` output.
+| Change area                                        | Read                                                                                                                                                                                                                                                                                                                                            |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Any code or API shape                              | [Code organization](docs/standards/code-organization.md), [agent work](docs/standards/agent-work.md)                                                                                                                                                                                                                                            |
+| Authentication, ownership, credentials, MCP scopes | [Security and ownership](docs/standards/security-and-ownership.md); [database](docs/standards/database.md) when persistence changes                                                                                                                                                                                                             |
+| Database schema, repositories, RPC, or RLS         | [Database](docs/standards/database.md), [security and ownership](docs/standards/security-and-ownership.md), [database reference](docs/reference/database.md)                                                                                                                                                                                    |
+| Recipe behavior or API                             | [Recipe reference](docs/reference/recipes.md) and relevant standards                                                                                                                                                                                                                                                                            |
+| MCP tools or transport                             | [MCP reference](docs/reference/mcp.md), [security and ownership](docs/standards/security-and-ownership.md)                                                                                                                                                                                                                                      |
+| UI                                                 | [UI composition](docs/standards/ui/composition.md), [Storybook authoring](docs/standards/ui/storybook-authoring.md), [accessibility](docs/standards/ui/accessibility.md), component family guides, and the [`ui-development`](.agents/skills/ui-development/SKILL.md) and [`ui-accessibility`](.agents/skills/ui-accessibility/SKILL.md) skills |
+| Explicit `$app-feature-workflow` invocation        | [Feature workflow](docs/workflows/app-feature.md) and its skill; ordinary feature requests do not invoke it automatically                                                                                                                                                                                                                       |
 
-## Architecture
+## Safety essentials
 
-- Keep route components and route handlers in `src/app` thin. Validate external
-  inputs before invoking domain services.
-- Collocate recipe UI and feature composition in private folders beside the routes that use them under `src/app/(private)/recipes` and `src/app/(private)/tags`. Put UI shared by several recipe pages at their nearest common route parent.
-- Put recipe-domain services, transformations, and authorization policy in
-  `src/lib/recipes`.
-- Put database repositories and Supabase access adapters in `src/lib/db`.
-  Features must not query Supabase directly.
-- Put shared validation schemas in `src/lib/validation`.
-- Put Clerk identity and Supabase browser/server client setup in `src/lib/auth`.
-- Put the remote MCP transport, Clerk OAuth policy, and tool adapters in
-  `src/mcp`. MCP tools must reuse recipe-domain ownership rules and enforce
-  their scopes.
-- Read the `README.md` in the boundary you are changing before adding code there.
-
-## Multi-agent work
-
-For app features and change reviews, follow `docs/agent-workflows.md`. Use
-`$app-feature-workflow` for the full app feature lifecycle only when the user
-explicitly invokes it. Use `$feature-slicing` when an approved feature needs
-smaller implementation steps. Reusable agents
-own bounded tasks; no agent represents a feature slice or an entire stage.
-
-- The root agent is the coordinator. It defines the outcome, assigns bounded
-  work, reconciles findings, integrates edits, and owns final verification.
-- Use `workflow_implementer` for an assigned implementation task and a fresh
-  `workflow_reviewer` for independent plan verification or code review. For
-  changes to ownership or credential boundaries, ask the reviewer to explicitly
-  trace the authorization path.
-
-- Use subagents for bounded, independent exploration, documentation research,
-  diagnosis, or review when parallel work improves the outcome. Keep dependent
-  decisions and short tasks with the coordinating agent.
-- Give each subagent a specific question, relevant boundaries, expected evidence,
-  and a concise result to return. The coordinator reconciles findings and owns
-  the final design, integration, formatting, and verification.
-- Give each editing task one owner and explicit file boundaries. Coordinate
-  before agents edit shared files, generated output, or database state. Prefer
-  read-only parallel review when work overlaps.
-- For changes to authentication, RLS, MCP scopes, or service-role access,
-  require `workflow_reviewer` to check owner binding, scope enforcement, and
-  credential boundaries before handing off the change.
-
-## Planning decisions
-
-- Before asking the user to choose a technical approach during planning, explain
-  the relevant goal and codebase facts, the viable options, and your recommended
-  option with its reason. State the tradeoffs that matter to this choice, such
-  as implementation effort, maintenance, compatibility, performance, or security.
-- Show a concise, realistic example for each materially different option so the
-  user can see what it would mean in this project. Use consuming code for APIs,
-  JSX for components, or a directory tree or data flow sketch when those are the
-  decision. Include enough detail to reveal the practical difference without
-  expanding routine choices into design documents.
-- Give this context before the choice prompt. Short option labels and one-line
-  descriptions in a question tool do not replace the explanation.
-
-## API design
-
-- Show the consuming code whenever proposing or discussing an API. Include at
-  least one realistic call-site example alongside the recommendation so its
-  ergonomics can be reviewed before implementation. For UI components, show
-  JSX that exercises the intended composition and important props or states.
-- When comparing materially different API shapes, include a consuming-code
-  example for each. Use the examples to check names, defaults, and composition,
-  and revise the API when a call site feels awkward or unclear.
-
-## Security and configuration
-
-- Never commit `.env.local`, secrets, or real credentials; use `.env.example`
-  only for non-sensitive placeholders.
-- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and
-  `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` are public client configuration.
-  `CLERK_SECRET_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are server-only. Never expose
-  them through a `NEXT_PUBLIC_*` variable, browser code, logs, responses, or
-  error messages.
-- Preserve private-only recipe visibility and Clerk user ownership. Browser and
-  API requests use Clerk session tokens with Supabase RLS; only the verified MCP
-  adapter may use the Supabase service-role credential. Do not infer an owner
-  identity or grant access from request or tool input.
-
-## Change discipline
-
-- Do not refactor production components or modules without explicit user permission.
-- Break plans, implementation prompts, and changes into small iterative steps,
-  each with one focused outcome and a way to verify it. Prefer narrow vertical
-  slices; split coupled work horizontally when needed. Keep large cross-cutting
-  changes out of a single step.
-- Preserve existing public behavior unless the request explicitly changes it.
-- Do not add production dependencies, change deployment configuration, or alter
-  authentication policy without a clear task requirement.
-- Update `README.md` or the applicable boundary README when a change alters a
-  documented contract or ownership boundary.
-
-## Commit messages
-
-- Write every commit, including merges and reverts, as
-  `<type>[(scope)][!]: <description>`. Use `feat`, `fix`, `docs`, `refactor`,
-  `test`, `perf`, `style`, `chore`, `build`, `ci`, or `revert`. Use `style` for
-  presentation or formatting changes without functional behavior.
-- Keep the subject at 72 characters or fewer, without a trailing period.
-  Describe the result that landed and its purpose, not work planned for later.
-  Use a lowercase, hyphenated scope when one helps identify the area.
-- After a blank line, write a nonempty prose body that explains why the change
-  was needed and what the commit actually changed. Keep it factual and concise;
-  use more detail when the reason or implementation is not obvious.
-
-```text
-fix(auth): keep expired sessions out of recipe requests
-
-Expired sessions could reach the recipe API before authentication failed.
-The request boundary now rejects them before invoking recipe services.
-```
-
-## Storybook component guidance
-
-When working on UI components, use the `recipe-vault-components` MCP server to
-consult Storybook's component guidance before answering or changing UI. Read
-`src/components/ui/README.md` and the linked family guide for local intent and
-token usage.
-
-Use `$ui-development` when building or changing UI. It routes to the current
-design-system docs, story guidance, and verification steps. Use
-`$ui-accessibility` for UI changes to select relevant accessibility checks; its
-shared target and criteria live in `docs/ui-accessibility.md`.
-Story ownership and coverage policy live in `docs/storybook-ui-authoring.md`.
-
-When designing a new reusable UI pattern or resolving a meaningful design
-choice, review relevant guidance from [shadcn/ui](https://ui.shadcn.com/),
-[Astryx](https://astryx.atmeta.com/),
-[Atlassian Design System](https://atlassian.design/get-started), and
-[Primer](https://primer.style/product/getting-started/) as useful for the task.
-Keep the local component API and tokens authoritative.
-
-- Call `docs-list` to find the relevant components, then `docs-show` for their
-  props, guidance, and examples. Check every prop before using it, even when its
-  name seems familiar.
-- Use only existing props supported by the documentation, example stories, or
-  exported types. If a needed prop is absent, propose an API change with a
-  consuming JSX example; ask the user when the choice needs a product decision.
-  Never infer an existing prop from another library or a story title.
-- Before creating or updating stories, call `get-storybook-story-instructions`.
-- Story the composite root rather than each exported part. Recommend a story
-  for page UI; ask the user before omitting one when the page is vendor-owned,
-  redirect-only, or unusually difficult to isolate. Raise the question during
-  planning when possible, or during implementation if the reason emerges later.
-- After changing stories or components, use `test-run` to check the affected
-  stories. Use the accessibility skill to select focused browser or manual
-  checks; manual review is targeted to the changed behavior.
+Preserve private per-user visibility. Bind ownership from verified Clerk
+identity, never request or tool input. Browser and API data access uses Clerk
+session tokens with Supabase RLS; only the verified MCP adapter may use the
+Supabase service-role credential. Keep `CLERK_SECRET_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`, and other server-only secrets out of browser code,
+logs, and responses. The [security standard](docs/standards/security-and-ownership.md)
+defines the complete rules.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
